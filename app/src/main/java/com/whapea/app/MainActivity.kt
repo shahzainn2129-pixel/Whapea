@@ -39,7 +39,7 @@ class MainActivity : ComponentActivity() {
             if (result.values.all { it }) {
                 askAndStart()
             } else {
-                Core.setStatus("Allow the Bluetooth (Nearby devices) permission so Whapea can work")
+                Core.say("Allow the Bluetooth (Nearby devices) permission so Whapea can work")
             }
         }
 
@@ -125,7 +125,7 @@ class MainActivity : ComponentActivity() {
             return
         }
         if (!Core.btOn()) {
-            Core.setStatus("Turn on Bluetooth")
+            Core.say("Turn on Bluetooth")
             startActivity(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE))
             return
         }

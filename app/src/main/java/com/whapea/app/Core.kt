@@ -73,7 +73,7 @@ object Core {
 
     fun btOn(): Boolean = adapter?.isEnabled == true
 
-    fun setStatus(t: String) {
+    fun say(t: String) {
         status = t
         onUi()
     }
@@ -90,11 +90,11 @@ object Core {
         if (running) return
         val a = adapter
         if (a == null) {
-            setStatus("This phone has no Bluetooth")
+            say("This phone has no Bluetooth")
             return
         }
         if (!a.isEnabled) {
-            setStatus("Turn on Bluetooth, then open Whapea again")
+            say("Turn on Bluetooth, then open Whapea again")
             return
         }
         running = true
@@ -201,7 +201,7 @@ object Core {
     fun connect(address: String) {
         val a = adapter ?: return
         val label = found.firstOrNull { it.address == address }?.name ?: address
-        setStatus("Connecting to $label...")
+        say("Connecting to $label...")
         io.execute {
             try {
                 a.cancelDiscovery()
@@ -209,7 +209,7 @@ object Core {
                 s.connect()
                 setupSocket(s)
             } catch (e: Exception) {
-                main.post { setStatus("Could not connect. Is Whapea open on $label?") }
+                main.post { say("Could not connect. Is Whapea open on $label?") }
             }
         }
     }
