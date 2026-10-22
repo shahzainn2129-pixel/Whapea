@@ -191,7 +191,7 @@ class MainActivity : ComponentActivity() {
             runOnUiThread {
                 wantStart = false
                 Core.auto = false
-                stopService(Intent(this, BtService::class.java))
+                stopService(Intent(this@MainActivity, BtService::class.java))
                 Core.stop()
             }
         }
