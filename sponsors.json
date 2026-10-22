@@ -1,0 +1,13 @@
+{
+  "posts": [
+    {
+      "id": "welcome1",
+      "brand": "Whapea",
+      "caption": "Whapea mein khush aamdeed! Yahan aap ko sponsor ki posts nazar aayengi.",
+      "contact": "",
+      "date": "2026-10-22",
+      "until": "2026-12-31",
+      "pinned": true
+    }
+  ]
+}

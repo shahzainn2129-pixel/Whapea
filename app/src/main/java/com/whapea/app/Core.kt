@@ -19,7 +19,10 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.io.DataInputStream
 import java.io.DataOutputStream
+import java.net.URL
+import java.security.MessageDigest
 import java.util.UUID
+import javax.net.ssl.HttpsURLConnection
 import java.util.concurrent.Executors
 
 data class Found(val address: String, val name: String, val paired: Boolean)
@@ -33,6 +36,8 @@ data class Found(val address: String, val name: String, val paired: Boolean)
 object Core {
     private val APP_UUID: UUID = UUID.fromString("8f2b6c1e-5d3a-4c7e-9b1a-0a6c3e5f7d21")
     private const val MAX_FRAME = 2_000_000
+    private const val FEED_URL = "https://raw.githubusercontent.com/shahzainn2129-pixel/Whapea/main/sponsors.json"
+    private const val OWNER_HASH = "cd3c52d11ece85816bab73c0147660f24d46de44591dbe6ef7e4d60103d43f46"
 
     private var ready = false
     private lateinit var app: Context
@@ -260,5 +265,41 @@ object Core {
                 // the reader thread notices a broken connection
             }
         }
+    }
+
+    // ---------- sponsor posts (need internet, nothing else does) ----------
+    fun fetchFeed(done: (String?) -> Unit) {
+        io.execute {
+            var result: String? = null
+            try {
+                val c = URL(FEED_URL + "?t=" + System.currentTimeMillis()).openConnection() as HttpsURLConnection
+                c.connectTimeout = 8000
+                c.readTimeout = 8000
+                c.instanceFollowRedirects = false
+                if (c.responseCode == 200) {
+                    val buf = java.io.ByteArrayOutputStream()
+                    c.inputStream.use { inp ->
+                        val chunk = ByteArray(8192)
+                        while (true) {
+                            val n = inp.read(chunk)
+                            if (n < 0) break
+                            buf.write(chunk, 0, n)
+                            if (buf.size() > 1_500_000) throw java.io.IOException("feed too large")
+                        }
+                    }
+                    result = String(buf.toByteArray(), Charsets.UTF_8)
+                }
+                c.disconnect()
+            } catch (e: Exception) {
+                result = null
+            }
+            main.post { done(result) }
+        }
+    }
+
+    /** The owner key is never stored here, only a one-way fingerprint of it. */
+    fun checkOwnerKey(key: String): Boolean {
+        val d = MessageDigest.getInstance("SHA-256").digest(("whapea-owner:" + key.trim()).toByteArray(Charsets.UTF_8))
+        return d.joinToString("") { "%02x".format(it) } == OWNER_HASH
     }
 }

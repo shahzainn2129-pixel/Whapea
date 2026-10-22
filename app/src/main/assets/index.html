@@ -290,7 +290,7 @@ const P={
   usman:{name:'Usman Tariq',about:'Offline kabhi kabhi',hue:268,dist:null,range:false},
 };
 const ME={name:'Ahmed',about:'Whapea par hoon',hue:230,dp:null};
-const OWNER_PIN='2026';
+const OWNER_PIN='';
 const DAY=864e5;
 const SPONS=[
  {id:'s1',brand:'Noor Chai House',hue:28,kind:'sample',caption:'Garam chai aur taza paratha. Whapea users ke liye 10% discount, code WHAPEA.',contact:'03XX XXXXXXX',t:T0-3*3600e3,until:T0+6*DAY,likes:12,pinned:true},
@@ -398,16 +398,16 @@ function statusHTML(){
 
 function spCard(p){
   const left=Math.max(1,Math.ceil((p.until-Date.now())/DAY));
-  const media=p.kind==='video'?`<video class="spm" controls playsinline preload="metadata" src="${p.src}#t=0.1"></video>`:p.kind==='image'?`<img class="spm" src="${p.src}" alt="${esc(p.brand)}">`:`<button class="spm poster" style="--h:${p.hue}" data-a="spSample" aria-label="Play sample video"><span class="play">${ic('play',30)}</span><span>${esc(p.brand)}</span></button>`;
-  return `<article class="sp"><header><span class="av sm" style="--h:${p.hue}">${esc(p.brand[0])}</span><span style="flex:1;min-width:0"><b>${esc(p.brand)} ${ic('verified',15)}</b><div class="val">Sponsored${p.pinned?' · Pinned':''} · ends in ${left} day${left>1?'s':''}</div></span>${S.owner?`<button class="ib" data-a="spMenu" data-v="${p.id}" aria-label="Manage post">${ic('more')}</button>`:''}</header>
+  const media=p.kind==='text'?'':p.kind==='video'?`<video class="spm" controls playsinline preload="metadata" src="${p.src}#t=0.1"></video>`:p.kind==='image'?`<img class="spm" src="${p.src}" alt="${esc(p.brand)}">`:`<button class="spm poster" style="--h:${p.hue}" data-a="spSample" aria-label="Play sample video"><span class="play">${ic('play',30)}</span><span>${esc(p.brand)}</span></button>`;
+  return `<article class="sp"><header><span class="av sm" style="--h:${p.hue}">${esc(p.brand[0])}</span><span style="flex:1;min-width:0"><b>${esc(p.brand)} ${ic('verified',15)}</b><div class="val">Sponsored${p.pinned?' · Pinned':''} · ends in ${left} day${left>1?'s':''}</div></span>${S.owner&&!NATIVE?`<button class="ib" data-a="spMenu" data-v="${p.id}" aria-label="Manage post">${ic('more')}</button>`:''}</header>
   ${media}<div class="spb"><p>${esc(p.caption)}</p>${p.contact?`<div class="spc"><span>${ic('phone',16)} ${esc(p.contact)}</span><button class="tag" data-a="spCopy" data-v="${p.id}">Copy</button></div>`:''}
   <div class="spa"><button data-a="spLike" data-v="${p.id}" class="${p.liked?'on':''}">${ic('star',18)} ${p.likes+(p.liked?1:0)}</button><button data-a="spShare" data-v="${p.id}">${ic('fwd',18)} Share</button><button data-a="spHide" data-v="${p.id}">${ic('x',18)} Hide</button></div></div></article>`}
 function sponsHTML(){
   const L=SPONS.filter(p=>p.until>Date.now()&&!p.hidden).sort((a,b)=>(b.pinned?1:0)-(a.pinned?1:0)||b.t-a.t);
   const inr=Object.keys(P).filter(k=>reach(k)!=='none').length;
-  return `${S.owner?`<div class="card ownerbar">${ic('verified',28)}<span style="flex:1;min-width:0"><b>Owner mode</b><div class="val">Only you can post here. Posts are saved on this phone for now.</div></span><button class="tag" data-a="ownerOff">Sign out</button></div>`:''}
-  <div class="note2">Sponsored posts come from the Whapea owner. Posts you add here are saved on this phone for now. Sending them to nearby phones comes in the next update.</div>
-  ${L.length?L.map(spCard).join(''):`<div class="empty"><b>No sponsored posts</b>${S.owner?'Tap + to post your first brand video.':'Check again later.'}</div>`}
+  return `${S.owner?`<div class="card ownerbar">${ic('verified',28)}<span style="flex:1;min-width:0"><b>Owner mode</b><div class="val">Create a post, then copy its data to publish it.</div></span><button class="tag" data-a="ownerOff">Sign out</button></div>`:''}
+  <div class="note2">Sponsored posts come from the Whapea owner. They download when your phone is online and stay saved for offline use. ${NATIVE?`<button class="tag" data-a="spRefresh">Refresh</button>`:''}</div>
+  ${L.length?L.map(spCard).join(''):`<div class="empty"><b>No sponsored posts</b>${NATIVE?'Posts download when your phone is online.':(S.owner?'Tap + to post your first brand video.':'Check again later.')}</div>`}
   <div style="height:90px"></div>`}
 function nearHTML(){if(NATIVE)return nearNative();
   const keys=Object.keys(P),pts=keys.filter(k=>P[k].range);
@@ -434,8 +434,8 @@ function setHTML(){
   const row=(a,i,l,v,sub)=>`<button class="act" data-a="${a}" data-v="">${ic(i)}<span class="grow">${l}${sub?`<small>${sub}</small>`:''}</span>${v!==undefined?`<span class="val">${v}</span>`:ic('chev',18)}</button>`;
   const sw=(k,i,l,sub)=>`<button class="act" data-a="sw" data-v="${k}">${ic(i)}<span class="grow">${l}${sub?`<small>${sub}</small>`:''}</span>${tg(SET[k])}</button>`;
   return `<button class="card" style="width:calc(100% - 32px);text-align:left" data-a="editProfile">${avMe('')}<span style="flex:1;min-width:0"><b style="font-size:18px;font-family:var(--font-display)">${esc(ME.name)}</b><div class="val">${esc(ME.about)}</div></span>${NATIVE?'':`<span data-a="qr" data-v="" style="padding:8px;color:var(--accent)">${ic('qr',26)}</span>`}</button>
-  <div class="sec">Brand owner</div>
-  ${S.owner?row('ownerOff','verified','Owner mode is on','','Tap to sign out'):row('ownerLogin','verified','Owner sign-in','','Only the owner can post sponsored videos')}
+  ${NATIVE&&!S.owner?'':'<div class="sec">Brand owner</div>'}
+  ${S.owner?row('ownerOff','verified','Owner mode is on','','Tap to sign out'):(NATIVE?'':row('ownerLogin','verified','Owner sign-in','','Only the owner can post sponsored videos'))}
   <div class="sec">Account</div>
   ${NATIVE?'':row('myKey','shield','Device key','',`Your identity: ${KEY.slice(0,9)}…`)}
   <div class="note2" style="margin-top:-2px">No phone number or email needed. Friends find you nearby over Bluetooth.</div>
@@ -654,8 +654,8 @@ const ACT={
    draw()},
 
  /* sponsors */
- ownerLogin:()=>sheet('Owner sign-in',`<div class=\"note2\" style=\"font-size:14px\">Enter the owner PIN to post sponsored videos and photos.</div><div class="field"><input id="opin" type="password" inputmode="numeric" maxlength="8" placeholder="Owner PIN" autocomplete="off"></div><button class="btn" data-a="ownerOk">Unlock owner mode</button>`),
- ownerOk:()=>{if($('#opin').value===OWNER_PIN){S.owner=true;closeSheet();S.tab='spons';render();toast('Owner mode on. Tap + to post')}else toast('Wrong PIN')},
+ ownerLogin:()=>sheet('Owner sign-in',`<div class=\"note2\" style=\"font-size:14px\">Enter the owner key.</div><div class="field"><input id="opin" type="password" maxlength="40" autocapitalize="characters" placeholder="Owner key" autocomplete="off"></div><button class="btn" data-a="ownerOk">Unlock owner mode</button>`),
+ ownerOk:()=>{if(NATIVE?Android.checkKey($('#opin').value):$('#opin').value===OWNER_PIN){S.owner=true;closeSheet();S.tab='spons';render();toast('Owner mode on. Tap + to post')}else toast('Wrong PIN')},
  ownerOff:()=>{S.owner=false;closeSheet();render()},
  spSample:()=>toast('This is a sample post. Videos you add play right here.'),
  spNew:()=>{S.spm=null;S.spd=7;sheet('New sponsored post',`<div class="field"><input id="spb" placeholder="Brand name" maxlength="30" autocomplete="off"></div><div class="field"><textarea id="spcap" rows="3" maxlength="200" placeholder="What are you promoting?" class="txt"></textarea></div><div class="field"><input id="spct" placeholder="Phone or address (optional)" maxlength="40" autocomplete="off"></div><div class="sec" style="padding-top:2px">Runs for</div><div class="chips" id="spdur">${[3,7,14,30].map(d=>`<button class="chip ${d===7?'on':''}" data-a="spDur" data-v="${d}">${d} days</button>`).join('')}</div><button class="act" data-a="spPick">${ic('video')}<span class="grow" id="spmi">Add a video or photo<small>The real app shrinks videos before they travel</small></span></button><button class="btn" data-a="spPost">Post to nearby phones</button>`)},
@@ -724,7 +724,7 @@ const RXOK=['👍','❤️','😂','😮','😢','🙏'];
 const cl=(s,n)=>String(s==null?'':s).slice(0,n);
 const copyText=async t=>{if(NATIVE){Android.copy(t);return}await navigator.clipboard.writeText(t)};
 let pt;
-function persistSoon(){if(!NATIVE)return;clearTimeout(pt);pt=setTimeout(()=>{try{Android.save(JSON.stringify({ME,SET,P,chats:chats.map(c=>({...c,typing:null,find:''})),spons:SPONS.filter(p=>p.kind!=='video'),my:myStatus}))}catch(e){}},700)}
+function persistSoon(){if(!NATIVE)return;clearTimeout(pt);pt=setTimeout(()=>{try{Android.save(JSON.stringify({ME,SET,P,chats:chats.map(c=>({...c,typing:null,find:''})),spons:SPONS.filter(p=>!p.local),my:myStatus}))}catch(e){}},700)}
 function applySettings(){const r=document.documentElement;if(SET.theme==='system')r.removeAttribute('data-theme');else r.setAttribute('data-theme',SET.theme);phone.dataset.wp=SET.wp;r.style.setProperty('--fs',SET.fs+'px')}
 function ensurePeer(a,name,about,dp){
   let p=P[a];if(!p)p=P[a]={name:a,about:'',hue:hueOf(a),dist:null,range:false};
@@ -797,11 +797,36 @@ window.nativeBack=()=>{
   if(S.tab!=='chats'){S.tab='chats';render();return true}
   return false};
 
+/* ---- sponsor feed (downloads when online) ---- */
+const MEDIA_BASE='https://raw.githubusercontent.com/shahzainn2129-pixel/Whapea/main/sponsor-media/';
+let FEEDOK=false,FEEDAT=0;
+const okUrl=u=>typeof u==='string'&&/^https:\/\/raw\.githubusercontent\.com\/shahzainn2129-pixel\/Whapea\/[A-Za-z0-9._~%\/-]{1,200}$/.test(u);
+function cleanPost(p){
+  if(!p||typeof p!=='object')return null;
+  const id=cl(p.id,40);if(!id)return null;
+  const until=typeof p.until==='number'?p.until:Date.parse(p.until);if(!(until>Date.now()))return null;
+  const o={id,brand:cl(p.brand,40)||'Sponsor',caption:cl(p.caption,300),contact:cl(p.contact,60),t:(typeof p.t==='number'?p.t:Date.parse(p.date))||0,until,likes:0,pinned:!!p.pinned,kind:'text'};
+  o.hue=hueOf(o.brand);
+  const m=p.media;
+  if(m&&typeof m==='object'){
+    if(m.type==='video'&&okUrl(m.url)){o.kind='video';o.src=m.url}
+    else if(m.type==='image'){if(okUrl(m.url)){o.kind='image';o.src=m.url}else if(okImg(m.data)&&m.data.length<300000){o.kind='image';o.src=m.data}}
+  }
+  return o}
+function loadFeed(force){if(!NATIVE)return;if(!force&&Date.now()-FEEDAT<60000)return;FEEDAT=Date.now();Android.fetchFeed()}
+window.nativeFeed=raw=>{try{
+  const j=JSON.parse(raw),arr=(Array.isArray(j.posts)?j.posts.slice(0,30):[]).map(cleanPost).filter(Boolean);
+  const liked=new Set(SPONS.filter(x=>x.liked).map(x=>x.id));
+  const local=SPONS.filter(x=>x.local);
+  SPONS.length=0;arr.forEach(x=>{x.liked=liked.has(x.id);SPONS.push(x)});local.forEach(x=>SPONS.push(x));
+  FEEDOK=true;FEEDAT=Date.now();if(S.tab==='spons'&&!S.chat)render();else persistSoon()}catch(e){}};
+window.nativeFeedFail=()=>{if(S.tab==='spons'&&!S.chat)toast('Could not download posts. Check your internet.')};
+
 if(NATIVE){
   for(const k in P)delete P[k];chats.length=0;calls.length=0;for(const k in STAT)delete STAT[k];SPONS.length=0;myStatus.length=0;
   ME.name='';ME.about='Whapea par hoon';ME.dp=null;
   let saved=null;try{saved=JSON.parse(Android.load()||'null')}catch(e){}
-  if(saved){Object.assign(ME,saved.ME||{});Object.assign(SET,saved.SET||{});Object.assign(P,saved.P||{});chats.push(...(saved.chats||[]));SPONS.push(...(saved.spons||[]));myStatus.push(...(saved.my||[]))}
+  if(saved){Object.assign(ME,saved.ME||{});Object.assign(SET,saved.SET||{});Object.assign(P,saved.P||{});chats.push(...(saved.chats||[]));(saved.spons||[]).map(cleanPost).filter(Boolean).forEach(x=>SPONS.push(x));myStatus.push(...(saved.my||[]))}
   for(const k in P)P[k].range=false;
   chats.forEach(c=>{c.typing=null;c.find=''});
   applySettings();
@@ -818,6 +843,30 @@ if(NATIVE){
     nConnect:v=>{toast('Connecting…');Android.connect(v)},
     obGo:()=>{const n=($('#obn').value||'').trim();if(!n)return;ME.name=n;persistSoon();render();Android.start()},
   });
+
+  let aboutTaps=0;
+  Object.assign(ACT,{
+    tab:v=>{S.tab=v;render();if(v==='spons')loadFeed(false)},
+    spRefresh:()=>{toast('Checking for new posts…');loadFeed(true)},
+    appinfo:()=>{aboutTaps++;if(aboutTaps>=7){aboutTaps=0;ACT.ownerLogin();return}
+      sheet('About Whapea',`<div class="note2" style="font-size:14px">Version 1.2. Chats work without internet, straight from phone to phone over Bluetooth. Sponsored posts download when your phone is online.</div>`)},
+    spNew:()=>{sheet('New sponsored post',`<div class="field"><input id="spb" placeholder="Brand name" maxlength="40" autocomplete="off"></div><div class="field"><textarea id="spcap" rows="3" maxlength="300" placeholder="What are you promoting?" class="txt"></textarea></div><div class="field"><input id="spct" placeholder="Phone or address (optional)" maxlength="60" autocomplete="off"></div><div class="field"><input id="spv" placeholder="Video file name, e.g. chai.mp4 (optional)" maxlength="80" autocomplete="off" autocapitalize="none"></div><div class="sec" style="padding-top:2px">Runs for</div><div class="chips" id="spdur">${[3,7,14,30,60].map(d=>`<button class="chip ${d===7?'on':''}" data-a="spDur" data-v="${d}">${d} days</button>`).join('')}</div><button class="act" data-a="spPick">${ic('image')}<span class="grow" id="spmi">Add a photo (optional)<small>Photos are made small so they fit in the post</small></span></button><button class="btn" data-a="spPost">Create post data</button>`);S.spm=null;S.spd=7},
+    spPick:()=>pickFile('image/*',f=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,640/Math.max(im.width,im.height)),cv=document.createElement('canvas');cv.width=im.width*k;cv.height=im.height*k;cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);const src=cv.toDataURL('image/jpeg',.6);S.spm={kind:'image',src};const e=$('#spmi');if(e)e.innerHTML=`${esc(f.name)}<small>Photo · ${size(src.length*.75)}</small>`};im.src=r.result};r.readAsDataURL(f)}),
+    spPost:()=>{
+      const b=$('#spb').value.trim(),cap=$('#spcap').value.trim(),vf=$('#spv').value.trim();
+      if(!b||!cap){toast('Add a brand name and a short message');return}
+      if(vf&&!/^[A-Za-z0-9._-]{1,80}\.(mp4|webm)$/.test(vf)){toast('Video name must end in .mp4 or .webm');return}
+      const day=new Date(),end=new Date(Date.now()+S.spd*864e5),iso=d=>d.toISOString().slice(0,10);
+      const post={id:'p'+uid(),brand:b,caption:cap,contact:$('#spct').value.trim(),date:iso(day),until:iso(end)};
+      if(vf)post.media={type:'video',url:MEDIA_BASE+vf};else if(S.spm)post.media={type:'image',data:S.spm.src};
+      const mine=cleanPost(post);if(mine){mine.local=true;SPONS.unshift(mine)}
+      const txt=JSON.stringify(post,null,1);
+      closeSheet();render();
+      sheet('Post data',`<div class="note2" style="font-size:14px">This post shows on your phone as a preview. To publish it to everyone, add this data to <b>sponsors.json</b> in your GitHub repository, or ask your assistant to add it. ${vf?'Also upload the video file to the <b>sponsor-media</b> folder.':''}</div><div class="field"><textarea class="txt" id="pjson" rows="7" readonly>${esc(txt)}</textarea></div><button class="btn" data-a="spCopyJson">Copy post data</button>`);
+      S.pjson=txt},
+    spCopyJson:async()=>{try{await copyText(S.pjson);toast('Copied')}catch(e){toast('Press and hold the text to copy')}},
+  });
+  loadFeed(true);
   if(ME.name)setTimeout(()=>Android.start(),300);
 }
 

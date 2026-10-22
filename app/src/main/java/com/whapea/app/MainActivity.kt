@@ -186,6 +186,18 @@ class MainActivity : ComponentActivity() {
         }
 
         @JavascriptInterface
+        fun fetchFeed() {
+            runOnUiThread {
+                Core.fetchFeed { t ->
+                    if (t != null) js("nativeFeed(${q(t)})") else js("nativeFeedFail()")
+                }
+            }
+        }
+
+        @JavascriptInterface
+        fun checkKey(key: String): Boolean = Core.checkOwnerKey(key)
+
+        @JavascriptInterface
         fun copy(text: String) {
             runOnUiThread {
                 val cm = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
