@@ -14,11 +14,6 @@ import android.content.SharedPreferences
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.core.content.ContextCompat
 import org.json.JSONArray
 import org.json.JSONObject
@@ -27,25 +22,17 @@ import java.io.DataOutputStream
 import java.util.UUID
 import java.util.concurrent.Executors
 
-/** status: 0 = waiting (peer not in range), 1 = sent, 2 = delivered. peer = Bluetooth address of the other phone. */
-data class Msg(
-    val id: String,
-    val peer: String,
-    val mine: Boolean,
-    val text: String,
-    val ts: Long,
-    val status: Int
-)
-
 data class Found(val address: String, val name: String, val paired: Boolean)
 
 /**
  * All Bluetooth work lives here. It uses plain Android Bluetooth (RFCOMM sockets),
- * so it does not need Google Play services and works on any Android phone.
+ * so it does not need Google Play services. The screen (index.html) decides what
+ * the messages mean; this class only moves text between phones.
  */
 @SuppressLint("MissingPermission")
 object Core {
     private val APP_UUID: UUID = UUID.fromString("8f2b6c1e-5d3a-4c7e-9b1a-0a6c3e5f7d21")
+    private const val MAX_FRAME = 2_000_000
 
     private var ready = false
     private lateinit var app: Context
@@ -61,89 +48,62 @@ object Core {
     private class Conn(val socket: BluetoothSocket, val out: DataOutputStream)
 
     private val conns = mutableMapOf<String, Conn>()
+    private val found = mutableListOf<Found>() // main thread only
 
-    var myName by mutableStateOf("")
-    var running by mutableStateOf(false)
-    var scanning by mutableStateOf(false)
-    var statusText by mutableStateOf("Not started")
-    var openPeer by mutableStateOf<String?>(null)
+    var running = false
+    var scanning = false
+    var status = "Not started"
 
-    val found = mutableStateListOf<Found>()
-    val connected = mutableStateMapOf<String, String>() // address -> name
-    val names = mutableStateMapOf<String, String>()     // address -> last known name
-    val messages = mutableStateListOf<Msg>()
-    val unread = mutableStateMapOf<String, Int>()
-
-    fun nameOf(address: String): String = connected[address] ?: names[address] ?: address
+    var onLink: (String, Boolean) -> Unit = { _, _ -> }
+    var onData: (String, String) -> Unit = { _, _ -> }
+    var onUi: () -> Unit = {}
 
     fun init(context: Context) {
         if (ready) return
         app = context.applicationContext
         prefs = app.getSharedPreferences("whapea", Context.MODE_PRIVATE)
         adapter = (app.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager).adapter
-        myName = prefs.getString("name", "") ?: ""
-        load()
         ready = true
+    }
+
+    fun loadState(): String = prefs.getString("state", "") ?: ""
+    fun saveState(s: String) {
+        prefs.edit().putString("state", s).apply()
     }
 
     fun btOn(): Boolean = adapter?.isEnabled == true
 
-    fun setName(n: String) {
-        myName = n.trim()
-        prefs.edit().putString("name", myName).apply()
+    fun setStatus(t: String) {
+        status = t
+        onUi()
     }
 
-    // ---------- saving ----------
-    private fun save() {
+    fun uiJson(): String {
         val arr = JSONArray()
-        for (m in messages) {
-            arr.put(
-                JSONObject().put("id", m.id).put("peer", m.peer).put("mine", m.mine)
-                    .put("text", m.text).put("ts", m.ts).put("st", m.status)
-            )
-        }
-        val nm = JSONObject()
-        for ((k, v) in names) nm.put(k, v)
-        prefs.edit().putString("msgs", arr.toString()).putString("names", nm.toString()).apply()
-    }
-
-    private fun load() {
-        try {
-            val arr = JSONArray(prefs.getString("msgs", "[]"))
-            for (i in 0 until arr.length()) {
-                val o = arr.getJSONObject(i)
-                messages.add(
-                    Msg(
-                        o.getString("id"), o.getString("peer"), o.getBoolean("mine"),
-                        o.getString("text"), o.getLong("ts"), o.getInt("st")
-                    )
-                )
-            }
-            val nm = JSONObject(prefs.getString("names", "{}"))
-            for (k in nm.keys()) names[k] = nm.getString(k)
-        } catch (e: Exception) {
-            // start empty if saved data is unreadable
-        }
+        for (f in found) arr.put(JSONObject().put("a", f.address).put("n", f.name).put("p", f.paired))
+        return JSONObject().put("running", running).put("scanning", scanning)
+            .put("text", status).put("btOn", btOn()).put("found", arr).toString()
     }
 
     // ---------- start / stop ----------
     fun start() {
-        if (running || myName.isBlank()) return
+        if (running) return
         val a = adapter
         if (a == null) {
-            statusText = "This phone has no Bluetooth"
+            setStatus("This phone has no Bluetooth")
             return
         }
         if (!a.isEnabled) {
-            statusText = "Turn on Bluetooth, then open Whapea again"
+            setStatus("Turn on Bluetooth, then open Whapea again")
             return
         }
         running = true
-        statusText = "Ready. Waiting for people nearby"
+        status = "Ready. Waiting for people nearby"
         listenForever(a)
         registerScanReceiver()
         refreshPaired()
         scan()
+        onUi()
     }
 
     fun stop() {
@@ -155,9 +115,9 @@ object Core {
             for (c in conns.values) try { c.socket.close() } catch (e: Exception) { }
             conns.clear()
         }
-        connected.clear()
         found.clear()
-        statusText = "Stopped"
+        status = "Stopped"
+        onUi()
     }
 
     private fun listenForever(a: BluetoothAdapter) {
@@ -191,9 +151,13 @@ object Core {
                     }
                     if (d != null && found.none { it.address == d.address }) {
                         found.add(Found(d.address, d.name ?: d.address, d.bondState == BluetoothDevice.BOND_BONDED))
+                        onUi()
                     }
                 }
-                BluetoothAdapter.ACTION_DISCOVERY_FINISHED -> scanning = false
+                BluetoothAdapter.ACTION_DISCOVERY_FINISHED -> {
+                    scanning = false
+                    onUi()
+                }
             }
         }
     }
@@ -216,7 +180,7 @@ object Core {
                 }
             }
         } catch (e: SecurityException) {
-            statusText = "Allow Nearby devices permission"
+            status = "Allow the Nearby devices permission"
         }
     }
 
@@ -228,22 +192,24 @@ object Core {
             refreshPaired()
             scanning = a.startDiscovery()
         } catch (e: SecurityException) {
-            statusText = "Allow Nearby devices permission"
+            status = "Allow the Nearby devices permission"
         }
+        onUi()
     }
 
     // ---------- connecting ----------
-    fun connect(f: Found) {
+    fun connect(address: String) {
         val a = adapter ?: return
-        statusText = "Connecting to ${f.name}..."
+        val label = found.firstOrNull { it.address == address }?.name ?: address
+        setStatus("Connecting to $label...")
         io.execute {
             try {
                 a.cancelDiscovery()
-                val s = a.getRemoteDevice(f.address).createInsecureRfcommSocketToServiceRecord(APP_UUID)
+                val s = a.getRemoteDevice(address).createInsecureRfcommSocketToServiceRecord(APP_UUID)
                 s.connect()
                 setupSocket(s)
             } catch (e: Exception) {
-                main.post { statusText = "Could not connect. Is Whapea open on ${f.name}?" }
+                main.post { setStatus("Could not connect. Is Whapea open on $label?") }
             }
         }
     }
@@ -258,89 +224,41 @@ object Core {
                 conns.remove(addr)?.let { try { it.socket.close() } catch (e: Exception) { } }
                 conns[addr] = Conn(s, out)
             }
-            send(addr, JSONObject().put("t", "hi").put("name", myName))
+            main.post {
+                status = "Connected"
+                onLink(addr, true)
+                onUi()
+            }
             while (true) {
-                val j = JSONObject(inp.readUTF())
-                main.post { handle(addr, j) }
+                val n = inp.readInt()
+                if (n <= 0 || n > MAX_FRAME) break
+                val b = ByteArray(n)
+                inp.readFully(b)
+                val raw = String(b, Charsets.UTF_8)
+                main.post { onData(addr, raw) }
             }
         } catch (e: Exception) {
             // connection closed
         } finally {
-            synchronized(conns) { if (conns[addr]?.socket === s) conns.remove(addr) }
-            try { s.close() } catch (e: Exception) { }
-            main.post {
-                val n = connected.remove(addr)
-                if (n != null) statusText = "$n went out of range"
+            val last = synchronized(conns) {
+                if (conns[addr]?.socket === s) { conns.remove(addr); true } else false
             }
+            try { s.close() } catch (e: Exception) { }
+            if (last) main.post { onLink(addr, false) }
         }
     }
 
-    private fun send(addr: String, j: JSONObject) {
+    fun send(addr: String, json: String) {
         writer.execute {
             try {
                 val c = synchronized(conns) { conns[addr] } ?: return@execute
-                c.out.writeUTF(j.toString())
+                val b = json.toByteArray(Charsets.UTF_8)
+                c.out.writeInt(b.size)
+                c.out.write(b)
                 c.out.flush()
             } catch (e: Exception) {
-                // the reader thread will notice a broken connection
+                // the reader thread notices a broken connection
             }
         }
-    }
-
-    // ---------- messages ----------
-    private fun handle(addr: String, j: JSONObject) {
-        when (j.optString("t")) {
-            "hi" -> {
-                val n = j.optString("name", addr).ifBlank { addr }
-                names[addr] = n
-                connected[addr] = n
-                statusText = "Connected to $n"
-                save()
-                flushQueue(addr)
-            }
-            "msg" -> {
-                val id = j.getString("id")
-                if (messages.none { it.id == id }) {
-                    messages.add(Msg(id, addr, false, j.getString("text"), System.currentTimeMillis(), 2))
-                    if (openPeer != addr) unread[addr] = (unread[addr] ?: 0) + 1
-                    save()
-                }
-                send(addr, JSONObject().put("t", "ack").put("id", id))
-            }
-            "ack" -> {
-                val id = j.getString("id")
-                val i = messages.indexOfFirst { it.id == id }
-                if (i >= 0) {
-                    messages[i] = messages[i].copy(status = 2)
-                    save()
-                }
-            }
-        }
-    }
-
-    fun sendText(peer: String, text: String) {
-        val t = text.trim()
-        if (t.isEmpty()) return
-        val id = UUID.randomUUID().toString()
-        val online = connected.containsKey(peer)
-        if (online) send(peer, JSONObject().put("t", "msg").put("id", id).put("text", t))
-        messages.add(Msg(id, peer, true, t, System.currentTimeMillis(), if (online) 1 else 0))
-        save()
-    }
-
-    private fun flushQueue(peer: String) {
-        for (i in messages.indices) {
-            val m = messages[i]
-            if (m.mine && m.peer == peer && m.status == 0) {
-                send(peer, JSONObject().put("t", "msg").put("id", m.id).put("text", m.text))
-                messages[i] = m.copy(status = 1)
-            }
-        }
-        save()
-    }
-
-    fun clearChat(peer: String) {
-        messages.removeAll { it.peer == peer }
-        save()
     }
 }
