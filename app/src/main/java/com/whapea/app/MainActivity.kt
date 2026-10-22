@@ -27,6 +27,8 @@ class MainActivity : ComponentActivity() {
     private lateinit var web: WebView
     private var fileCb: ValueCallback<Array<Uri>>? = null
     private var wantStart = false
+    private var pageReady = false
+    private var askedNotif = false
 
     private val pickFile =
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
@@ -55,7 +57,9 @@ class MainActivity : ComponentActivity() {
         web.addJavascriptInterface(Bridge(), "Android")
         web.webViewClient = object : WebViewClient() {
             override fun onPageFinished(view: WebView?, url: String?) {
+                pageReady = true
                 pushUi()
+                if (Core.uiAttached) web.postDelayed({ Core.drainInbox() }, 400)
             }
         }
         web.webChromeClient = object : WebChromeClient() {
@@ -82,8 +86,21 @@ class MainActivity : ComponentActivity() {
         web.loadUrl("file:///android_asset/index.html")
     }
 
+    override fun onPause() {
+        super.onPause()
+        Core.uiAttached = false
+    }
+
     override fun onResume() {
         super.onResume()
+        Core.uiAttached = true
+        if (pageReady) Core.drainInbox()
+        if (Build.VERSION.SDK_INT >= 33 && !askedNotif &&
+            ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+        ) {
+            askedNotif = true
+            permissionLauncher.launch(arrayOf(Manifest.permission.POST_NOTIFICATIONS))
+        }
         if (wantStart && !Core.running && hasPermissions() && Core.btOn()) Core.start()
     }
 
@@ -130,6 +147,8 @@ class MainActivity : ComponentActivity() {
             return
         }
         Core.start()
+        Core.auto = true
+        ContextCompat.startForegroundService(this, Intent(this, BtService::class.java))
     }
 
     private fun makeVisible() {
@@ -171,6 +190,8 @@ class MainActivity : ComponentActivity() {
         fun stopBt() {
             runOnUiThread {
                 wantStart = false
+                Core.auto = false
+                stopService(Intent(this, BtService::class.java))
                 Core.stop()
             }
         }

@@ -14,6 +14,8 @@ import android.content.SharedPreferences
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import org.json.JSONArray
 import org.json.JSONObject
@@ -62,6 +64,11 @@ object Core {
     var onLink: (String, Boolean) -> Unit = { _, _ -> }
     var onData: (String, String) -> Unit = { _, _ -> }
     var onUi: () -> Unit = {}
+    /** True while the screen is open and can handle messages itself. */
+    var uiAttached = false
+
+    const val CH = "whapea_msgs"
+    const val CH_SVC = "whapea_svc"
 
     fun init(context: Context) {
         if (ready) return
@@ -69,6 +76,67 @@ object Core {
         prefs = app.getSharedPreferences("whapea", Context.MODE_PRIVATE)
         adapter = (app.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager).adapter
         ready = true
+        if (Build.VERSION.SDK_INT >= 26) {
+            val nm = app.getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
+            nm.createNotificationChannel(android.app.NotificationChannel(CH, "Messages", android.app.NotificationManager.IMPORTANCE_HIGH))
+            nm.createNotificationChannel(android.app.NotificationChannel(CH_SVC, "Whapea is running", android.app.NotificationManager.IMPORTANCE_LOW))
+        }
+    }
+
+    var auto: Boolean
+        get() = prefs.getBoolean("auto", false)
+        set(v) { prefs.edit().putBoolean("auto", v).apply() }
+
+    // ---------- messages that arrive while the screen is closed ----------
+    private fun names(): JSONObject = try { JSONObject(prefs.getString("names", "{}") ?: "{}") } catch (e: Exception) { JSONObject() }
+
+    private fun dispatch(addr: String, raw: String) {
+        try {
+            val o = JSONObject(raw)
+            if (o.optString("t") == "hi") {
+                val n = names(); n.put(addr, o.optString("name").take(40))
+                prefs.edit().putString("names", n.toString()).apply()
+            }
+        } catch (e: Exception) { }
+        if (uiAttached) { onData(addr, raw); return }
+        val arr = try { JSONArray(prefs.getString("inbox", "[]")) } catch (e: Exception) { JSONArray() }
+        if (arr.length() >= 300) return
+        arr.put(JSONObject().put("a", addr).put("r", raw))
+        prefs.edit().putString("inbox", arr.toString()).apply()
+        try {
+            val o = JSONObject(raw)
+            if (o.optString("t") == "msg") {
+                val who = names().optString(addr).ifBlank { "New message" }
+                val body = when (o.optString("type")) { "img" -> "Photo"; "contact" -> "Contact"; else -> o.optString("text").take(120) }
+                notifyMsg(addr, who, body)
+            }
+        } catch (e: Exception) { }
+    }
+
+    private fun notifyMsg(addr: String, who: String, body: String) {
+        try {
+            val pi = android.app.PendingIntent.getActivity(app, 0,
+                Intent(app, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP),
+                android.app.PendingIntent.FLAG_IMMUTABLE or android.app.PendingIntent.FLAG_UPDATE_CURRENT)
+            val n = NotificationCompat.Builder(app, CH)
+                .setSmallIcon(android.R.drawable.stat_notify_chat)
+                .setContentTitle(who).setContentText(body)
+                .setAutoCancel(true).setContentIntent(pi)
+                .setPriority(NotificationCompat.PRIORITY_HIGH).build()
+            NotificationManagerCompat.from(app).notify(addr.hashCode(), n)
+        } catch (e: SecurityException) { }
+    }
+
+    /** Hands everything that arrived in the background to the screen. */
+    fun drainInbox() {
+        val arr = try { JSONArray(prefs.getString("inbox", "[]")) } catch (e: Exception) { JSONArray() }
+        if (arr.length() == 0) return
+        prefs.edit().putString("inbox", "[]").apply()
+        for (i in 0 until arr.length()) {
+            val o = arr.getJSONObject(i)
+            onData(o.getString("a"), o.getString("r"))
+        }
+        try { NotificationManagerCompat.from(app).cancelAll() } catch (e: SecurityException) { }
     }
 
     fun loadState(): String = prefs.getString("state", "") ?: ""
@@ -240,7 +308,7 @@ object Core {
                 val b = ByteArray(n)
                 inp.readFully(b)
                 val raw = String(b, Charsets.UTF_8)
-                main.post { onData(addr, raw) }
+                main.post { dispatch(addr, raw) }
             }
         } catch (e: Exception) {
             // connection closed
