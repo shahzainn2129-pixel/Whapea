@@ -88,7 +88,7 @@ object Core {
                 android.media.RingtoneManager.getDefaultUri(android.media.RingtoneManager.TYPE_RINGTONE),
                 android.media.AudioAttributes.Builder()
                     .setUsage(android.media.AudioAttributes.USAGE_NOTIFICATION_RINGTONE)
-                    .setContentType(android.media.AudioAttributes.CONTENT_TYPE_SONIC).build()
+                    .setContentType(android.media.AudioAttributes.CONTENT_TYPE_UNKNOWN).build()
             )
             cc.enableVibration(true)
             nm.createNotificationChannel(cc)
