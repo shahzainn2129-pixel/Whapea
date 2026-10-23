@@ -11,8 +11,22 @@ android {
         applicationId = "com.whapea.app"
         minSdk = 26
         targetSdk = 34
-        versionCode = 5
-        versionName = "1.4"
+        val run = (System.getenv("GITHUB_RUN_NUMBER") ?: "0").toInt()
+        versionCode = if (run > 0) run else 5
+        versionName = "1.5"
+        buildConfigField("int", "BUILD_N", run.toString())
+    }
+    buildFeatures { buildConfig = true }
+    signingConfigs {
+        create("whapea") {
+            storeFile = file("whapea.jks")
+            storePassword = "0058f7f3afab872c89bdb95a"
+            keyAlias = "whapea"
+            keyPassword = "0058f7f3afab872c89bdb95a"
+        }
+    }
+    buildTypes {
+        getByName("debug") { signingConfig = signingConfigs.getByName("whapea") }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17

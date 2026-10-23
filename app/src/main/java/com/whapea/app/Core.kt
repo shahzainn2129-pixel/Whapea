@@ -49,7 +49,7 @@ object Core {
     private var receiverOn = false
 
     private val main = Handler(Looper.getMainLooper())
-    private val io = Executors.newCachedThreadPool()
+    val io = Executors.newCachedThreadPool()
     private val writer = Executors.newSingleThreadExecutor()
 
     private class Conn(val socket: BluetoothSocket, val out: DataOutputStream)
@@ -444,6 +444,62 @@ object Core {
             }
             main.post { done(result) }
         }
+    }
+
+    // ---------- app updates (from the Releases page) ----------
+    const val UPDATE_PREFIX = "https://github.com/shahzainn2129-pixel/Whapea/releases/download/"
+
+    /** Calls back with {"n":build number,"url":apk link} or null when nothing could be read. */
+    fun checkUpdate(done: (String?) -> Unit) {
+        io.execute {
+            var result: String? = null
+            try {
+                val c = URL("https://api.github.com/repos/shahzainn2129-pixel/Whapea/releases/latest").openConnection() as HttpsURLConnection
+                c.connectTimeout = 8000
+                c.readTimeout = 8000
+                c.setRequestProperty("Accept", "application/vnd.github+json")
+                if (c.responseCode == 200) {
+                    val j = JSONObject(c.inputStream.use { String(it.readBytes(), Charsets.UTF_8) })
+                    val n = j.optString("tag_name").removePrefix("build-").toIntOrNull()
+                    val assets = j.optJSONArray("assets")
+                    var url = ""
+                    if (assets != null) for (i in 0 until assets.length()) {
+                        val u = assets.getJSONObject(i).optString("browser_download_url")
+                        if (u.startsWith(UPDATE_PREFIX) && u.endsWith(".apk")) { url = u; break }
+                    }
+                    if (n != null && url.isNotEmpty()) result = JSONObject().put("n", n).put("url", url).toString()
+                }
+                c.disconnect()
+            } catch (e: Exception) { result = null }
+            main.post { done(result) }
+        }
+    }
+
+    /** Downloads the new APK to the cache folder. Returns the file or null. */
+    fun downloadApk(url: String, progress: (Int) -> Unit): java.io.File? {
+        if (!url.startsWith(UPDATE_PREFIX)) return null
+        return try {
+            val dir = java.io.File(app.cacheDir, "updates").also { it.mkdirs() }
+            val f = java.io.File(dir, "whapea.apk")
+            var c = URL(url).openConnection() as HttpsURLConnection
+            c.connectTimeout = 10000; c.readTimeout = 15000
+            c.instanceFollowRedirects = true
+            val total = c.contentLength
+            var got = 0L
+            c.inputStream.use { inp ->
+                f.outputStream().use { out ->
+                    val buf = ByteArray(16384)
+                    while (true) {
+                        val n = inp.read(buf)
+                        if (n < 0) break
+                        out.write(buf, 0, n); got += n
+                        if (got > 40_000_000) throw java.io.IOException("too big")
+                        if (total > 0) main.post { progress((got * 100 / total).toInt()) }
+                    }
+                }
+            }
+            if (got < 500_000) null else f
+        } catch (e: Exception) { null }
     }
 
     /** The owner key is never stored here, only a one-way fingerprint of it. */

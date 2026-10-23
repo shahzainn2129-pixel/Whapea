@@ -41,6 +41,14 @@ class MainActivity : ComponentActivity() {
             js("nativeMic(${ok})")
         }
 
+    private var pendingApk: java.io.File? = null
+
+    private fun openInstaller(f: java.io.File) {
+        val uri = androidx.core.content.FileProvider.getUriForFile(this, "com.whapea.app.files", f)
+        startActivity(Intent(Intent.ACTION_VIEW).setDataAndType(uri, "application/vnd.android.package-archive")
+            .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK))
+    }
+
     private fun hasMic(): Boolean =
         ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED
 
@@ -103,6 +111,7 @@ class MainActivity : ComponentActivity() {
         super.onResume()
         Core.uiAttached = true
         if (pageReady) Core.drainInbox()
+        pendingApk?.let { if (packageManager.canRequestPackageInstalls()) { pendingApk = null; openInstaller(it) } }
         if (Build.VERSION.SDK_INT >= 33 && !askedNotif &&
             ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
         ) {
@@ -257,6 +266,34 @@ class MainActivity : ComponentActivity() {
 
         @JavascriptInterface
         fun ringStop() { Core.ringStop() }
+
+        @JavascriptInterface
+        fun buildNo(): Int = BuildConfig.BUILD_N
+
+        @JavascriptInterface
+        fun checkUpdate() {
+            runOnUiThread {
+                Core.checkUpdate { t -> if (t != null) js("nativeUpdate(${q(t)})") else js("nativeUpdate('')") }
+            }
+        }
+
+        @JavascriptInterface
+        fun installUpdate(url: String) {
+            Core.io.execute {
+                val f = Core.downloadApk(url) { p -> js("nativeUpdProg($p)") }
+                runOnUiThread {
+                    if (f == null) { js("nativeUpdProg(-1)"); return@runOnUiThread }
+                    if (!packageManager.canRequestPackageInstalls()) {
+                        js("nativeUpdProg(-2)")
+                        startActivity(Intent(android.provider.Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+                            Uri.parse("package:$packageName")))
+                        pendingApk = f
+                        return@runOnUiThread
+                    }
+                    openInstaller(f)
+                }
+            }
+        }
 
         @JavascriptInterface
         fun checkKey(key: String): Boolean = Core.checkOwnerKey(key)
