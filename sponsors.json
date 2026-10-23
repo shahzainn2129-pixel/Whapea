@@ -1,13 +1,26 @@
 {
   "posts": [
     {
+      "id": "founder1",
+      "brand": "Whapea",
+      "caption": "Welcome to Whapea. Chat with the people around you over Bluetooth, with no internet. - Shah Zain, Founder of Whapea",
+      "contact": "",
+      "date": "2026-10-23",
+      "until": "2027-12-31",
+      "pinned": true,
+      "media": {
+        "type": "image",
+        "url": "https://raw.githubusercontent.com/shahzainn2129-pixel/Whapea/main/sponsor-media/founder-welcome.jpg"
+      }
+    },
+    {
       "id": "welcome2",
       "brand": "Whapea",
       "caption": "Whapea ki taraf se aap ko dil se khush aamdeed! Bina internet, sirf Bluetooth se apno se baat karein.",
       "contact": "",
       "date": "2026-10-22",
       "until": "2027-12-31",
-      "pinned": true,
+      "pinned": false,
       "media": {
         "type": "image",
         "url": "https://raw.githubusercontent.com/shahzainn2129-pixel/Whapea/main/sponsor-media/welcome.jpg"
