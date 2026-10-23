@@ -399,7 +399,7 @@ function statusHTML(){
 function spCard(p){
   const left=Math.max(1,Math.ceil((p.until-Date.now())/DAY));
   const media=p.kind==='text'?'':p.kind==='video'?`<video class="spm" controls playsinline preload="metadata" src="${p.src}#t=0.1"></video>`:p.kind==='image'?`<img class="spm" src="${p.src}" alt="${esc(p.brand)}">`:`<button class="spm poster" style="--h:${p.hue}" data-a="spSample" aria-label="Play sample video"><span class="play">${ic('play',30)}</span><span>${esc(p.brand)}</span></button>`;
-  return `<article class="sp"><header><span class="av sm" style="--h:${p.hue}">${esc(p.brand[0])}</span><span style="flex:1;min-width:0"><b>${esc(p.brand)} ${ic('verified',15)}</b><div class="val">Sponsored${p.pinned?' · Pinned':''} · ends in ${left} day${left>1?'s':''}</div></span>${S.owner&&!NATIVE?`<button class="ib" data-a="spMenu" data-v="${p.id}" aria-label="Manage post">${ic('more')}</button>`:''}</header>
+  return `<article class="sp"><header><span class="av sm" style="background:none;border-radius:12px;overflow:hidden;display:block">${WLOGO}</span><span style="flex:1;min-width:0"><b>${esc(p.brand)} ${ic('verified',15)}</b><div class="val">Sponsored${p.pinned?' · Pinned':''} · ends in ${left} day${left>1?'s':''}</div></span>${S.owner&&!NATIVE?`<button class="ib" data-a="spMenu" data-v="${p.id}" aria-label="Manage post">${ic('more')}</button>`:''}</header>
   ${media}<div class="spb"><p>${esc(p.caption)}</p>${p.contact?`<div class="spc"><span>${ic('phone',16)} ${esc(p.contact)}</span><button class="tag" data-a="spCopy" data-v="${p.id}">Copy</button></div>`:''}
   <div class="spa"><button data-a="spLike" data-v="${p.id}" class="${p.liked?'on':''}">${ic('star',18)} ${p.likes+(p.liked?1:0)}</button><button data-a="spShare" data-v="${p.id}">${ic('fwd',18)} Share</button><button data-a="spHide" data-v="${p.id}">${ic('x',18)} Hide</button></div></div></article>`}
 function sponsHTML(){
@@ -721,6 +721,7 @@ const NS={running:false,scanning:false,text:'Not started',found:[],btOn:true};
 const hueOf=s=>{let h=0;for(const ch of String(s))h=(h*31+ch.charCodeAt(0))>>>0;return h%360};
 const okImg=s=>typeof s==='string'&&s.length<400000&&/^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/.test(s);
 const okAud=s=>typeof s==='string'&&s.length<700000&&/^data:audio\/mp4;base64,[A-Za-z0-9+\/=]+$/.test(s);
+const WLOGO=`<svg width="100%" height="100%" viewBox="0 0 108 108" aria-label="Whapea"><rect width="108" height="108" rx="26" fill="#1560FF"/><path fill="#fff" d="M54,31 C41.3,31 31,39.7 31,50.5 C31,56.8 34.6,62.4 40.2,66 L37.5,77 L48.6,71 C50.3,71.3 52.1,71.4 54,71.4 C66.7,71.4 77,62.7 77,52 C77,41 66.7,31 54,31 Z"/><path d="M47.5,46.5 L60.5,58.5 L54,64.5 L54,38.5 L60.5,44.5 L47.5,56.5" fill="none" stroke="#1560FF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 const RXOK=['👍','❤️','😂','😮','😢','🙏'];
 const cl=(s,n)=>String(s==null?'':s).slice(0,n);
 const copyText=async t=>{if(NATIVE){Android.copy(t);return}await navigator.clipboard.writeText(t)};
