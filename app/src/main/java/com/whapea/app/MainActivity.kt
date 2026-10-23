@@ -36,6 +36,14 @@ class MainActivity : ComponentActivity() {
             fileCb = null
         }
 
+    private val micLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { ok ->
+            js("nativeMic(${ok})")
+        }
+
+    private fun hasMic(): Boolean =
+        ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED
+
     private val permissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
             if (result.values.all { it }) {
@@ -214,6 +222,41 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+
+        /** true when the microphone is allowed; otherwise asks and returns false. */
+        @JavascriptInterface
+        fun micOk(): Boolean {
+            if (hasMic()) return true
+            runOnUiThread { micLauncher.launch(Manifest.permission.RECORD_AUDIO) }
+            return false
+        }
+
+        @JavascriptInterface
+        fun recStart(): Boolean = hasMic() && VoiceNote.start(this@MainActivity)
+
+        @JavascriptInterface
+        fun recStop(cancel: Boolean): String {
+            if (cancel) { VoiceNote.cancel(); return "" }
+            return VoiceNote.stop() ?: ""
+        }
+
+        @JavascriptInterface
+        fun callStart(addr: String): Boolean = hasMic() && CallAudio.start(this@MainActivity, addr)
+
+        @JavascriptInterface
+        fun callStop() { CallAudio.stop() }
+
+        @JavascriptInterface
+        fun callMute(on: Boolean) { CallAudio.muted = on }
+
+        @JavascriptInterface
+        fun callSpeaker(on: Boolean) { CallAudio.speaker(on) }
+
+        @JavascriptInterface
+        fun ringStart() { Core.ringStart() }
+
+        @JavascriptInterface
+        fun ringStop() { Core.ringStop() }
 
         @JavascriptInterface
         fun checkKey(key: String): Boolean = Core.checkOwnerKey(key)

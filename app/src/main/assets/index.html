@@ -187,7 +187,7 @@ h1,h2,h3{font-family:var(--font-display);margin:0;text-wrap:balance}
 .call h2{font-size:28px}.call p{opacity:.75;margin:6px 0 0}
 .cbtns{display:flex;gap:22px}
 .cbtns button{width:62px;height:62px;border-radius:50%;background:rgba(255,255,255,.16);display:grid;place-items:center;color:#fff}
-.cbtns button.on{background:#fff;color:#0a1428}.cbtns button.end{background:var(--bad)}
+.cbtns button.on{background:#fff;color:#0a1428}.cbtns button.end{background:var(--bad)}.cbtns button.acc{background:#1fa855}.cbtns button.end svg{transform:rotate(135deg)}
 .qr{display:block;margin:6px auto;background:#fff;padding:10px;border-radius:14px;width:200px;height:200px}
 .kv{font-family:ui-monospace,Menlo,monospace;font-size:13px;letter-spacing:.04em}
 .av img{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block}
@@ -424,11 +424,11 @@ function nearHTML(){if(NATIVE)return nearNative();
   ${A('toggleMesh','', 'globe',SET.mesh?'Turn mesh relay off':'Turn mesh relay on',SET.mesh?'Sana is reached through Bilal':'Sana becomes unreachable')}
   <div class="note2" style="padding-bottom:30px">Bluetooth reaches roughly 10 to 100 metres. Mesh relay passes messages through phones in between, up to ${SET.hops} hops, so people beyond your range can still receive them.</div>`}
 
-function callsHTML(){if(NATIVE)return `<div class="empty"><b>Voice calls are coming soon</b>Calls will work between two phones in direct Bluetooth range.</div>`;
+function callsHTML(){
   return `<button class="li" data-a="newCall">${`<span class="av sm" style="--h:210;background:var(--accent)">${ic('phone',18)}</span>`}<span class="mid"><span class="nm">Start a voice call</span><span class="sub">Works with people in direct range</span></span></button>
   <div class="sec">Recent</div>
-  ${calls.map((c,i)=>`<button class="li" data-a="callBack" data-v="${c.cid}">${av(P[c.cid].hue,P[c.cid].name)}<span class="mid"><span class="nm" style="${c.missed?'color:var(--bad)':''}"><span>${esc(P[c.cid].name)}</span></span><span class="sub">${c.dir==='in'?'↙':'↗'} ${c.missed?'Missed':c.dir==='in'?'Incoming':'Outgoing'} · ${dayLabel(c.t)}${c.d?' · '+dur(c.d):''}</span></span><span style="color:var(--accent)">${ic('phone',20)}</span></button>`).join('')}
-  <div class="note2" style="padding-bottom:90px">Voice calls stream directly between two phones over Bluetooth, so both people must be near each other. Video calls and call links need the internet and are not included.</div>`}
+  ${calls.filter(c=>P[c.cid]).map((c,i)=>`<button class="li" data-a="callBack" data-v="${c.cid}">${av(P[c.cid].hue,P[c.cid].name)}<span class="mid"><span class="nm" style="${c.missed?'color:var(--bad)':''}"><span>${esc(P[c.cid].name)}</span></span><span class="sub">${c.dir==='in'?'↙':'↗'} ${c.missed?'Missed':c.dir==='in'?'Incoming':'Outgoing'} · ${dayLabel(c.t)}${c.d?' · '+dur(c.d):''}</span></span><span style="color:var(--accent)">${ic('phone',20)}</span></button>`).join('')}
+  <div class="note2" style="padding-bottom:90px">Voice calls stream directly between two phones over Bluetooth, so both people must be near each other and keep Whapea open during the call. Video calls need the internet and are not included.</div>`}
 
 function setHTML(){
   const row=(a,i,l,v,sub)=>`<button class="act" data-a="${a}" data-v="">${ic(i)}<span class="grow">${l}${sub?`<small>${sub}</small>`:''}</span>${v!==undefined?`<span class="val">${v}</span>`:ic('chev',18)}</button>`;
@@ -720,11 +720,12 @@ document.addEventListener('contextmenu',e=>{const el=e.target.closest('[data-lp]
 const NS={running:false,scanning:false,text:'Not started',found:[],btOn:true};
 const hueOf=s=>{let h=0;for(const ch of String(s))h=(h*31+ch.charCodeAt(0))>>>0;return h%360};
 const okImg=s=>typeof s==='string'&&s.length<400000&&/^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/.test(s);
+const okAud=s=>typeof s==='string'&&s.length<700000&&/^data:audio\/mp4;base64,[A-Za-z0-9+\/=]+$/.test(s);
 const RXOK=['👍','❤️','😂','😮','😢','🙏'];
 const cl=(s,n)=>String(s==null?'':s).slice(0,n);
 const copyText=async t=>{if(NATIVE){Android.copy(t);return}await navigator.clipboard.writeText(t)};
 let pt;
-function persistSoon(){if(!NATIVE)return;clearTimeout(pt);pt=setTimeout(()=>{try{Android.save(JSON.stringify({ME,SET,P,chats:chats.map(c=>({...c,typing:null,find:''})),spons:SPONS.filter(p=>!p.local),my:myStatus}))}catch(e){}},700)}
+function persistSoon(){if(!NATIVE)return;clearTimeout(pt);pt=setTimeout(()=>{try{Android.save(JSON.stringify({ME,SET,P,calls:calls.slice(0,50),chats:chats.map(c=>({...c,typing:null,find:''})),spons:SPONS.filter(p=>!p.local),my:myStatus}))}catch(e){}},700)}
 function applySettings(){const r=document.documentElement;if(SET.theme==='system')r.removeAttribute('data-theme');else r.setAttribute('data-theme',SET.theme);phone.dataset.wp=SET.wp;r.style.setProperty('--fs',SET.fs+'px')}
 function ensurePeer(a,name,about,dp){
   let p=P[a];if(!p)p=P[a]={name:a,about:'',hue:hueOf(a),dist:null,range:false};
@@ -735,7 +736,7 @@ function netSend(c,o){if(!NATIVE||!c||c.type!=='dm')return;if(P[c.cid]&&P[c.cid]
 function sendMsg(c,m){
   if(!NATIVE||c.type!=='dm'||!P[c.cid]||!P[c.cid].range)return;
   const o={t:'msg',id:m.id,type:m.type,text:m.text||'',reply:m.reply||null,fwd:!!m.fwd};
-  if(m.type==='img')o.src=m.src;if(m.type==='contact')o.name=m.name;
+  if(m.type==='img')o.src=m.src;if(m.type==='voice'){o.src=m.src;o.dur=m.dur}if(m.type==='contact')o.name=m.name;
   Android.send(c.cid,JSON.stringify(o))}
 function flushQ(a){const c=chatOf(a);if(!c)return;c.msgs.forEach(m=>{if(m.from==='me'&&!m.deleted&&(m.status==='queued'||m.status==='sent')){m.status='sent';sendMsg(c,m)}})}
 function sendReads(c){if(!NATIVE||c.type!=='dm'||!SET.receipts)return;const ids=c.msgs.filter(m=>m.from!=='me'&&!m.rs).map(m=>{m.rs=true;return m.id});if(ids.length)netSend(c,{t:'read',ids})}
@@ -762,17 +763,19 @@ function nearNative(){
 window.nativeUi=raw=>{try{const o=JSON.parse(raw);NS.running=!!o.running;NS.scanning=!!o.scanning;NS.text=cl(o.text,120);NS.btOn=!!o.btOn;NS.found=(o.found||[]).map(f=>({a:cl(f.a,24),n:cl(f.n,40),p:!!f.p}));if(!S.chat&&!document.querySelector('.scrim'))render();else if(S.tab==='set')render()}catch(e){}};
 window.nativeLink=(a,up)=>{
   if(up){Android.send(a,JSON.stringify({t:'hi',name:ME.name,about:ME.about,dp:ME.dp||null}))}
-  else if(P[a]&&P[a].range){P[a].range=false;toast(P[a].name+' went out of range');refresh()}};
+  else if(P[a]&&P[a].range){P[a].range=false;toast(P[a].name+' went out of range');if(S.call===a)finishCall(S.cst==='in');refresh()}};
 window.nativeData=(a,raw)=>{
   let o;try{o=JSON.parse(raw)}catch(e){return}
   if(!o||typeof o!=='object')return;
   if(o.t==='hi'){const p=ensurePeer(a,o.name,o.about,o.dp);const was=p.range;p.range=true;flushQ(a);if(!was)toast('Connected to '+p.name);refresh();return}
+  if(o.t==='call'){if(P[a])callRx(a,o);return}
   const c=P[a]?chatOf(a):null;if(!c)return;
   if(o.t==='msg'&&typeof o.id==='string'&&o.id.length<=40){
     if(!c.msgs.some(m=>m.id===o.id)){
-      const type=['text','img','contact'].includes(o.type)?o.type:'text';
+      const type=['text','img','contact','voice'].includes(o.type)?o.type:'text';
       const m={id:o.id,from:a,type,text:cl(o.text,4000),t:Date.now(),status:'read'};
       if(type==='img'){if(!okImg(o.src))return;m.src=o.src}
+      if(type==='voice'){if(!okAud(o.src))return;m.src=o.src;m.dur=Math.max(1,Math.min(600,Math.round(+o.dur)||1))}
       if(type==='contact')m.name=cl(o.name,40);
       if(o.fwd)m.fwd=true;
       if(o.reply&&typeof o.reply==='object')m.reply={who:cl(o.reply.who,30),text:cl(o.reply.text,200)};
@@ -826,7 +829,7 @@ if(NATIVE){
   for(const k in P)delete P[k];chats.length=0;calls.length=0;for(const k in STAT)delete STAT[k];SPONS.length=0;myStatus.length=0;
   ME.name='';ME.about='Whapea par hoon';ME.dp=null;
   let saved=null;try{saved=JSON.parse(Android.load()||'null')}catch(e){}
-  if(saved){Object.assign(ME,saved.ME||{});Object.assign(SET,saved.SET||{});Object.assign(P,saved.P||{});chats.push(...(saved.chats||[]));(saved.spons||[]).map(cleanPost).filter(Boolean).forEach(x=>SPONS.push(x));myStatus.push(...(saved.my||[]))}
+  if(saved){Object.assign(ME,saved.ME||{});Object.assign(SET,saved.SET||{});Object.assign(P,saved.P||{});chats.push(...(saved.chats||[]));calls.push(...(saved.calls||[]));(saved.spons||[]).map(cleanPost).filter(Boolean).forEach(x=>SPONS.push(x));myStatus.push(...(saved.my||[]))}
   for(const k in P)P[k].range=false;
   chats.forEach(c=>{c.typing=null;c.find=''});
   applySettings();
@@ -836,7 +839,7 @@ if(NATIVE){
     m.status=P[c.cid]&&P[c.cid].range?'sent':'queued';c.msgs.push(m);drawMsgs(true);render();
     if(m.status==='sent')sendMsg(c,m)};
   Object.assign(ACT,{
-    recStart:soon,startCall:soon,callBack:soon,newCall:soon,newGroup:soon,attPoll:soon,
+    newGroup:soon,attPoll:soon,
     attach:()=>sheet('',`<div class="grid4">${[['attPhoto','image','Photo',215],['attContact','user','Contact',150]].map(([a,i,l,h])=>`<button data-a="${a}"><span class="c" style="--h:${h}">${ic(i,24)}</span>${l}</button>`).join('')}</div><div class="note2">Documents, audio and location are coming soon.</div>`),
     chatMenu:()=>{const c=chatOf(S.chat);sheet('',A('findIn','', 'search','Search in chat')+A('cm_mute',c.id,'mute',c.muted?'Unmute':'Mute notifications')+A('media','', 'image','Media, links and documents')+A('cm_clear',c.id,'x','Clear chat')+A('cm_block',c.id,'ban','Block','','bad'))},
     nStart:()=>Android.start(),nScan:()=>Android.scan(),nVisible:()=>Android.visible(),nStop:()=>Android.stopBt(),
@@ -844,12 +847,86 @@ if(NATIVE){
     obGo:()=>{const n=($('#obn').value||'').trim();if(!n)return;ME.name=n;persistSoon();render();Android.start()},
   });
 
+  /* ---- voice messages ---- */
+  window.nativeMic=ok=>toast(ok?'Microphone allowed. Tap again to start':'Microphone is needed for voice messages and calls');
+  let AUD=null;
+  const oldCancel=ACT.recCancel;
+  Object.assign(ACT,{
+    recStart:()=>{
+      if(!Android.micOk()){return}
+      if(!Android.recStart()){toast('Could not start recording');return}
+      S.rec={s:0};S.rec.iv=setInterval(()=>{S.rec.s++;const e=$('#rt');if(e)e.textContent=dur(S.rec.s);if(S.rec.s>=90)ACT.recSend()},1000);drawComp()},
+    recCancel:()=>{Android.recStop(true);oldCancel()},
+    recSend:()=>{
+      if(!S.rec)return;const c=chatOf(S.chat);clearInterval(S.rec.iv);S.rec=null;drawComp();
+      const r=Android.recStop(false);if(!r){toast('Recording failed');return}
+      let j;try{j=JSON.parse(r)}catch(e){toast('Recording failed');return}
+      if(!okAud(j.src)){toast('That voice message is too long');return}
+      pushMsg(c,M('me','',0,{t:Date.now(),type:'voice',dur:j.dur,src:j.src}))},
+    play:v=>{
+      const [c,m]=msgById(v);if(!m||!m.src)return;
+      if(S.playing===v){if(AUD)AUD.pause();S.playing=null;drawMsgs(false);return}
+      if(AUD)AUD.pause();
+      const a=AUD=new Audio(m.src);S.playing=v;S.pp=0;
+      const fail=()=>{if(AUD===a){S.playing=null;toast('Could not play this voice message');drawMsgs(false)}};
+      a.ontimeupdate=()=>{if(AUD!==a)return;S.pp=Math.min(26,Math.round(26*a.currentTime/Math.max(1,m.dur)));drawMsgs(false)};
+      a.onended=()=>{if(AUD===a){S.playing=null;drawMsgs(false)}};
+      a.onerror=fail;a.play().catch(fail);drawMsgs(false)},
+  });
+
+  /* ---- voice calls ---- */
+  const CALLTO=40000,csend=(k,op)=>Android.send(k,JSON.stringify({t:'call',op}));
+  window.callUI=function(k,st){
+    const old=$('#callv');if(old)old.remove();
+    const p=P[k],v=document.createElement('div');v.className='screen call';v.id='callv';
+    v.innerHTML=`<div><span class="av" style="--h:${p.hue}">${esc((p.name||'?')[0])}</span><h2>${esc(p.name)}</h2><p id="cst">${st==='out'?'Calling over Bluetooth…':st==='in'?'Incoming Whapea call':dur(S.cs)}</p></div>`+
+     (st==='live'?`<div class="cbtns"><button data-a="cmute" aria-label="Mute">${ic('mic',26)}</button><button data-a="cspk" aria-label="Speaker">${ic('vol',26)}</button></div>`:'<div></div>')+
+     (st==='in'?`<div class="cbtns"><button class="end" data-a="callRej" aria-label="Decline">${ic('phone',28)}</button><button class="acc" data-a="callAcc" aria-label="Answer">${ic('phone',28)}</button></div>`:`<div class="cbtns"><button class="end" data-a="endCall" aria-label="End call">${ic('phone',28)}</button></div>`);
+    phone.append(v)};
+  window.finishCall=function(missed){
+    const k=S.call;if(!k)return;
+    clearTimeout(S.cto);clearInterval(S.ci);Android.callStop();Android.ringStop();
+    const el=$('#callv');if(el)el.remove();
+    calls.unshift({cid:k,dir:S.cdir,t:Date.now(),missed:!!missed,d:S.cst==='live'?S.cs:0});if(calls.length>50)calls.length=50;
+    S.call=null;S.cst=null;persistSoon();render()};
+  function goLive(k){
+    clearTimeout(S.cto);Android.ringStop();
+    if(!Android.callStart(k)){toast('Could not start the microphone');csend(k,'end');finishCall(false);return}
+    S.cst='live';S.cs=0;callUI(k,'live');
+    S.ci=setInterval(()=>{S.cs++;const e=$('#cst');if(e)e.textContent=dur(S.cs)},1000)}
+  window.callRx=function(a,o){
+    const op=o.op;
+    if(op==='ring'){
+      if(S.call){csend(a,'busy');return}
+      S.call=a;S.cdir='in';S.cst='in';S.cs=0;callUI(a,'in');Android.ringStart();
+      S.cto=setTimeout(()=>{if(S.call===a&&S.cst==='in')finishCall(true)},CALLTO);return}
+    if(S.call!==a)return;
+    if(op==='acc'&&S.cst==='out')goLive(a);
+    else if(op==='rej'||op==='busy'){toast(op==='busy'?P[a].name+' is on another call':P[a].name+' declined the call');finishCall(false)}
+    else if(op==='end')finishCall(S.cst==='in')};
+  Object.assign(ACT,{
+    startCall:v=>{
+      if(S.call){toast('You are already in a call');return}
+      if(!P[v]||!P[v].range){toast((P[v]?P[v].name.split(' ')[0]:'This person')+' is not connected. Calls need a Bluetooth link');return}
+      if(!Android.micOk())return;
+      S.call=v;S.cdir='out';S.cst='out';S.cs=0;closeSheet();csend(v,'ring');callUI(v,'out');
+      S.cto=setTimeout(()=>{if(S.call===v&&S.cst==='out'){csend(v,'end');toast('No answer');finishCall(false)}},CALLTO)},
+    callBack:v=>ACT.startCall(v),
+    newCall:()=>{const ks=Object.keys(P);if(!ks.length){toast('Connect to someone in the Nearby tab first');return}
+      sheet('Call someone nearby',ks.map(k=>`<button class="act" data-a="startCall" data-v="${esc(k)}">${av(P[k].hue,P[k].name,'sm',dotOf(k))}<span class="grow">${esc(P[k].name)}<small>${P[k].range?'Connected':'Not connected'}</small></span></button>`).join(''))},
+    callAcc:()=>{const k=S.call;if(!k||S.cst!=='in')return;if(!Android.micOk())return;csend(k,'acc');goLive(k)},
+    callRej:()=>{const k=S.call;if(!k)return;csend(k,'rej');finishCall(true)},
+    endCall:()=>{const k=S.call;if(!k)return;csend(k,'end');finishCall(false)},
+    cmute:(v,el)=>{el.classList.toggle('on');Android.callMute(el.classList.contains('on'))},
+    cspk:(v,el)=>{el.classList.toggle('on');Android.callSpeaker(el.classList.contains('on'))},
+  });
+
   let aboutTaps=0;
   Object.assign(ACT,{
     tab:v=>{S.tab=v;render();if(v==='spons')loadFeed(false)},
     spRefresh:()=>{toast('Checking for new posts…');loadFeed(true)},
     appinfo:()=>{aboutTaps++;if(aboutTaps>=7){aboutTaps=0;ACT.ownerLogin();return}
-      sheet('About Whapea',`<div class="note2" style="font-size:14px">Version 1.2. Chats work without internet, straight from phone to phone over Bluetooth. Sponsored posts download when your phone is online.</div>`)},
+      sheet('About Whapea',`<div class="note2" style="font-size:14px">Version 1.4. Chats work without internet, straight from phone to phone over Bluetooth. Sponsored posts download when your phone is online.</div>`)},
     spNew:()=>{sheet('New sponsored post',`<div class="field"><input id="spb" placeholder="Brand name" maxlength="40" autocomplete="off"></div><div class="field"><textarea id="spcap" rows="3" maxlength="300" placeholder="What are you promoting?" class="txt"></textarea></div><div class="field"><input id="spct" placeholder="Phone or address (optional)" maxlength="60" autocomplete="off"></div><div class="field"><input id="spv" placeholder="Video file name, e.g. chai.mp4 (optional)" maxlength="80" autocomplete="off" autocapitalize="none"></div><div class="sec" style="padding-top:2px">Runs for</div><div class="chips" id="spdur">${[3,7,14,30,60].map(d=>`<button class="chip ${d===7?'on':''}" data-a="spDur" data-v="${d}">${d} days</button>`).join('')}</div><button class="act" data-a="spPick">${ic('image')}<span class="grow" id="spmi">Add a photo (optional)<small>Photos are made small so they fit in the post</small></span></button><button class="btn" data-a="spPost">Create post data</button>`);S.spm=null;S.spd=7},
     spPick:()=>pickFile('image/*',f=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,640/Math.max(im.width,im.height)),cv=document.createElement('canvas');cv.width=im.width*k;cv.height=im.height*k;cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);const src=cv.toDataURL('image/jpeg',.6);S.spm={kind:'image',src};const e=$('#spmi');if(e)e.innerHTML=`${esc(f.name)}<small>Photo · ${size(src.length*.75)}</small>`};im.src=r.result};r.readAsDataURL(f)}),
     spPost:()=>{

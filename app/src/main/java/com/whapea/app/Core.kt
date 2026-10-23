@@ -69,6 +69,10 @@ object Core {
 
     const val CH = "whapea_msgs"
     const val CH_SVC = "whapea_svc"
+    const val CH_CALL = "whapea_calls"
+    private const val CALL_ID = 99
+    private var pendingRing: Triple<String, String, Long>? = null
+    private var ringtone: android.media.Ringtone? = null
 
     fun init(context: Context) {
         if (ready) return
@@ -79,6 +83,15 @@ object Core {
         if (Build.VERSION.SDK_INT >= 26) {
             val nm = app.getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
             nm.createNotificationChannel(android.app.NotificationChannel(CH, "Messages", android.app.NotificationManager.IMPORTANCE_HIGH))
+            val cc = android.app.NotificationChannel(CH_CALL, "Calls", android.app.NotificationManager.IMPORTANCE_HIGH)
+            cc.setSound(
+                android.media.RingtoneManager.getDefaultUri(android.media.RingtoneManager.TYPE_RINGTONE),
+                android.media.AudioAttributes.Builder()
+                    .setUsage(android.media.AudioAttributes.USAGE_NOTIFICATION_RINGTONE)
+                    .setContentType(android.media.AudioAttributes.CONTENT_TYPE_SONIC).build()
+            )
+            cc.enableVibration(true)
+            nm.createNotificationChannel(cc)
             nm.createNotificationChannel(android.app.NotificationChannel(CH_SVC, "Whapea is running", android.app.NotificationManager.IMPORTANCE_LOW))
         }
     }
@@ -90,9 +103,57 @@ object Core {
     // ---------- messages that arrive while the screen is closed ----------
     private fun names(): JSONObject = try { JSONObject(prefs.getString("names", "{}") ?: "{}") } catch (e: Exception) { JSONObject() }
 
+    fun ringStart() {
+        try {
+            if (ringtone == null) {
+                ringtone = android.media.RingtoneManager.getRingtone(app,
+                    android.media.RingtoneManager.getDefaultUri(android.media.RingtoneManager.TYPE_RINGTONE))
+            }
+            ringtone?.play()
+        } catch (e: Exception) { }
+    }
+
+    fun ringStop() {
+        try { ringtone?.stop() } catch (e: Exception) { }
+    }
+
+    private fun clearCallNotice() {
+        pendingRing = null
+        try { NotificationManagerCompat.from(app).cancel(CALL_ID) } catch (e: SecurityException) { }
+    }
+
+    private fun notifyCall(addr: String) {
+        try {
+            val who = names().optString(addr).ifBlank { "Someone nearby" }
+            val pi = android.app.PendingIntent.getActivity(app, 2,
+                Intent(app, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK),
+                android.app.PendingIntent.FLAG_IMMUTABLE or android.app.PendingIntent.FLAG_UPDATE_CURRENT)
+            val n = NotificationCompat.Builder(app, CH_CALL)
+                .setSmallIcon(android.R.drawable.stat_sys_phone_call)
+                .setContentTitle("Whapea call").setContentText("$who is calling you")
+                .setCategory(NotificationCompat.CATEGORY_CALL)
+                .setPriority(NotificationCompat.PRIORITY_MAX)
+                .setFullScreenIntent(pi, true).setContentIntent(pi)
+                .setOngoing(true).setTimeoutAfter(40000).build()
+            NotificationManagerCompat.from(app).notify(CALL_ID, n)
+        } catch (e: SecurityException) { }
+    }
+
     private fun dispatch(addr: String, raw: String) {
         try {
             val o = JSONObject(raw)
+            if (o.optString("t") == "call") {
+                val op = o.optString("op")
+                if (op == "end" || op == "rej" || op == "busy") {
+                    if (CallAudio.active && CallAudio.peer == addr) CallAudio.stop()
+                    ringStop(); clearCallNotice()
+                }
+                if (op == "ring" && !uiAttached) {
+                    pendingRing = Triple(addr, raw, System.currentTimeMillis())
+                    notifyCall(addr)
+                    return
+                }
+            }
             if (o.optString("t") == "hi") {
                 val n = names(); n.put(addr, o.optString("name").take(40))
                 prefs.edit().putString("names", n.toString()).apply()
@@ -107,7 +168,7 @@ object Core {
             val o = JSONObject(raw)
             if (o.optString("t") == "msg") {
                 val who = names().optString(addr).ifBlank { "New message" }
-                val body = when (o.optString("type")) { "img" -> "Photo"; "contact" -> "Contact"; else -> o.optString("text").take(120) }
+                val body = when (o.optString("type")) { "img" -> "Photo"; "voice" -> "Voice message"; "contact" -> "Contact"; else -> o.optString("text").take(120) }
                 notifyMsg(addr, who, body)
             }
         } catch (e: Exception) { }
@@ -129,14 +190,19 @@ object Core {
 
     /** Hands everything that arrived in the background to the screen. */
     fun drainInbox() {
+        val pr = pendingRing
+        pendingRing = null
+        try { NotificationManagerCompat.from(app).cancel(CALL_ID) } catch (e: SecurityException) { }
         val arr = try { JSONArray(prefs.getString("inbox", "[]")) } catch (e: Exception) { JSONArray() }
-        if (arr.length() == 0) return
-        prefs.edit().putString("inbox", "[]").apply()
+        if (arr.length() > 0) prefs.edit().putString("inbox", "[]").apply()
         for (i in 0 until arr.length()) {
             val o = arr.getJSONObject(i)
             onData(o.getString("a"), o.getString("r"))
         }
-        try { NotificationManagerCompat.from(app).cancelAll() } catch (e: SecurityException) { }
+        if (arr.length() > 0) {
+            try { NotificationManagerCompat.from(app).cancelAll() } catch (e: SecurityException) { }
+        }
+        if (pr != null && System.currentTimeMillis() - pr.third < 40000) onData(pr.first, pr.second)
     }
 
     fun loadState(): String = prefs.getString("state", "") ?: ""
@@ -307,6 +373,7 @@ object Core {
                 if (n <= 0 || n > MAX_FRAME) break
                 val b = ByteArray(n)
                 inp.readFully(b)
+                if (b[0] == 1.toByte()) { CallAudio.onFrame(addr, b); continue }
                 val raw = String(b, Charsets.UTF_8)
                 main.post { dispatch(addr, raw) }
             }
@@ -326,13 +393,27 @@ object Core {
             try {
                 val c = synchronized(conns) { conns[addr] } ?: return@execute
                 val b = json.toByteArray(Charsets.UTF_8)
-                c.out.writeInt(b.size)
-                c.out.write(b)
-                c.out.flush()
+                synchronized(c.out) {
+                    c.out.writeInt(b.size)
+                    c.out.write(b)
+                    c.out.flush()
+                }
             } catch (e: Exception) {
                 // the reader thread notices a broken connection
             }
         }
+    }
+
+    /** Sends raw bytes (live voice) right away, without waiting behind messages. */
+    fun sendFrame(addr: String, b: ByteArray) {
+        try {
+            val c = synchronized(conns) { conns[addr] } ?: return
+            synchronized(c.out) {
+                c.out.writeInt(b.size)
+                c.out.write(b)
+                c.out.flush()
+            }
+        } catch (e: Exception) { }
     }
 
     // ---------- sponsor posts (need internet, nothing else does) ----------
