@@ -174,7 +174,7 @@ class MainActivity : ComponentActivity() {
             return
         }
         val i = Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE)
-        i.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 18000)
+        i.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 86400)
         startActivity(i)
     }
 
