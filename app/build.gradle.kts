@@ -13,7 +13,7 @@ android {
         targetSdk = 34
         val run = (System.getenv("GITHUB_RUN_NUMBER") ?: "0").toInt()
         versionCode = if (run > 0) run else 5
-        versionName = "1.5"
+        versionName = "1.6"
         buildConfigField("int", "BUILD_N", run.toString())
     }
     buildFeatures { buildConfig = true }
