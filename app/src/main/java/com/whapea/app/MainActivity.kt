@@ -165,7 +165,21 @@ class MainActivity : ComponentActivity() {
         }
         Core.start()
         Core.auto = true
+        askBatteryOnce()
         ContextCompat.startForegroundService(this, Intent(this, BtService::class.java))
+    }
+
+    /** Asks once to keep Whapea out of battery saving, so Android does not stop it in the background. */
+    private fun askBatteryOnce() {
+        try {
+            val pm = getSystemService(Context.POWER_SERVICE) as android.os.PowerManager
+            val sp = getSharedPreferences("whapea", Context.MODE_PRIVATE)
+            if (!pm.isIgnoringBatteryOptimizations(packageName) && !sp.getBoolean("askedBatt", false)) {
+                sp.edit().putBoolean("askedBatt", true).apply()
+                startActivity(Intent(android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
+                    Uri.parse("package:$packageName")))
+            }
+        } catch (e: Exception) { }
     }
 
     private fun makeVisible() {
