@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="Theme.Whapea" parent="android:Theme.Material.Light.NoActionBar" />
-    <color name="ic_launcher_background">#1560FF</color>
+    <color name="ic_launcher_background">#2A62E8</color>
 </resources>
