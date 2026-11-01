@@ -37,7 +37,7 @@ data class Found(val address: String, val name: String, val paired: Boolean)
 @SuppressLint("MissingPermission")
 object Core {
     private val APP_UUID: UUID = UUID.fromString("8f2b6c1e-5d3a-4c7e-9b1a-0a6c3e5f7d21")
-    private const val MAX_FRAME = 2_000_000
+    private const val MAX_FRAME = 6_000_000
     private const val FEED_URL = "https://raw.githubusercontent.com/shahzainn2129-pixel/Whapea/main/sponsors.json"
     private const val OWNER_HASH = "cd3c52d11ece85816bab73c0147660f24d46de44591dbe6ef7e4d60103d43f46"
 
@@ -204,6 +204,38 @@ object Core {
             try { NotificationManagerCompat.from(app).cancelAll() } catch (e: SecurityException) { }
         }
         if (pr != null && System.currentTimeMillis() - pr.third < 40000) onData(pr.first, pr.second)
+    }
+
+    // ---------- photos and videos kept as files, so the saved chat state stays small ----------
+    private fun mediaDir(): java.io.File = java.io.File(app.filesDir, "media").also { it.mkdirs() }
+
+    /** Saves a data: URL to a file and returns its file:// address, or "" on failure. */
+    fun mediaSave(id: String, dataUrl: String): String {
+        return try {
+            val comma = dataUrl.indexOf(',')
+            if (comma < 0 || !dataUrl.startsWith("data:video/")) return ""
+            val ext = if (dataUrl.startsWith("data:video/mp4")) "mp4" else "webm"
+            val name = id.filter { it.isLetterOrDigit() || it == '-' || it == '_' }.take(40).ifEmpty { "m" }
+            val f = java.io.File(mediaDir(), "$name.$ext")
+            f.writeBytes(android.util.Base64.decode(dataUrl.substring(comma + 1), android.util.Base64.DEFAULT))
+            "file://" + f.absolutePath
+        } catch (e: Exception) { "" }
+    }
+
+    fun mediaRead(uri: String): String {
+        return try {
+            val f = java.io.File(uri.removePrefix("file://"))
+            if (f.parentFile?.canonicalPath != mediaDir().canonicalPath) return ""
+            val mime = if (f.name.endsWith(".mp4")) "video/mp4" else "video/webm"
+            "data:$mime;base64," + android.util.Base64.encodeToString(f.readBytes(), android.util.Base64.NO_WRAP)
+        } catch (e: Exception) { "" }
+    }
+
+    fun mediaDel(uri: String) {
+        try {
+            val f = java.io.File(uri.removePrefix("file://"))
+            if (f.parentFile?.canonicalPath == mediaDir().canonicalPath) f.delete()
+        } catch (e: Exception) { }
     }
 
     fun loadState(): String = prefs.getString("state", "") ?: ""

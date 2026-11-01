@@ -70,6 +70,7 @@ class MainActivity : ComponentActivity() {
         web.settings.javaScriptEnabled = true
         web.settings.domStorageEnabled = true
         web.settings.allowFileAccess = true
+        web.settings.mediaPlaybackRequiresUserGesture = false
         web.addJavascriptInterface(Bridge(), "Android")
         web.webViewClient = object : WebViewClient() {
             override fun onPageFinished(view: WebView?, url: String?) {
@@ -325,6 +326,15 @@ class MainActivity : ComponentActivity() {
                 NetWatch.start()
             }
         }
+
+        @JavascriptInterface
+        fun mediaSave(id: String, dataUrl: String): String = Core.mediaSave(id, dataUrl)
+
+        @JavascriptInterface
+        fun mediaRead(uri: String): String = Core.mediaRead(uri)
+
+        @JavascriptInterface
+        fun mediaDel(uri: String) { Core.mediaDel(uri) }
 
         @JavascriptInterface
         fun netGet(): String = NetWatch.session()?.toString() ?: ""
