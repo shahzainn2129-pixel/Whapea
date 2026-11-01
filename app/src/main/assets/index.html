@@ -796,12 +796,14 @@ async function netRefresh(){
 const netEmail=u=>u+'@users.whapea.example.com';
 async function netLogin(id,pass){
   const r=await fetch(SB+'/auth/v1/token?grant_type=password',{method:'POST',headers:{apikey:SBK,'Content-Type':'application/json'},body:JSON.stringify({email:id.includes('@')?id:netEmail(id),password:pass})});
-  if(!r.ok)throw new Error('login');
+  if(!r.ok){let m='';try{const e=await r.json();m=(e.error_code||'')+(e.msg||e.error_description||'')}catch(x){}throw new Error(/not_confirmed|not confirmed/i.test(m)?'unconfirmed':'login')}
   const j=await r.json();const user=((j.user.user_metadata||{}).username)||id.split('@')[0];NET.s={at:j.access_token,rt:j.refresh_token,uid:j.user.id,user};NET.ok=true;NET.s.ts=Date.now();persistSoon();netStart();return true}
-async function netSignup(email,user,pass,name){
-  const r=await fetch(SB+'/functions/v1/signup',{method:'POST',headers:{apikey:SBK,Authorization:'Bearer '+SBK,'Content-Type':'application/json'},body:JSON.stringify({email,username:user,password:pass,name})});
+async function netFn(body){
+  const r=await fetch(SB+'/functions/v1/signup',{method:'POST',headers:{apikey:SBK,Authorization:'Bearer '+SBK,'Content-Type':'application/json'},body:JSON.stringify(body)});
   if(!r.ok){let e='failed';try{e=(await r.json()).error}catch(x){}throw new Error(e)}
-  return netLogin(email||user,pass)}
+  return r.json()}
+function netErr(x){const m={taken:'That username is taken',email_taken:'That email already has an account. Log in instead',bad_username:'Invalid username',bad_password:'Invalid password',bad_email:'Invalid email',bad_code:'Wrong or expired code',wait:'Wait a minute, then ask for a new code',mail_failed:'Could not send the email. Try again later',update_app:'Please update Whapea',login:'Wrong email or password',unconfirmed:'Confirm your email first'}[x.message];toast(m||'Could not connect. Check internet')}
+function netDone(){if(!ME.name){ME.name=S.ntyped||NET.s.user}persistSoon();closeSheet();render();toast('You are online');netPushProfile()}
 function netStart(){
   if(!NET.s)return;NET.ok=true;
   for(const k in P)if(isNet(k))P[k].range=true;
@@ -1066,7 +1068,7 @@ if(NATIVE){
     tab:v=>{S.tab=v;render();if(v==='spons')loadFeed(false)},
     spRefresh:()=>{toast('Checking for new posts…');loadFeed(true)},
     appinfo:()=>{aboutTaps++;if(aboutTaps>=7){aboutTaps=0;ACT.ownerLogin();return}
-      sheet('About Whapea',`<div class="note2" style="font-size:14px">Version 2.4. Chats work without internet, straight from phone to phone over Bluetooth. Sponsored posts and updates download when your phone is online.</div><button class="btn" data-a="updCheck">Check for updates</button>`)},
+      sheet('About Whapea',`<div class="note2" style="font-size:14px">Version 2.5. Chats work without internet, straight from phone to phone over Bluetooth. Sponsored posts and updates download when your phone is online.</div><button class="btn" data-a="updCheck">Check for updates</button>`)},
     spNew:()=>{sheet('New sponsored post',`<div class="field"><input id="spb" placeholder="Brand name" maxlength="40" autocomplete="off"></div><div class="field"><textarea id="spcap" rows="3" maxlength="300" placeholder="What are you promoting?" class="txt"></textarea></div><div class="field"><input id="spct" placeholder="Phone or address (optional)" maxlength="60" autocomplete="off"></div><div class="field"><input id="spv" placeholder="Video file name, e.g. chai.mp4 (optional)" maxlength="80" autocomplete="off" autocapitalize="none"></div><div class="sec" style="padding-top:2px">Runs for</div><div class="chips" id="spdur">${[3,7,14,30,60].map(d=>`<button class="chip ${d===7?'on':''}" data-a="spDur" data-v="${d}">${d} days</button>`).join('')}</div><button class="act" data-a="spPick">${ic('image')}<span class="grow" id="spmi">Add a photo (optional)<small>Photos are made small so they fit in the post</small></span></button><button class="btn" data-a="spPost">Create post data</button>`);S.spm=null;S.spd=7},
     spPick:()=>pickFile('image/*',f=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,640/Math.max(im.width,im.height)),cv=document.createElement('canvas');cv.width=im.width*k;cv.height=im.height*k;cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);const src=cv.toDataURL('image/jpeg',.6);S.spm={kind:'image',src};const e=$('#spmi');if(e)e.innerHTML=`${esc(f.name)}<small>Photo · ${size(src.length*.75)}</small>`};im.src=r.result};r.readAsDataURL(f)}),
     spPost:()=>{
@@ -1091,16 +1093,25 @@ if(NATIVE){
   Object.assign(ACT,{
     netAcct:v=>{if(NET.s)return sheet('Internet account',`<div style="text-align:center;padding:6px 20px"><b style="font-size:20px;font-family:var(--font-display)">${esc(ME.name)}</b><div class="val">@${esc(NET.s.user)} · ${NET.ok?'Online':'Connecting…'}</div></div>`+A('netFind','','search','Find people by username')+A('netOut','','x','Log out','','bad'));
       const up=v!=='in';closeSheet();
-      sheet(up?'Create account':'Log in',`<div class="field"><input id="ne" type="email" placeholder="${up?'Email':'Email or username'}" maxlength="80" autocapitalize="none" autocomplete="off"></div>${up?'<div class="field"><input id="nu" placeholder="Username (people find you by this)" maxlength="20" autocapitalize="none" autocomplete="off"></div>':''}<div class="field"><input id="np" type="password" placeholder="Password (6+ characters)" maxlength="72" autocomplete="off"></div><button class="btn" data-a="netGo" data-v="${up?'up':'in'}">${up?'Create account':'Log in'}</button><button class="btn" style="background:transparent;color:inherit;border:1.5px solid currentColor" data-a="netAcct" data-v="${up?'in':'up'}">${up?'I already have an account':'Create a new account'}</button>${up?'<div class="note2">Your email is only used to sign in. Whapea does not send you emails.</div>':''}`)},
+      sheet(up?'Create account':'Log in',`<div class="field"><input id="ne" type="email" placeholder="${up?'Email':'Email or username'}" maxlength="80" autocapitalize="none" autocomplete="off"></div>${up?'<div class="field"><input id="nu" placeholder="Username (people find you by this)" maxlength="20" autocapitalize="none" autocomplete="off"></div>':''}<div class="field"><input id="np" type="password" placeholder="Password (6+ characters)" maxlength="72" autocomplete="off"></div><button class="btn" data-a="netGo" data-v="${up?'up':'in'}">${up?'Create account':'Log in'}</button><button class="btn" style="background:transparent;color:inherit;border:1.5px solid currentColor" data-a="netAcct" data-v="${up?'in':'up'}">${up?'I already have an account':'Create a new account'}</button>${up?'<div class="note2">We email you a 6 digit code to confirm your email.</div>':'<button class="tag" style="margin:6px auto 0;display:block" data-a="netForgot">Forgot password?</button>'}`)},
     netGo:async v=>{const e=($('#ne').value||'').trim().toLowerCase(),u=(($('#nu')||{}).value||'').trim().toLowerCase(),pw=$('#np').value||'';
       if(v==='up'){if(!/^[^\s@]{1,64}@[^\s@]+\.[^\s@]{2,}$/.test(e)){toast('Enter a valid email');return}
         if(!/^[a-z0-9_]{3,20}$/.test(u)){toast('Username: 3-20 letters, numbers or _');return}}
       else if(!e){toast('Enter your email or username');return}
       if(pw.length<6){toast('Password needs 6+ characters');return}
-      toast('Please wait…');const typed=($('#obn')&&$('#obn').value.trim())||'';
-      try{if(v==='up'){await netSignup(e,u,pw,typed||ME.name||u)}else await netLogin(e,pw);
-        if(!ME.name){ME.name=typed||NET.s.user}persistSoon();closeSheet();render();toast('You are online');netPushProfile()}
-      catch(x){const m={taken:'That username is taken',email_taken:'That email already has an account. Log in instead',bad_username:'Invalid username',bad_password:'Invalid password',bad_email:'Invalid email',login:'Wrong email or password'}[x.message];toast(m||'Could not connect. Check internet')}},
+      toast('Please wait…');S.ntyped=($('#obn')&&$('#obn').value.trim())||'';
+      try{if(v==='up'){await netFn({action:'signup',email:e,username:u,password:pw,name:S.ntyped||ME.name||u});S.npend={email:e,pass:pw};ACT.netCodeSheet()}
+        else{try{await netLogin(e,pw);netDone()}catch(x){if(x.message==='unconfirmed'&&e.includes('@')){S.npend={email:e,pass:pw};await netFn({action:'resend',email:e}).catch(()=>{});ACT.netCodeSheet()}else throw x}}}
+      catch(x){netErr(x)}},
+    netCodeSheet:()=>{closeSheet();sheet('Enter the code',`<div class="note2" style="font-size:14px">We sent a 6 digit code to ${esc(S.npend.email)}. Check Spam too.</div><div class="field"><input id="nc" inputmode="numeric" maxlength="6" placeholder="123456" autocomplete="off"></div><button class="btn" data-a="netVerify">Confirm</button><button class="btn" style="background:transparent;color:inherit;border:1.5px solid currentColor" data-a="netResend">Send the code again</button>`)},
+    netVerify:async()=>{const c=($('#nc').value||'').trim();if(!/^\d{6}$/.test(c)){toast('Enter the 6 digit code');return}
+      try{await netFn({action:'verify',email:S.npend.email,code:c});await netLogin(S.npend.email,S.npend.pass);S.npend=null;netDone()}catch(x){netErr(x)}},
+    netResend:async()=>{try{await netFn({action:'resend',email:S.npend.email});toast('Code sent')}catch(x){netErr(x)}},
+    netForgot:()=>{closeSheet();sheet('Reset password',`<div class="field"><input id="ne" type="email" placeholder="Your email" maxlength="80" autocapitalize="none" autocomplete="off"></div><button class="btn" data-a="netForgotGo">Send code</button>`)},
+    netForgotGo:async()=>{const e=($('#ne').value||'').trim().toLowerCase();if(!/^[^\s@]{1,64}@[^\s@]+\.[^\s@]{2,}$/.test(e)){toast('Enter a valid email');return}
+      try{await netFn({action:'forgot',email:e});S.nreset=e;closeSheet();sheet('New password',`<div class="note2" style="font-size:14px">If that email has an account, a code is on its way. Check Spam too.</div><div class="field"><input id="nc" inputmode="numeric" maxlength="6" placeholder="6 digit code" autocomplete="off"></div><div class="field"><input id="np" type="password" placeholder="New password (6+ characters)" maxlength="72" autocomplete="off"></div><button class="btn" data-a="netResetGo">Change password</button>`)}catch(x){netErr(x)}},
+    netResetGo:async()=>{const c=($('#nc').value||'').trim(),pw=$('#np').value||'';if(!/^\d{6}$/.test(c)||pw.length<6){toast('Enter the code and a new password (6+ characters)');return}
+      try{await netFn({action:'reset',email:S.nreset,code:c,password:pw});toast('Password changed. Log in now');ACT.netAcct('in')}catch(x){netErr(x)}},
     netOut:()=>{netStop();NET.s=null;netSave();persistSoon();closeSheet();render();toast('Logged out')},
     netFind:()=>{if(!NET.s){ACT.netAcct();return}closeSheet();const s=sheet('Find by username',`<div class="field"><input id="nq" placeholder="Username" maxlength="20" autocapitalize="none" autocomplete="off"></div><button class="btn" data-a="netSearch">Search</button><div id="nres"></div>`);},
     netSearch:async()=>{const q=($('#nq').value||'').trim().toLowerCase().replace(/[^a-z0-9_]/g,'');if(!q)return;const el=$('#nres');el.innerHTML='<div class="note2">Searching…</div>';
