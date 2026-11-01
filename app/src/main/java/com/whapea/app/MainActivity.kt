@@ -79,6 +79,12 @@ class MainActivity : ComponentActivity() {
             }
         }
         web.webChromeClient = object : WebChromeClient() {
+            override fun onPermissionRequest(request: android.webkit.PermissionRequest?) {
+                runOnUiThread {
+                    val r = request ?: return@runOnUiThread
+                    if (hasMic() && r.resources.all { it == android.webkit.PermissionRequest.RESOURCE_AUDIO_CAPTURE }) r.grant(r.resources) else r.deny()
+                }
+            }
             override fun onShowFileChooser(
                 webView: WebView?,
                 callback: ValueCallback<Array<Uri>>?,
@@ -110,6 +116,7 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         Core.uiAttached = true
+        if (NetWatch.session() != null) try { androidx.core.app.NotificationManagerCompat.from(this).cancelAll() } catch (e: SecurityException) { }
         if (pageReady) Core.drainInbox()
         pendingApk?.let { if (packageManager.canRequestPackageInstalls()) { pendingApk = null; openInstaller(it) } }
         if (Build.VERSION.SDK_INT >= 33 && !askedNotif &&
@@ -222,7 +229,7 @@ class MainActivity : ComponentActivity() {
             runOnUiThread {
                 wantStart = false
                 Core.auto = false
-                stopService(Intent(this@MainActivity, BtService::class.java))
+                if (NetWatch.session() == null) stopService(Intent(this@MainActivity, BtService::class.java))
                 Core.stop()
             }
         }
@@ -308,6 +315,22 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+
+        /** The internet account's sign-in, so the background service can watch for messages. */
+        @JavascriptInterface
+        fun netSession(s: String) {
+            NetWatch.setSession(s)
+            if (s.isNotBlank()) {
+                try { ContextCompat.startForegroundService(this@MainActivity, Intent(this@MainActivity, BtService::class.java)) } catch (e: Exception) { }
+                NetWatch.start()
+            }
+        }
+
+        @JavascriptInterface
+        fun netGet(): String = NetWatch.session()?.toString() ?: ""
+
+        @JavascriptInterface
+        fun rtcMode(on: Boolean) { CallAudio.mode(this@MainActivity, on) }
 
         @JavascriptInterface
         fun checkKey(key: String): Boolean = Core.checkOwnerKey(key)

@@ -9,7 +9,7 @@ import androidx.core.content.ContextCompat
 class BootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         Core.init(context)
-        if (Core.auto) {
+        if (Core.auto || NetWatch.session() != null) {
             try {
                 ContextCompat.startForegroundService(context, Intent(context, BtService::class.java))
             } catch (e: Exception) { }

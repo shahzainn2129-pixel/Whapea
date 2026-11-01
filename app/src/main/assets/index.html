@@ -744,6 +744,22 @@ function sendMsg(c,m){
   const o={t:'msg',id:m.id,type:m.type,text:m.text||'',reply:m.reply||null,fwd:!!m.fwd};
   if(m.type==='img')o.src=m.src;if(m.type==='voice'){o.src=m.src;o.dur=m.dur}if(m.type==='contact')o.name=m.name;
   tx(c.cid,JSON.stringify(o))}
+function sendGroup(c,m){
+  if(!NET.s)return;
+  const o={t:'msg',id:m.id,type:m.type,text:m.text||'',reply:m.reply||null,fwd:!!m.fwd};
+  if(m.type==='img')o.src=m.src;if(m.type==='voice'){o.src=m.src;o.dur=m.dur}if(m.type==='contact')o.name=m.name;
+  const net=c.members.filter(isNet);o.g={id:c.id,name:c.name,mem:[NET.s.uid,...net.map(k=>k.slice(2))]};
+  const j=JSON.stringify(o);net.forEach(k=>tx(k,j))}
+function groupChat(g,a){
+  if(!g||typeof g!=='object'||!/^[A-Za-z0-9_-]{2,40}$/.test(g.id||'')||!Array.isArray(g.mem)||g.mem.length>60)return null;
+  const mem=g.mem.filter(u=>/^[0-9a-f-]{36}$/.test(u));if(!mem.includes(a.slice(2)))return null;
+  let c=chatOf(g.id);
+  if(c&&c.type!=='group')return null;
+  const keys=mem.filter(u=>NET.s&&u!==NET.s.uid).map(u=>'u:'+u);
+  keys.forEach(k=>{if(!P[k]){const p=ensurePeer(k,'User','',null);p.net=true;p.range=NET.ok;netPeer(k.slice(2))}});
+  if(!c){c={id:g.id,type:'group',name:cl(g.name,30)||'Group',hue:hueOf(g.id),members:keys,unread:0,msgs:[]};chats.push(c)}
+  else c.members=[...new Set([...c.members,...keys])];
+  return c}
 function flushQ(a){const c=chatOf(a);if(!c)return;c.msgs.forEach(m=>{if(m.from==='me'&&!m.deleted&&(m.status==='queued'||m.status==='sent')){m.status='sent';sendMsg(c,m)}})}
 function sendReads(c){if(!NATIVE||c.type!=='dm'||!SET.receipts)return;const ids=c.msgs.filter(m=>m.from!=='me'&&!m.rs).map(m=>{m.rs=true;return m.id});if(ids.length)netSend(c,{t:'read',ids})}
 function announce(){if(!NATIVE)return;for(const k in P)if(P[k].range&&!isNet(k))tx(k,JSON.stringify({t:'hi',name:ME.name,about:ME.about,dp:ME.dp||null}))}
@@ -761,12 +777,12 @@ async function sb(path,o={}){
 async function netRefresh(){
   try{const r=await fetch(SB+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{apikey:SBK,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:NET.s.rt})});
     if(!r.ok){if(r.status===400||r.status===401){NET.ok=false}return false}
-    const j=await r.json();NET.s.at=j.access_token;NET.s.rt=j.refresh_token;persistSoon();return true}catch(e){return false}}
+    const j=await r.json();NET.s.at=j.access_token;NET.s.rt=j.refresh_token;NET.s.ts=Date.now();persistSoon();netSave();return true}catch(e){return false}}
 const netEmail=u=>u+'@users.whapea.example.com';
 async function netLogin(user,pass){
   const r=await fetch(SB+'/auth/v1/token?grant_type=password',{method:'POST',headers:{apikey:SBK,'Content-Type':'application/json'},body:JSON.stringify({email:netEmail(user),password:pass})});
   if(!r.ok)throw new Error('login');
-  const j=await r.json();NET.s={at:j.access_token,rt:j.refresh_token,uid:j.user.id,user};NET.ok=true;persistSoon();netStart();return true}
+  const j=await r.json();NET.s={at:j.access_token,rt:j.refresh_token,uid:j.user.id,user};NET.ok=true;NET.s.ts=Date.now();persistSoon();netStart();return true}
 async function netSignup(user,pass,name){
   const r=await fetch(SB+'/functions/v1/signup',{method:'POST',headers:{apikey:SBK,Authorization:'Bearer '+SBK,'Content-Type':'application/json'},body:JSON.stringify({username:user,password:pass,name})});
   if(!r.ok){let e='failed';try{e=(await r.json()).error}catch(x){}throw new Error(e)}
@@ -774,9 +790,12 @@ async function netSignup(user,pass,name){
 function netStart(){
   if(!NET.s)return;NET.ok=true;
   for(const k in P)if(isNet(k))P[k].range=true;
-  clearInterval(NET.poll);NET.poll=setInterval(netPull,document.hidden?9000:2500);netPull();netPushProfile();refresh()}
-function netStop(){clearInterval(NET.poll);NET.ok=false;for(const k in P)if(isNet(k))P[k].range=false}
-document.addEventListener('visibilitychange',()=>{if(NET.s&&NET.ok){clearInterval(NET.poll);NET.poll=setInterval(netPull,document.hidden?9000:2500);if(!document.hidden)netPull()}});
+  try{const g=JSON.parse(Android.netGet()||'null');if(g&&g.rt&&(g.ts||0)>(NET.s.ts||0)){NET.s=g;persistSoon()}}catch(e){}
+  netSave();netSched();netPull();netPushProfile();refresh()}
+function netSave(){try{if(NET.s){if(!NET.s.ts)NET.s.ts=Date.now();Android.netSession(JSON.stringify(NET.s))}else Android.netSession('')}catch(e){}}
+function netSched(){clearTimeout(NET.poll);if(!NET.s)return;NET.poll=setTimeout(async()=>{await netPull();netSched()},S.call?700:document.hidden?9000:2500)}
+function netStop(){clearTimeout(NET.poll);NET.ok=false;for(const k in P)if(isNet(k))P[k].range=false}
+document.addEventListener('visibilitychange',()=>{if(NET.s&&NET.ok){netSched();if(!document.hidden)netPull()}});
 function netPushProfile(){if(!NET.s)return;sb('/rest/v1/profiles?id=eq.'+NET.s.uid,{m:'PATCH',h:{Prefer:'return=minimal'},b:{name:cl(ME.name,40),about:cl(ME.about,60),avatar:ME.dp&&ME.dp.length<150000?ME.dp:null}}).catch(()=>{})}
 async function netPeer(uid){
   const key='u:'+uid;
@@ -829,7 +848,7 @@ window.nativeData=(a,raw)=>{
   if(!o||typeof o!=='object')return;
   if(o.t==='hi'){const p=ensurePeer(a,o.name,o.about,o.dp);const was=p.range;p.range=true;flushQ(a);if(!was)toast('Connected to '+p.name);refresh();return}
   if(o.t==='call'){if(P[a])callRx(a,o);return}
-  const c=P[a]?chatOf(a):null;if(!c)return;
+  const c=(o.g&&isNet(a)&&P[a])?groupChat(o.g,a):(P[a]?chatOf(a):null);if(!c)return;
   if(o.t==='msg'&&typeof o.id==='string'&&o.id.length<=40){
     if(!c.msgs.some(m=>m.id===o.id)){
       const type=['text','img','contact','voice'].includes(o.type)?o.type:'text';
@@ -840,9 +859,9 @@ window.nativeData=(a,raw)=>{
       if(o.fwd)m.fwd=true;
       if(o.reply&&typeof o.reply==='object')m.reply={who:cl(o.reply.who,30),text:cl(o.reply.text,200)};
       c.msgs.push(m);
-      if(S.chat===a){sendReads(c)}else{c.unread=(c.unread||0)+1;toast(P[a].name+': '+prev(m))}
+      if(S.chat===c.id){sendReads(c)}else{c.unread=(c.unread||0)+1;toast(P[a].name+': '+prev(m))}
     }
-    tx(a,JSON.stringify({t:'ack',id:cl(o.id,40)}));
+    if(c.type==='dm')tx(a,JSON.stringify({t:'ack',id:cl(o.id,40)}));
     refresh();return}
   const mine=id=>c.msgs.find(m=>m.id===id&&m.from==='me');
   const theirs=id=>c.msgs.find(m=>m.id===id&&m.from===a);
@@ -896,11 +915,12 @@ if(NATIVE){
   applySettings();
   const soon=()=>toast('This feature is coming in the next update');
   pushMsg=function(c,m){
+    if(c.type==='group'){m.status='sent';c.msgs.push(m);drawMsgs(true);render();sendGroup(c,m);return}
     if(c.type!=='dm'){soon();return}
     m.status=P[c.cid]&&P[c.cid].range?'sent':'queued';c.msgs.push(m);drawMsgs(true);render();
     if(m.status==='sent')sendMsg(c,m)};
   Object.assign(ACT,{
-    newGroup:soon,attPoll:soon,
+    attPoll:soon,
     attach:()=>sheet('',`<div class="grid4">${[['attPhoto','image','Photo',215],['attContact','user','Contact',150]].map(([a,i,l,h])=>`<button data-a="${a}"><span class="c" style="--h:${h}">${ic(i,24)}</span>${l}</button>`).join('')}</div><div class="note2">Documents, audio and location are coming soon.</div>`),
     chatMenu:()=>{const c=chatOf(S.chat);sheet('',A('findIn','', 'search','Search in chat')+A('cm_mute',c.id,'mute',c.muted?'Unmute':'Mute notifications')+A('media','', 'image','Media, links and documents')+A('cm_clear',c.id,'x','Clear chat')+A('cm_block',c.id,'ban','Block','','bad'))},
     nStart:()=>Android.start(),nScan:()=>Android.scan(),nVisible:()=>Android.visible(),nStop:()=>Android.stopBt(),
@@ -936,22 +956,46 @@ if(NATIVE){
   });
 
   /* ---- voice calls ---- */
-  const CALLTO=40000,csend=(k,op)=>tx(k,JSON.stringify({t:'call',op}));
+  const CALLTO=40000,csend=(k,op,x)=>tx(k,JSON.stringify({t:'call',op,...(x||{})}));
+  const RTC={pc:null,stream:null,audio:null,pend:[],ready:null};
+  const ICE={iceServers:[{urls:['stun:stun.l.google.com:19302','stun:stun1.l.google.com:19302']},{urls:['turn:openrelay.metered.ca:80','turn:openrelay.metered.ca:443','turn:openrelay.metered.ca:443?transport=tcp'],username:'openrelayproject',credential:'openrelayproject'}]};
+  async function rtcStart(k,caller){
+    Android.rtcMode(true);
+    RTC.stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
+    const pc=RTC.pc=new RTCPeerConnection(ICE);
+    RTC.stream.getTracks().forEach(t=>pc.addTrack(t,RTC.stream));
+    pc.ontrack=e=>{if(!RTC.audio){RTC.audio=new Audio();RTC.audio.autoplay=true}RTC.audio.srcObject=e.streams[0];RTC.audio.play().catch(()=>{})};
+    pc.onicecandidate=e=>{if(e.candidate&&RTC.pc===pc)csend(k,'ice',{c:{candidate:e.candidate.candidate,sdpMid:e.candidate.sdpMid,sdpMLineIndex:e.candidate.sdpMLineIndex}})};
+    pc.onconnectionstatechange=()=>{if(RTC.pc===pc&&(pc.connectionState==='failed')&&S.call===k){toast('Call connection failed. Try again');csend(k,'end');finishCall(false)}};
+    if(caller){const o=await pc.createOffer();await pc.setLocalDescription(o);csend(k,'offer',{sdp:o.sdp})}}
+  async function rtcSig(k,o){
+    try{await RTC.ready;const pc=RTC.pc;if(!pc)return;
+      const flush=async()=>{const q=RTC.pend;RTC.pend=[];for(const c of q){try{await pc.addIceCandidate(c)}catch(e){}}};
+      if(o.op==='offer'&&typeof o.sdp==='string'&&o.sdp.length<30000){await pc.setRemoteDescription({type:'offer',sdp:o.sdp});await flush();const a=await pc.createAnswer();await pc.setLocalDescription(a);csend(k,'answer',{sdp:a.sdp})}
+      else if(o.op==='answer'&&typeof o.sdp==='string'&&o.sdp.length<30000){await pc.setRemoteDescription({type:'answer',sdp:o.sdp});await flush()}
+      else if(o.op==='ice'&&o.c&&typeof o.c.candidate==='string'&&o.c.candidate.length<600){const c={candidate:o.c.candidate,sdpMid:cl(String(o.c.sdpMid||'0'),10),sdpMLineIndex:+o.c.sdpMLineIndex||0};if(pc.remoteDescription){try{await pc.addIceCandidate(c)}catch(e){}}else RTC.pend.push(c)}
+    }catch(e){}}
+  function rtcStop(){try{if(RTC.pc)RTC.pc.close()}catch(e){}try{if(RTC.stream)RTC.stream.getTracks().forEach(t=>t.stop())}catch(e){}
+    RTC.pc=null;RTC.stream=null;RTC.ready=null;RTC.pend=[];if(RTC.audio){RTC.audio.srcObject=null;RTC.audio=null}try{Android.rtcMode(false)}catch(e){}}
   window.callUI=function(k,st){
     const old=$('#callv');if(old)old.remove();
     const p=P[k],v=document.createElement('div');v.className='screen call';v.id='callv';
-    v.innerHTML=`<div><span class="av" style="--h:${p.hue}">${esc((p.name||'?')[0])}</span><h2>${esc(p.name)}</h2><p id="cst">${st==='out'?'Calling over Bluetooth…':st==='in'?'Incoming Whapea call':dur(S.cs)}</p></div>`+
+    v.innerHTML=`<div><span class="av" style="--h:${p.hue}">${esc((p.name||'?')[0])}</span><h2>${esc(p.name)}</h2><p id="cst">${st==='out'?(isNet(k)?'Calling…':'Calling over Bluetooth…'):st==='in'?'Incoming Whapea call':dur(S.cs)}</p></div>`+
      (st==='live'?`<div class="cbtns"><button data-a="cmute" aria-label="Mute">${ic('mic',26)}</button><button data-a="cspk" aria-label="Speaker">${ic('vol',26)}</button></div>`:'<div></div>')+
      (st==='in'?`<div class="cbtns"><button class="end" data-a="callRej" aria-label="Decline">${ic('phone',28)}</button><button class="acc" data-a="callAcc" aria-label="Answer">${ic('phone',28)}</button></div>`:`<div class="cbtns"><button class="end" data-a="endCall" aria-label="End call">${ic('phone',28)}</button></div>`);
     phone.append(v)};
   window.finishCall=function(missed){
     const k=S.call;if(!k)return;
-    clearTimeout(S.cto);clearInterval(S.ci);Android.callStop();Android.ringStop();
+    clearTimeout(S.cto);clearInterval(S.ci);Android.callStop();Android.ringStop();rtcStop();
     const el=$('#callv');if(el)el.remove();
     calls.unshift({cid:k,dir:S.cdir,t:Date.now(),missed:!!missed,d:S.cst==='live'?S.cs:0});if(calls.length>50)calls.length=50;
     S.call=null;S.cst=null;persistSoon();render()};
   function goLive(k){
     clearTimeout(S.cto);Android.ringStop();
+    if(isNet(k)){
+      S.cst='live';S.cs=0;callUI(k,'live');netSched();
+      RTC.ready=rtcStart(k,S.cdir==='out').catch(()=>{toast('Could not start the microphone');csend(k,'end');finishCall(false)});
+      S.ci=setInterval(()=>{S.cs++;const e=$('#cst');if(e)e.textContent=dur(S.cs)},1000);return}
     if(!Android.callStart(k)){toast('Could not start the microphone');csend(k,'end');finishCall(false);return}
     S.cst='live';S.cs=0;callUI(k,'live');
     S.ci=setInterval(()=>{S.cs++;const e=$('#cst');if(e)e.textContent=dur(S.cs)},1000)}
@@ -959,9 +1003,10 @@ if(NATIVE){
     const op=o.op;
     if(op==='ring'){
       if(S.call){csend(a,'busy');return}
-      S.call=a;S.cdir='in';S.cst='in';S.cs=0;callUI(a,'in');Android.ringStart();
+      S.call=a;S.cdir='in';S.cst='in';S.cs=0;callUI(a,'in');Android.ringStart();netSched();
       S.cto=setTimeout(()=>{if(S.call===a&&S.cst==='in')finishCall(true)},CALLTO);return}
     if(S.call!==a)return;
+    if(op==='offer'||op==='answer'||op==='ice'){if(S.cst==='live')rtcSig(a,o);return}
     if(op==='acc'&&S.cst==='out')goLive(a);
     else if(op==='rej'||op==='busy'){toast(op==='busy'?P[a].name+' is on another call':P[a].name+' declined the call');finishCall(false)}
     else if(op==='end')finishCall(S.cst==='in')};
@@ -970,7 +1015,7 @@ if(NATIVE){
       if(S.call){toast('You are already in a call');return}
       if(!P[v]||!P[v].range){toast((P[v]?P[v].name.split(' ')[0]:'This person')+' is not connected. Calls need a Bluetooth link');return}
       if(!Android.micOk())return;
-      S.call=v;S.cdir='out';S.cst='out';S.cs=0;closeSheet();csend(v,'ring');callUI(v,'out');
+      S.call=v;S.cdir='out';S.cst='out';S.cs=0;closeSheet();csend(v,'ring');callUI(v,'out');netSched();
       S.cto=setTimeout(()=>{if(S.call===v&&S.cst==='out'){csend(v,'end');toast('No answer');finishCall(false)}},CALLTO)},
     callBack:v=>ACT.startCall(v),
     newCall:()=>{const ks=Object.keys(P);if(!ks.length){toast('Connect to someone in the Nearby tab first');return}
@@ -978,7 +1023,7 @@ if(NATIVE){
     callAcc:()=>{const k=S.call;if(!k||S.cst!=='in')return;if(!Android.micOk())return;csend(k,'acc');goLive(k)},
     callRej:()=>{const k=S.call;if(!k)return;csend(k,'rej');finishCall(true)},
     endCall:()=>{const k=S.call;if(!k)return;csend(k,'end');finishCall(false)},
-    cmute:(v,el)=>{el.classList.toggle('on');Android.callMute(el.classList.contains('on'))},
+    cmute:(v,el)=>{el.classList.toggle('on');const on=el.classList.contains('on');if(RTC.stream)RTC.stream.getAudioTracks().forEach(t=>t.enabled=!on);else Android.callMute(on)},
     cspk:(v,el)=>{el.classList.toggle('on');Android.callSpeaker(el.classList.contains('on'))},
   });
 
@@ -1006,7 +1051,7 @@ if(NATIVE){
     tab:v=>{S.tab=v;render();if(v==='spons')loadFeed(false)},
     spRefresh:()=>{toast('Checking for new posts…');loadFeed(true)},
     appinfo:()=>{aboutTaps++;if(aboutTaps>=7){aboutTaps=0;ACT.ownerLogin();return}
-      sheet('About Whapea',`<div class="note2" style="font-size:14px">Version 2.0. Chats work without internet, straight from phone to phone over Bluetooth. Sponsored posts and updates download when your phone is online.</div><button class="btn" data-a="updCheck">Check for updates</button>`)},
+      sheet('About Whapea',`<div class="note2" style="font-size:14px">Version 2.1. Chats work without internet, straight from phone to phone over Bluetooth. Sponsored posts and updates download when your phone is online.</div><button class="btn" data-a="updCheck">Check for updates</button>`)},
     spNew:()=>{sheet('New sponsored post',`<div class="field"><input id="spb" placeholder="Brand name" maxlength="40" autocomplete="off"></div><div class="field"><textarea id="spcap" rows="3" maxlength="300" placeholder="What are you promoting?" class="txt"></textarea></div><div class="field"><input id="spct" placeholder="Phone or address (optional)" maxlength="60" autocomplete="off"></div><div class="field"><input id="spv" placeholder="Video file name, e.g. chai.mp4 (optional)" maxlength="80" autocomplete="off" autocapitalize="none"></div><div class="sec" style="padding-top:2px">Runs for</div><div class="chips" id="spdur">${[3,7,14,30,60].map(d=>`<button class="chip ${d===7?'on':''}" data-a="spDur" data-v="${d}">${d} days</button>`).join('')}</div><button class="act" data-a="spPick">${ic('image')}<span class="grow" id="spmi">Add a photo (optional)<small>Photos are made small so they fit in the post</small></span></button><button class="btn" data-a="spPost">Create post data</button>`);S.spm=null;S.spd=7},
     spPick:()=>pickFile('image/*',f=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,640/Math.max(im.width,im.height)),cv=document.createElement('canvas');cv.width=im.width*k;cv.height=im.height*k;cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);const src=cv.toDataURL('image/jpeg',.6);S.spm={kind:'image',src};const e=$('#spmi');if(e)e.innerHTML=`${esc(f.name)}<small>Photo · ${size(src.length*.75)}</small>`};im.src=r.result};r.readAsDataURL(f)}),
     spPost:()=>{
@@ -1025,6 +1070,10 @@ if(NATIVE){
   });
 
   Object.assign(ACT,{
+    newGroup:()=>{const ks=Object.keys(P).filter(isNet);if(!NET.s||!ks.length){toast('First find people by username, then make a group');return}
+      closeSheet();sheet('New group',`<div class="field"><input id="gname" placeholder="Group name" maxlength="30" autocomplete="off"></div>${ks.map(k=>`<label class="act"><input type="checkbox" class="gm" value="${esc(k)}">${av(P[k].hue,P[k].name,'sm')}<span class="grow">${esc(P[k].name)}</span></label>`).join('')}<button class="btn" data-a="mkGroup">Create group</button>`)},
+  });
+  Object.assign(ACT,{
     netAcct:()=>NET.s?sheet('Internet account',`<div style="text-align:center;padding:6px 20px"><b style="font-size:20px;font-family:var(--font-display)">${esc(ME.name)}</b><div class="val">@${esc(NET.s.user)} · ${NET.ok?'Online':'Connecting…'}</div></div>`+A('netFind','','search','Find people by username')+A('netOut','','x','Log out','','bad')):sheet('Internet account',`<div class="note2" style="font-size:14px">Pick a username (letters, numbers, _). No phone number needed.</div><div class="field"><input id="nu" placeholder="Username" maxlength="20" autocapitalize="none" autocomplete="off"></div><div class="field"><input id="np" type="password" placeholder="Password (6+ characters)" maxlength="72" autocomplete="off"></div><button class="btn" data-a="netGo" data-v="up">Create account</button><button class="btn" style="background:transparent;color:inherit;border:1.5px solid currentColor" data-a="netGo" data-v="in">Log in</button>`),
     netGo:async v=>{const u=($('#nu').value||'').trim().toLowerCase(),pw=$('#np').value||'';
       if(!/^[a-z0-9_]{3,20}$/.test(u)){toast('Username: 3-20 letters, numbers or _');return}
@@ -1033,7 +1082,7 @@ if(NATIVE){
       try{if(v==='up'){await netSignup(u,pw,typed||ME.name||u)}else await netLogin(u,pw);
         if(!ME.name){ME.name=typed||u;setTimeout(()=>Android.start(),300)}persistSoon();closeSheet();render();toast('You are online');netPushProfile()}
       catch(e){const m={taken:'That username is taken',bad_username:'Invalid username',bad_password:'Invalid password',login:'Wrong username or password'}[e.message];toast(m||'Could not connect. Check internet')}},
-    netOut:()=>{netStop();NET.s=null;persistSoon();closeSheet();render();toast('Logged out')},
+    netOut:()=>{netStop();NET.s=null;netSave();persistSoon();closeSheet();render();toast('Logged out')},
     netFind:()=>{if(!NET.s){ACT.netAcct();return}closeSheet();const s=sheet('Find by username',`<div class="field"><input id="nq" placeholder="Username" maxlength="20" autocapitalize="none" autocomplete="off"></div><button class="btn" data-a="netSearch">Search</button><div id="nres"></div>`);},
     netSearch:async()=>{const q=($('#nq').value||'').trim().toLowerCase().replace(/[^a-z0-9_]/g,'');if(!q)return;const el=$('#nres');el.innerHTML='<div class="note2">Searching…</div>';
       try{const r=await sb('/rest/v1/profiles?select=id,username,name&username=ilike.'+q+'*&limit=15');const a=(await r.json()).filter(x=>x.id!==NET.s.uid);
@@ -1047,7 +1096,6 @@ if(NATIVE){
       catch(e){el.querySelector('.sheet').innerHTML='<div class="grab"></div><div class="note2">Could not load. Unlock owner mode again, then retry.</div>'}},
     netBan:async v=>{const[id,h]=v.split('|');try{const r=await sb('/rest/v1/rpc/owner_ban',{m:'POST',b:{uid:id,hours:+h}});if(!r.ok)throw 0;toast(+h?'Blocked for 3 hours':'Unblocked');closeSheet();ACT.netOwner()}catch(e){toast('Failed')}},
   });
-  const _sc=ACT.startCall;ACT.startCall=v=>{if(isNet(v)){toast('Internet calls are coming soon. Messages work now.');return}_sc(v)};
   if(NET.s)setTimeout(netStart,400);
   loadFeed(true);
   if(ME.name)setTimeout(()=>Android.start(),300);

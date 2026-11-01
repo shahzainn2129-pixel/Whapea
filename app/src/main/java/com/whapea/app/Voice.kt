@@ -166,6 +166,16 @@ object CallAudio {
         queue.offer(b)
     }
 
+    /** Puts the phone in call mode while an internet (WebRTC) call is live. */
+    fun mode(ctx: Context, on: Boolean) {
+        try {
+            val audio = ctx.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+            am = audio
+            audio.mode = if (on) AudioManager.MODE_IN_COMMUNICATION else AudioManager.MODE_NORMAL
+            if (!on) audio.isSpeakerphoneOn = false
+        } catch (e: Exception) { }
+    }
+
     fun speaker(on: Boolean) {
         try { am?.isSpeakerphoneOn = on } catch (e: Exception) { }
     }

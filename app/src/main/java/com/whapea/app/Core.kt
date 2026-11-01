@@ -43,7 +43,7 @@ object Core {
 
     private var ready = false
     private lateinit var app: Context
-    private lateinit var prefs: SharedPreferences
+    lateinit var prefs: SharedPreferences
     private var adapter: BluetoothAdapter? = null
     private var server: BluetoothServerSocket? = null
     private var receiverOn = false
@@ -122,9 +122,10 @@ object Core {
         try { NotificationManagerCompat.from(app).cancel(CALL_ID) } catch (e: SecurityException) { }
     }
 
-    private fun notifyCall(addr: String) {
+    private fun notifyCall(addr: String) = notifyCallFrom(names().optString(addr).ifBlank { "Someone nearby" })
+
+    fun notifyCallFrom(who: String) {
         try {
-            val who = names().optString(addr).ifBlank { "Someone nearby" }
             val pi = android.app.PendingIntent.getActivity(app, 2,
                 Intent(app, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK),
                 android.app.PendingIntent.FLAG_IMMUTABLE or android.app.PendingIntent.FLAG_UPDATE_CURRENT)
@@ -174,7 +175,7 @@ object Core {
         } catch (e: Exception) { }
     }
 
-    private fun notifyMsg(addr: String, who: String, body: String) {
+    fun notifyMsg(addr: String, who: String, body: String) {
         try {
             val pi = android.app.PendingIntent.getActivity(app, 0,
                 Intent(app, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP),

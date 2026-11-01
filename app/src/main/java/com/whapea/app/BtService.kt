@@ -46,14 +46,19 @@ class BtService : Service() {
         val n = NotificationCompat.Builder(this, Core.CH_SVC)
             .setSmallIcon(android.R.drawable.stat_sys_data_bluetooth)
             .setContentTitle("Whapea")
-            .setContentText("Listening for messages over Bluetooth")
+            .setContentText(if (NetWatch.session() != null) "Waiting for messages" else "Listening for messages over Bluetooth")
             .setOngoing(true).setContentIntent(pi).build()
         if (Build.VERSION.SDK_INT >= 29) {
-            startForeground(7, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE)
+            val btOk = Build.VERSION.SDK_INT < 31 || checkSelfPermission(android.Manifest.permission.BLUETOOTH_CONNECT) == android.content.pm.PackageManager.PERMISSION_GRANTED
+            val type = if (btOk) ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE
+                else if (Build.VERSION.SDK_INT >= 34) ServiceInfo.FOREGROUND_SERVICE_TYPE_REMOTE_MESSAGING
+                else ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE
+            try { startForeground(7, n, type) } catch (e: Exception) { stopSelf(); return START_NOT_STICKY }
         } else {
             startForeground(7, n)
         }
         if (Core.auto && !Core.running && Core.btOn()) Core.start()
+        NetWatch.start()
         return START_STICKY
     }
 
