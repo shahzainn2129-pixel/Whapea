@@ -36,6 +36,14 @@ class MainActivity : ComponentActivity() {
             fileCb = null
         }
 
+    private val camLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { ok ->
+            js("nativeCam(${ok})")
+        }
+
+    private fun hasCam(): Boolean =
+        ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
+
     private val micLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { ok ->
             js("nativeMic(${ok})")
@@ -83,7 +91,7 @@ class MainActivity : ComponentActivity() {
             override fun onPermissionRequest(request: android.webkit.PermissionRequest?) {
                 runOnUiThread {
                     val r = request ?: return@runOnUiThread
-                    if (hasMic() && r.resources.all { it == android.webkit.PermissionRequest.RESOURCE_AUDIO_CAPTURE }) r.grant(r.resources) else r.deny()
+                    if (r.resources.all { (it == android.webkit.PermissionRequest.RESOURCE_AUDIO_CAPTURE && hasMic()) || (it == android.webkit.PermissionRequest.RESOURCE_VIDEO_CAPTURE && hasCam()) }) r.grant(r.resources) else r.deny()
                 }
             }
             override fun onShowFileChooser(
@@ -272,10 +280,17 @@ class MainActivity : ComponentActivity() {
         }
 
         @JavascriptInterface
-        fun callStart(addr: String): Boolean = hasMic() && CallAudio.start(this@MainActivity, addr)
+        fun callStart(addr: String): Boolean {
+            if (!hasMic()) return false
+            runOnUiThread { volumeControlStream = android.media.AudioManager.STREAM_VOICE_CALL }
+            return CallAudio.start(this@MainActivity, addr)
+        }
 
         @JavascriptInterface
-        fun callStop() { CallAudio.stop() }
+        fun callStop() {
+            CallAudio.stop()
+            runOnUiThread { volumeControlStream = android.media.AudioManager.USE_DEFAULT_STREAM_TYPE }
+        }
 
         @JavascriptInterface
         fun callMute(on: Boolean) { CallAudio.muted = on }
@@ -340,7 +355,19 @@ class MainActivity : ComponentActivity() {
         fun netGet(): String = NetWatch.session()?.toString() ?: ""
 
         @JavascriptInterface
-        fun rtcMode(on: Boolean) { CallAudio.mode(this@MainActivity, on) }
+        fun camOk(): Boolean {
+            if (hasCam()) return true
+            runOnUiThread { camLauncher.launch(Manifest.permission.CAMERA) }
+            return false
+        }
+
+        @JavascriptInterface
+        fun rtcMode(on: Boolean) {
+            CallAudio.mode(this@MainActivity, on)
+            runOnUiThread {
+                volumeControlStream = if (on) android.media.AudioManager.STREAM_VOICE_CALL else android.media.AudioManager.USE_DEFAULT_STREAM_TYPE
+            }
+        }
 
         @JavascriptInterface
         fun checkKey(key: String): Boolean = Core.checkOwnerKey(key)

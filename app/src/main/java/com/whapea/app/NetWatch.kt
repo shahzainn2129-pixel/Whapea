@@ -93,7 +93,7 @@ object NetWatch {
                     }
                     if (max > last) Core.prefs.edit().putLong("netlast", max).apply()
                 }
-                Thread.sleep(6000)
+                Thread.sleep(4000)
             } catch (e: InterruptedException) { break } catch (e: Exception) {
                 try { Thread.sleep(10000) } catch (x: InterruptedException) { break }
             }

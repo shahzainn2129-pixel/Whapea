@@ -240,6 +240,13 @@ img{max-width:100%}
 .wpg{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:4px 18px 12px}
 .wps{aspect-ratio:3/4;border-radius:12px;border:1px solid var(--line);font-size:12px;color:var(--ink);background:var(--chatbg);display:grid;place-items:end center;padding:6px}
 .vprog{position:absolute;left:50%;top:16px;transform:translateX(-50%);z-index:70;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:13.5px}
+/* ---- video calls ---- */
+.call .ci{position:relative;z-index:2}.call .cd{font-size:13px;opacity:.7;min-height:18px}
+.call>.cbtns{position:relative;z-index:2;flex-wrap:wrap;justify-content:center}
+.call.vc{background:#000;padding:24px 16px 34px}
+.call.vc .ci .av{display:none}.call.vc .ci h2{font-size:20px}
+.rv{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;background:#000}
+.lv{position:absolute;right:12px;top:70px;width:96px;height:132px;object-fit:cover;border-radius:12px;z-index:3;transform:scaleX(-1);background:#222;border:1px solid rgba(255,255,255,.3)}
 /* ---- Gradient Social theme: clean white / true black, thin lines, gradient accents ---- */
 .top{border-bottom:1px solid var(--line);padding-bottom:10px}
 .brand{font-weight:800;letter-spacing:-.045em;font-size:28px}
@@ -522,7 +529,7 @@ function drawHead(){
   let sub;if(c.typing)sub=`<small class="live">${esc(c.typing)} typing…</small>`;
   else if(c.type==='group')sub=`<small>${c.members.map(m=>P[m].name.split(' ')[0]).join(', ')}, You</small>`;
   else sub=`<small class="${r==='direct'?'live':''}">${r==='direct'?`In range${P[c.cid].dist!=null?' · '+P[c.cid].dist+' m':''}`:r==='relay'?`Reachable via ${esc(P[P[c.cid].via].name.split(' ')[0])} · 2 hops`:'Out of range · messages will wait'}</small>`;
-  $('#chh').innerHTML=`<button class="ib" data-a="closeChat" aria-label="Back">${ic('back')}</button>${av(cHue(c),cName(c),'sm')}<button class="who" data-a="chatInfo"><b>${esc(cName(c))}</b>${sub}</button>${c.type==='dm'?`<button class="ib" data-a="startCall" data-v="${c.cid}" aria-label="Voice call">${ic('phone',21)}</button>`:''}<button class="ib" data-a="chatMenu" aria-label="More">${ic('more')}</button>`;
+  $('#chh').innerHTML=`<button class="ib" data-a="closeChat" aria-label="Back">${ic('back')}</button>${av(cHue(c),cName(c),'sm')}<button class="who" data-a="chatInfo"><b>${esc(cName(c))}</b>${sub}</button>${c.type==='dm'?`${NATIVE&&isNet(c.cid)?`<button class="ib" data-a="startVideo" data-v="${c.cid}" aria-label="Video call">${ic('video',21)}</button>`:''}<button class="ib" data-a="startCall" data-v="${c.cid}" aria-label="Voice call">${ic('phone',21)}</button>`:''}<button class="ib" data-a="chatMenu" aria-label="More">${ic('more')}</button>`;
 }
 const hl=t=>esc(t).replace(/@(\w+)/g,'<span class="mention">@$1</span>');
 function msgHTML(c,m,i){
@@ -811,7 +818,7 @@ async function sb(path,o={}){
 async function netRefresh(){
   try{const r=await fetch(SB+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{apikey:SBK,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:NET.s.rt})});
     if(!r.ok){if(r.status===400||r.status===401){NET.ok=false}return false}
-    const j=await r.json();NET.s.at=j.access_token;NET.s.rt=j.refresh_token;NET.s.ts=Date.now();persistSoon();netSave();return true}catch(e){return false}}
+    const j=await r.json();NET.s.at=j.access_token;NET.s.rt=j.refresh_token;NET.s.ts=Date.now();persistSoon();netSave();if(RT.ok&&RT.send)RT.send({topic:RT.topic,event:'access_token',payload:{access_token:NET.s.at},ref:String(++RT.n+10)});return true}catch(e){return false}}
 const netEmail=u=>u+'@users.whapea.example.com';
 async function netLogin(id,pass){
   const r=await fetch(SB+'/auth/v1/token?grant_type=password',{method:'POST',headers:{apikey:SBK,'Content-Type':'application/json'},body:JSON.stringify({email:id.includes('@')?id:netEmail(id),password:pass})});
@@ -827,11 +834,26 @@ function netStart(){
   if(!NET.s)return;NET.ok=true;
   for(const k in P)if(isNet(k))P[k].range=true;
   try{const g=JSON.parse(Android.netGet()||'null');if(g&&g.rt&&(g.ts||0)>(NET.s.ts||0)){NET.s=g;persistSoon()}}catch(e){}
-  netSave();netSched();netPull();netPushProfile();setTimeout(()=>{try{stSyncAll()}catch(e){}},2500);refresh()}
+  netSave();netSched();rtOpen();clearInterval(NET.rf);NET.rf=setInterval(()=>{if(NET.s)netRefresh()},45*60000);netPull();netPushProfile();setTimeout(()=>{try{stSyncAll()}catch(e){}},2500);refresh()}
 function netSave(){try{if(NET.s){if(!NET.s.ts)NET.s.ts=Date.now();Android.netSession(JSON.stringify(NET.s))}else Android.netSession('')}catch(e){}}
-function netSched(){clearTimeout(NET.poll);if(!NET.s)return;NET.poll=setTimeout(async()=>{await netPull();netSched()},S.call?700:document.hidden?9000:2500)}
-function netStop(){clearTimeout(NET.poll);NET.ok=false;for(const k in P)if(isNet(k))P[k].range=false}
-document.addEventListener('visibilitychange',()=>{if(NET.s&&NET.ok){netSched();if(!document.hidden)netPull()}});
+function netSched(){clearTimeout(NET.poll);if(!NET.s)return;NET.poll=setTimeout(async()=>{await netPull();netSched()},RT.ok?(S.call?3000:10000):(S.call?700:document.hidden?9000:2500))}
+const RT={ws:null,ok:false,n:0,hb:0,retry:0,t:0,topic:'',send:null};
+function rtOpen(){
+  if(!NET.s||(RT.ws&&RT.ws.readyState<2))return;
+  let ws;try{ws=new WebSocket(SB.replace('https','wss')+'/realtime/v1/websocket?apikey='+SBK+'&vsn=1.0.0')}catch(e){return}
+  RT.ws=ws;RT.ok=false;const topic=RT.topic='realtime:wf-'+NET.s.uid.slice(0,8);
+  const send=RT.send=o=>{try{ws.send(JSON.stringify(o))}catch(e){}};
+  ws.onopen=()=>{send({topic,event:'phx_join',payload:{config:{broadcast:{ack:false,self:false},presence:{key:''},postgres_changes:[{event:'INSERT',schema:'public',table:'frames',filter:'receiver=eq.'+NET.s.uid}],private:false},access_token:NET.s.at},ref:'1',join_ref:'1'});
+    clearInterval(RT.hb);RT.hb=setInterval(()=>send({topic:'phoenix',event:'heartbeat',payload:{},ref:String(++RT.n+10)}),25000)};
+  ws.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch(x){return}
+    if(m.event==='phx_reply'&&m.topic===topic){if(m.payload&&m.payload.status==='ok'){if(!RT.ok){RT.ok=true;RT.retry=0;netSched();netPull()}}else{try{ws.close()}catch(x){}}}
+    else if(m.event==='postgres_changes'){netPull()}
+    else if(m.event==='phx_error'||m.event==='phx_close'){try{ws.close()}catch(x){}}};
+  ws.onclose=()=>{clearInterval(RT.hb);if(RT.ws===ws){RT.ok=false;RT.ws=null;netSched();if(NET.s){clearTimeout(RT.t);RT.t=setTimeout(rtOpen,Math.min(15000,1000*Math.pow(2,RT.retry++)))}}};
+  ws.onerror=()=>{try{ws.close()}catch(x){}}}
+function rtClose(){clearTimeout(RT.t);clearInterval(RT.hb);const w=RT.ws;RT.ws=null;RT.ok=false;if(w)try{w.close()}catch(e){}}
+function netStop(){rtClose();clearTimeout(NET.poll);NET.ok=false;for(const k in P)if(isNet(k))P[k].range=false}
+document.addEventListener('visibilitychange',()=>{if(NET.s&&NET.ok){if(!document.hidden){rtClose();rtOpen();netPull()}netSched()}});
 function netPushProfile(){if(!NET.s)return;sb('/rest/v1/profiles?id=eq.'+NET.s.uid,{m:'PATCH',h:{Prefer:'return=minimal'},b:{name:cl(ME.name,40),about:cl(ME.about,60),avatar:ME.dp&&ME.dp.length<150000?ME.dp:null}}).catch(()=>{})}
 async function netPeer(uid){
   const key='u:'+uid;
@@ -1094,19 +1116,37 @@ if(NATIVE){
       a.onerror=fail;a.play().catch(fail);drawMsgs(false)},
   });
 
-  /* ---- voice calls ---- */
+  /* ---- voice and video calls ---- */
   const CALLTO=40000,csend=(k,op,x)=>tx(k,JSON.stringify({t:'call',op,...(x||{})}));
-  const RTC={pc:null,stream:null,audio:null,pend:[],ready:null};
-  const ICE={iceServers:[{urls:['stun:stun.l.google.com:19302','stun:stun1.l.google.com:19302']},{urls:['turn:openrelay.metered.ca:80','turn:openrelay.metered.ca:443','turn:openrelay.metered.ca:443?transport=tcp'],username:'openrelayproject',credential:'openrelayproject'}]};
+  const RTC={pc:null,stream:null,audio:null,pend:[],ready:null,rs:null,diag:0,cam:'user',ticks:0,lastRtp:0,dis:0};
+  const ICE={iceServers:[{urls:['stun:stun.l.google.com:19302','stun:stun1.l.google.com:19302','stun:stun.cloudflare.com:3478']},{urls:['turn:openrelay.metered.ca:80','turn:openrelay.metered.ca:443','turn:openrelay.metered.ca:443?transport=tcp'],username:'openrelayproject',credential:'openrelayproject'}],iceCandidatePoolSize:2,bundlePolicy:'max-bundle'};
+  window.nativeCam=ok=>toast(ok?'Camera allowed. Tap again to continue':'Camera is needed for video calls');
+  function rtcAttach(){const rv=$('#rv'),lv=$('#lv');
+    if(rv&&RTC.rs&&rv.srcObject!==RTC.rs){rv.srcObject=RTC.rs;rv.play().catch(()=>{})}
+    if(lv&&RTC.stream&&lv.srcObject!==RTC.stream){lv.srcObject=RTC.stream;lv.play().catch(()=>{})}}
+  document.addEventListener('click',()=>{if(RTC.audio&&RTC.audio.paused)RTC.audio.play().catch(()=>{});const rv=$('#rv');if(rv&&rv.paused)rv.play().catch(()=>{})});
+  async function rtcOffer(k,restart){const pc=RTC.pc;if(!pc)return;const o=await pc.createOffer(restart?{iceRestart:true}:undefined);await pc.setLocalDescription(o);csend(k,'offer',{sdp:o.sdp})}
   async function rtcStart(k,caller){
     Android.rtcMode(true);
-    RTC.stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
+    const vid=!!S.cvideo,c={audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}};
+    if(vid)c.video={facingMode:'user',width:{ideal:640},height:{ideal:480},frameRate:{ideal:24,max:30}};
+    RTC.stream=await navigator.mediaDevices.getUserMedia(c);
+    if(vid)Android.callSpeaker(true);
     const pc=RTC.pc=new RTCPeerConnection(ICE);
     RTC.stream.getTracks().forEach(t=>pc.addTrack(t,RTC.stream));
-    pc.ontrack=e=>{if(!RTC.audio){RTC.audio=new Audio();RTC.audio.autoplay=true}RTC.audio.srcObject=e.streams[0];RTC.audio.play().catch(()=>{})};
+    pc.ontrack=e=>{RTC.rs=e.streams[0];
+      if(S.cvideo)rtcAttach();
+      else{if(!RTC.audio){RTC.audio=new Audio();RTC.audio.autoplay=true}RTC.audio.srcObject=e.streams[0];RTC.audio.play().catch(()=>{})}};
     pc.onicecandidate=e=>{if(e.candidate&&RTC.pc===pc)csend(k,'ice',{c:{candidate:e.candidate.candidate,sdpMid:e.candidate.sdpMid,sdpMLineIndex:e.candidate.sdpMLineIndex}})};
-    pc.onconnectionstatechange=()=>{if(RTC.pc===pc&&(pc.connectionState==='failed')&&S.call===k){toast('Call connection failed. Try again');csend(k,'end');finishCall(false)}};
-    if(caller){const o=await pc.createOffer();await pc.setLocalDescription(o);csend(k,'offer',{sdp:o.sdp})}}
+    pc.oniceconnectionstatechange=()=>{if(RTC.pc!==pc||S.call!==k)return;const s=pc.iceConnectionState;
+      if(s==='disconnected'||s==='failed'){clearTimeout(RTC.dis);RTC.dis=setTimeout(()=>{
+        if(RTC.pc!==pc||S.call!==k)return;
+        if(pc.iceConnectionState==='connected'||pc.iceConnectionState==='completed')return;
+        if(S.cdir==='out'&&!RTC.restarted){RTC.restarted=true;rtcOffer(k,true).catch(()=>{});RTC.dis=setTimeout(()=>{if(RTC.pc===pc&&S.call===k&&pc.iceConnectionState!=='connected'&&pc.iceConnectionState!=='completed'){toast('Call connection lost');csend(k,'end');finishCall(false)}},8000)}
+        else if(S.cdir==='in'){RTC.dis=setTimeout(()=>{if(RTC.pc===pc&&S.call===k&&pc.iceConnectionState!=='connected'&&pc.iceConnectionState!=='completed'){toast('Call connection lost');csend(k,'end');finishCall(false)}},9000)}
+      },s==='failed'?1500:4000)}};
+    rtcAttach();
+    if(caller)await rtcOffer(k,false)}
   async function rtcSig(k,o){
     try{await RTC.ready;const pc=RTC.pc;if(!pc)return;
       const flush=async()=>{const q=RTC.pend;RTC.pend=[];for(const c of q){try{await pc.addIceCandidate(c)}catch(e){}}};
@@ -1114,26 +1154,43 @@ if(NATIVE){
       else if(o.op==='answer'&&typeof o.sdp==='string'&&o.sdp.length<30000){await pc.setRemoteDescription({type:'answer',sdp:o.sdp});await flush()}
       else if(o.op==='ice'&&o.c&&typeof o.c.candidate==='string'&&o.c.candidate.length<600){const c={candidate:o.c.candidate,sdpMid:cl(String(o.c.sdpMid||'0'),10),sdpMLineIndex:+o.c.sdpMLineIndex||0};if(pc.remoteDescription){try{await pc.addIceCandidate(c)}catch(e){}}else RTC.pend.push(c)}
     }catch(e){}}
-  function rtcStop(){try{if(RTC.pc)RTC.pc.close()}catch(e){}try{if(RTC.stream)RTC.stream.getTracks().forEach(t=>t.stop())}catch(e){}
-    RTC.pc=null;RTC.stream=null;RTC.ready=null;RTC.pend=[];if(RTC.audio){RTC.audio.srcObject=null;RTC.audio=null}try{Android.rtcMode(false)}catch(e){}}
+  async function rtcDiag(){
+    const pc=RTC.pc;if(!pc||S.cst!=='live')return;
+    try{const st=await pc.getStats();let rtp=0,path='';
+      st.forEach(r=>{if(r.type==='inbound-rtp'&&r.kind==='audio')rtp=r.packetsReceived||0;
+        if(r.type==='candidate-pair'&&r.state==='succeeded'&&(r.nominated||r.selected)){const l=st.get(r.localCandidateId),m=st.get(r.remoteCandidateId);if(l&&m)path=(l.candidateType==='relay'||m.candidateType==='relay')?'through relay':'direct'}});
+      const moved=rtp>RTC.lastRtp;RTC.lastRtp=rtp;RTC.ticks++;
+      const s=pc.iceConnectionState;let t;
+      if(s==='new'||s==='checking')t='Connecting…';
+      else if(s==='failed')t='Connection failed';
+      else if(s==='disconnected')t='Weak connection…';
+      else if(RTC.ticks>2&&rtp===0)t='Connected, no sound yet';
+      else if(RTC.ticks>2&&!moved)t='Not hearing the other phone';
+      else t='Connected'+(path?' · '+path:'');
+      const el=$('#cdiag');if(el)el.textContent=t}catch(e){}}
+  function rtcStop(){clearInterval(RTC.diag);clearTimeout(RTC.dis);try{if(RTC.pc)RTC.pc.close()}catch(e){}try{if(RTC.stream)RTC.stream.getTracks().forEach(t=>t.stop())}catch(e){}
+    RTC.pc=null;RTC.stream=null;RTC.rs=null;RTC.ready=null;RTC.pend=[];RTC.restarted=false;RTC.cam='user';if(RTC.audio){RTC.audio.srcObject=null;RTC.audio=null}try{Android.rtcMode(false)}catch(e){}}
   window.callUI=function(k,st){
     const old=$('#callv');if(old)old.remove();
-    const p=P[k],v=document.createElement('div');v.className='screen call';v.id='callv';
-    v.innerHTML=`<div><span class="av" style="--h:${p.hue}">${esc((p.name||'?')[0])}</span><h2>${esc(p.name)}</h2><p id="cst">${st==='out'?(isNet(k)?'Calling…':'Calling over Bluetooth…'):st==='in'?'Incoming Whapea call':dur(S.cs)}</p></div>`+
-     (st==='live'?`<div class="cbtns"><button data-a="cmute" aria-label="Mute">${ic('mic',26)}</button><button data-a="cspk" aria-label="Speaker">${ic('vol',26)}</button></div>`:'<div></div>')+
-     (st==='in'?`<div class="cbtns"><button class="end" data-a="callRej" aria-label="Decline">${ic('phone',28)}</button><button class="acc" data-a="callAcc" aria-label="Answer">${ic('phone',28)}</button></div>`:`<div class="cbtns"><button class="end" data-a="endCall" aria-label="End call">${ic('phone',28)}</button></div>`);
-    phone.append(v)};
+    const p=P[k],vid=!!S.cvideo,vc=vid&&st==='live',v=document.createElement('div');v.className='screen call'+(vc?' vc':'');v.id='callv';
+    const title=st==='out'?(isNet(k)?(vid?'Video calling…':'Calling…'):'Calling over Bluetooth…'):st==='in'?(vid?'Incoming Whapea video call':'Incoming Whapea call'):dur(S.cs);
+    v.innerHTML=(vc?'<video id="rv" class="rv" autoplay playsinline></video><video id="lv" class="lv" autoplay muted playsinline></video>':'')+
+     `<div class="ci"><span class="av" style="--h:${p.hue}">${esc((p.name||'?')[0])}</span><h2>${esc(p.name)}</h2><p id="cst">${title}</p><p id="cdiag" class="cd"></p></div>`+
+     (st==='live'?`<div class="cbtns"><button data-a="cmute" aria-label="Mute">${ic('mic',26)}</button>${vid?`<button data-a="ccam" aria-label="Camera">${ic('video',26)}</button><button data-a="cflip" aria-label="Switch camera">${ic('camera',26)}</button>`:''}<button data-a="cspk" class="${vid?'on':''}" aria-label="Speaker">${ic('vol',26)}</button></div>`:'<div></div>')+
+     (st==='in'?`<div class="cbtns"><button class="end" data-a="callRej" aria-label="Decline">${ic('phone',28)}</button><button class="acc" data-a="callAcc" aria-label="Answer">${ic(vid?'video':'phone',28)}</button></div>`:`<div class="cbtns"><button class="end" data-a="endCall" aria-label="End call">${ic('phone',28)}</button></div>`);
+    phone.append(v);rtcAttach()};
   window.finishCall=function(missed){
     const k=S.call;if(!k)return;
     clearTimeout(S.cto);clearInterval(S.ci);Android.callStop();Android.ringStop();rtcStop();
     const el=$('#callv');if(el)el.remove();
-    calls.unshift({cid:k,dir:S.cdir,t:Date.now(),missed:!!missed,d:S.cst==='live'?S.cs:0});if(calls.length>50)calls.length=50;
-    S.call=null;S.cst=null;persistSoon();render()};
+    calls.unshift({cid:k,dir:S.cdir,t:Date.now(),missed:!!missed,d:S.cst==='live'?S.cs:0,video:!!S.cvideo});if(calls.length>50)calls.length=50;
+    S.call=null;S.cst=null;S.cvideo=false;persistSoon();render()};
   function goLive(k){
     clearTimeout(S.cto);Android.ringStop();
     if(isNet(k)){
-      S.cst='live';S.cs=0;callUI(k,'live');netSched();
-      RTC.ready=rtcStart(k,S.cdir==='out').catch(()=>{toast('Could not start the microphone');csend(k,'end');finishCall(false)});
+      S.cst='live';S.cs=0;callUI(k,'live');netSched();RTC.ticks=0;RTC.lastRtp=0;RTC.restarted=false;
+      RTC.ready=rtcStart(k,S.cdir==='out').catch(()=>{toast(S.cvideo?'Could not start the camera or microphone':'Could not start the microphone');csend(k,'end');finishCall(false)});
+      clearInterval(RTC.diag);RTC.diag=setInterval(rtcDiag,2000);
       S.ci=setInterval(()=>{S.cs++;const e=$('#cst');if(e)e.textContent=dur(S.cs)},1000);return}
     if(!Android.callStart(k)){toast('Could not start the microphone');csend(k,'end');finishCall(false);return}
     S.cst='live';S.cs=0;callUI(k,'live');
@@ -1142,6 +1199,7 @@ if(NATIVE){
     const op=o.op;
     if(op==='ring'){
       if(S.call){csend(a,'busy');return}
+      S.cvideo=!!o.video&&isNet(a);
       S.call=a;S.cdir='in';S.cst='in';S.cs=0;callUI(a,'in');Android.ringStart();netSched();
       S.cto=setTimeout(()=>{if(S.call===a&&S.cst==='in')finishCall(true)},CALLTO);return}
     if(S.call!==a)return;
@@ -1149,20 +1207,28 @@ if(NATIVE){
     if(op==='acc'&&S.cst==='out')goLive(a);
     else if(op==='rej'||op==='busy'){toast(op==='busy'?P[a].name+' is on another call':P[a].name+' declined the call');finishCall(false)}
     else if(op==='end')finishCall(S.cst==='in')};
+  function startCallX(v,video){
+    if(S.call){toast('You are already in a call');return}
+    if(!P[v]||!P[v].range){toast((P[v]?P[v].name.split(' ')[0]:'This person')+' is not connected. Calls need an internet or Bluetooth link');return}
+    if(video&&!isNet(v)){toast('Video calls work over the internet');return}
+    if(!Android.micOk())return;
+    if(video&&!Android.camOk())return;
+    S.cvideo=!!video;S.call=v;S.cdir='out';S.cst='out';S.cs=0;closeSheet();csend(v,'ring',{video:!!video});callUI(v,'out');netSched();
+    S.cto=setTimeout(()=>{if(S.call===v&&S.cst==='out'){csend(v,'end');toast('No answer');finishCall(false)}},CALLTO)}
   Object.assign(ACT,{
-    startCall:v=>{
-      if(S.call){toast('You are already in a call');return}
-      if(!P[v]||!P[v].range){toast((P[v]?P[v].name.split(' ')[0]:'This person')+' is not connected. Calls need a Bluetooth link');return}
-      if(!Android.micOk())return;
-      S.call=v;S.cdir='out';S.cst='out';S.cs=0;closeSheet();csend(v,'ring');callUI(v,'out');netSched();
-      S.cto=setTimeout(()=>{if(S.call===v&&S.cst==='out'){csend(v,'end');toast('No answer');finishCall(false)}},CALLTO)},
+    startCall:v=>startCallX(v,false),
+    startVideo:v=>startCallX(v,true),
     callBack:v=>ACT.startCall(v),
-    newCall:()=>{const ks=Object.keys(P);if(!ks.length){toast('Connect to someone in the Nearby tab first');return}
-      sheet('Call someone nearby',ks.map(k=>`<button class="act" data-a="startCall" data-v="${esc(k)}">${av(P[k].hue,P[k].name,'sm',dotOf(k))}<span class="grow">${esc(P[k].name)}<small>${P[k].range?'Connected':'Not connected'}</small></span></button>`).join(''))},
-    callAcc:()=>{const k=S.call;if(!k||S.cst!=='in')return;if(!Android.micOk())return;csend(k,'acc');goLive(k)},
+    newCall:()=>{const ks=Object.keys(P);if(!ks.length){toast('Find someone first: New chat, Find by username');return}
+      sheet('Call someone',ks.map(k=>`<div class="act">${av(P[k].hue,P[k].name,'sm',dotOf(k))}<span class="grow">${esc(P[k].name)}<small>${P[k].range?(isNet(k)?'Online':'Connected'):'Not connected'}</small></span>${P[k].range?`<button class="ib" data-a="startCall" data-v="${esc(k)}" aria-label="Voice call">${ic('phone',21)}</button>${isNet(k)?`<button class="ib" data-a="startVideo" data-v="${esc(k)}" aria-label="Video call">${ic('video',21)}</button>`:''}`:''}</div>`).join(''))},
+    callAcc:()=>{const k=S.call;if(!k||S.cst!=='in')return;if(!Android.micOk())return;if(S.cvideo&&!Android.camOk())return;csend(k,'acc');goLive(k)},
     callRej:()=>{const k=S.call;if(!k)return;csend(k,'rej');finishCall(true)},
     endCall:()=>{const k=S.call;if(!k)return;csend(k,'end');finishCall(false)},
     cmute:(v,el)=>{el.classList.toggle('on');const on=el.classList.contains('on');if(RTC.stream)RTC.stream.getAudioTracks().forEach(t=>t.enabled=!on);else Android.callMute(on)},
+    ccam:(v,el)=>{el.classList.toggle('on');const off=el.classList.contains('on');if(RTC.stream)RTC.stream.getVideoTracks().forEach(t=>t.enabled=!off)},
+    cflip:async()=>{if(!RTC.stream||!RTC.pc)return;const old=RTC.stream.getVideoTracks()[0];if(!old)return;const want=RTC.cam==='user'?'environment':'user';
+      try{old.stop();const ns=await navigator.mediaDevices.getUserMedia({video:{facingMode:want,width:{ideal:640},height:{ideal:480}}});const nt=ns.getVideoTracks()[0],sd=RTC.pc.getSenders().find(x=>x.track&&x.track.kind==='video'||x.track===old);
+        if(sd)await sd.replaceTrack(nt);RTC.stream.removeTrack(old);RTC.stream.addTrack(nt);RTC.cam=want;const lv=$('#lv');if(lv)lv.style.transform=want==='user'?'scaleX(-1)':'none'}catch(e){toast('Could not switch the camera')}},
     cspk:(v,el)=>{el.classList.toggle('on');Android.callSpeaker(el.classList.contains('on'))},
   });
 
@@ -1190,7 +1256,7 @@ if(NATIVE){
     tab:v=>{S.tab=v;render();if(v==='spons')loadFeed(false)},
     spRefresh:()=>{toast('Checking for new posts…');loadFeed(true)},
     appinfo:()=>{aboutTaps++;if(aboutTaps>=7){aboutTaps=0;ACT.ownerLogin();return}
-      sheet('About Whapea',`<div class="note2" style="font-size:14px">Version 2.6. Chats work without internet, straight from phone to phone over Bluetooth. Sponsored posts and updates download when your phone is online.</div><button class="btn" data-a="updCheck">Check for updates</button>`)},
+      sheet('About Whapea',`<div class="note2" style="font-size:14px">Version 2.7. Chats work without internet, straight from phone to phone over Bluetooth. Sponsored posts and updates download when your phone is online.</div><button class="btn" data-a="updCheck">Check for updates</button>`)},
     spNew:()=>{sheet('New sponsored post',`<div class="field"><input id="spb" placeholder="Brand name" maxlength="40" autocomplete="off"></div><div class="field"><textarea id="spcap" rows="3" maxlength="300" placeholder="What are you promoting?" class="txt"></textarea></div><div class="field"><input id="spct" placeholder="Phone or address (optional)" maxlength="60" autocomplete="off"></div><div class="field"><input id="spv" placeholder="Video file name, e.g. chai.mp4 (optional)" maxlength="80" autocomplete="off" autocapitalize="none"></div><div class="sec" style="padding-top:2px">Runs for</div><div class="chips" id="spdur">${[3,7,14,30,60].map(d=>`<button class="chip ${d===7?'on':''}" data-a="spDur" data-v="${d}">${d} days</button>`).join('')}</div><button class="act" data-a="spPick">${ic('image')}<span class="grow" id="spmi">Add a photo (optional)<small>Photos are made small so they fit in the post</small></span></button><button class="btn" data-a="spPost">Create post data</button>`);S.spm=null;S.spd=7},
     spPick:()=>pickFile('image/*',f=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,640/Math.max(im.width,im.height)),cv=document.createElement('canvas');cv.width=im.width*k;cv.height=im.height*k;cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);const src=cv.toDataURL('image/jpeg',.6);S.spm={kind:'image',src};const e=$('#spmi');if(e)e.innerHTML=`${esc(f.name)}<small>Photo · ${size(src.length*.75)}</small>`};im.src=r.result};r.readAsDataURL(f)}),
     spPost:()=>{

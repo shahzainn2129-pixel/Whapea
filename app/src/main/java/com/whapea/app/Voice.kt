@@ -95,6 +95,7 @@ object CallAudio {
             val audio = ctx.getSystemService(Context.AUDIO_SERVICE) as AudioManager
             am = audio
             audio.mode = AudioManager.MODE_IN_COMMUNICATION
+            raiseVolume(audio)
             val inMin = AudioRecord.getMinBufferSize(RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT)
             val r = AudioRecord(
                 MediaRecorder.AudioSource.VOICE_COMMUNICATION, RATE,
@@ -173,6 +174,16 @@ object CallAudio {
             am = audio
             audio.mode = if (on) AudioManager.MODE_IN_COMMUNICATION else AudioManager.MODE_NORMAL
             if (!on) audio.isSpeakerphoneOn = false
+            if (on) raiseVolume(audio)
+        } catch (e: Exception) { }
+    }
+
+    /** Phone calls often start very quiet; make sure the call volume is at least 70%. */
+    private fun raiseVolume(audio: AudioManager) {
+        try {
+            val max = audio.getStreamMaxVolume(AudioManager.STREAM_VOICE_CALL)
+            if (audio.getStreamVolume(AudioManager.STREAM_VOICE_CALL) < max * 7 / 10)
+                audio.setStreamVolume(AudioManager.STREAM_VOICE_CALL, max * 8 / 10, 0)
         } catch (e: Exception) { }
     }
 
