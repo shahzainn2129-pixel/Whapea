@@ -209,6 +209,20 @@ h1,h2,h3{font-family:var(--font-display);margin:0;text-wrap:balance}
 .ownerbar{background:var(--accent-soft)}
 @media (max-width:520px){.phone{border-radius:20px}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+.vb{display:inline-flex;vertical-align:-2px;margin-left:4px}.vb.plus{color:#1d8cf8}.vb.gold{color:#e0a800}
+.pc{margin:10px 16px;background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.pc header{display:flex;gap:10px;align-items:center;padding:12px 12px 8px}
+.pc p{margin:0;padding:6px 14px 4px;white-space:pre-wrap;word-break:break-word;line-height:1.45}
+.pim{width:100%;display:block;max-height:420px;object-fit:cover;background:var(--surface2)}
+.pc .spa{display:flex;gap:6px;padding:6px 8px 8px}
+.pc .spa button{display:flex;gap:6px;align-items:center;padding:6px 10px;border-radius:10px;color:var(--muted)}
+.pc .spa button.on{color:#d62976}
+.seg{display:flex;gap:8px;padding:6px 16px}
+.pfield{margin:8px 16px;width:calc(100% - 32px);box-sizing:border-box;padding:12px;border-radius:14px;border:1px solid var(--line);background:var(--surface2);color:var(--text);font:inherit;resize:none}
+.plist{white-space:pre-wrap;margin:8px 16px;padding:12px;border-radius:14px;background:var(--surface2);font-size:14px;line-height:1.5}
+.cm{padding:8px 16px}.cm b{font-size:13.5px}.cm div{font-size:14.5px;word-break:break-word}
+.lockwp{position:relative}.lockwp:after{content:"Plus";position:absolute;right:4px;top:4px;font-size:10px;font-weight:700;background:#1d8cf8;color:#fff;border-radius:6px;padding:1px 5px}
 </style>
 <style>
 html,body{height:100%;margin:0}
@@ -412,11 +426,12 @@ const tg=on=>`<span class="tg ${on?'on':''}"></span>`;
 /* ---------- main render ---------- */
 function render(){persistSoon();if(NATIVE&&!ME.name){$('#main').innerHTML=obHTML();return}
   const unread=chats.filter(c=>!c.archived&&(c.unread||c.mk)).length;
-  const tabs=[['chats','chat','Chats'],['status','status','Status'],['spons','mega','Sponsors'],['near','radar','Nearby'],['calls','phone','Calls'],['set','gear','Settings']];
+  const tabs=NATIVE?[['chats','chat','Chats'],['posts','image','Posts'],['spons','mega','Sponsors'],['calls','phone','Calls'],['set','gear','Settings']]:[['chats','chat','Chats'],['status','status','Status'],['spons','mega','Sponsors'],['near','radar','Nearby'],['calls','phone','Calls'],['set','gear','Settings']];
   let top='',body='',fab='';
   if(S.tab==='chats'){top=topbar('Whapea',true,true);body=chatsHTML();fab=`<button class="fab" data-a="newChat" aria-label="New chat">${ic('chat',24)}</button>`}
   if(S.tab==='status'){top=topbar('Status',false,false);body=statusHTML();fab=`<button class="fab" data-a="addStatus" aria-label="Add status">${ic('edit',24)}</button>`}
   if(S.tab==='spons'){top=topbar('Sponsors',false,false);body=sponsHTML();fab=S.owner?`<button class="fab" data-a="spNew" aria-label="New sponsored post">${ic('plus',24)}</button>`:''}
+  if(S.tab==='posts'){top=topbar('Posts',false,false);body=postsHTML();fab=NET.s?`<button class="fab" data-a="newPost" aria-label="New post">${ic('plus',24)}</button>`:''}
   if(S.tab==='near'){top=topbar('Nearby',false,false);body=nearHTML()}
   if(S.tab==='calls'){top=topbar('Calls',false,false);body=callsHTML();fab=`<button class="fab" data-a="newCall" aria-label="New call">${ic('phone',24)}</button>`}
   if(S.tab==='set'){top=topbar('Settings',false,false);body=setHTML()}
@@ -448,7 +463,7 @@ function rowHTML(c){
   const m=last(c),n=c.unread,r=chatReach(c);
   const sub=m?`${m.from==='me'&&!m.deleted?tick(m):''}<span>${c.type==='group'&&m.from!=='me'?esc(who(c,m))+': ':''}${m.type==='voice'?'🎙 ':m.type==='img'?'📷 ':''}${esc(prev(m))}</span>`:'';
   return `<button class="li" data-a="open" data-v="${c.id}" data-lp="${c.id}">${av(cHue(c),cName(c),'',c.type==='dm'?dotOf(c.cid):'')}
-  <span class="mid"><span class="nm"><span>${esc(cName(c))}</span>${c.fav?ic('star',13):''}</span><span class="sub">${sub}</span></span>
+  <span class="mid"><span class="nm"><span>${esc(cName(c))}</span>${c.type==='dm'&&P[c.cid]?bdg(P[c.cid].plan):''}${c.fav?ic('star',13):''}</span><span class="sub">${sub}</span></span>
   <span class="rt"><span ${n||c.mk?'style="color:var(--accent);font-weight:600"':''}>${m?dayLabel(m.t):''}</span><span style="display:flex;gap:5px;align-items:center">${c.muted?ic('mute',14):''}${c.pinned?ic('pin',14):''}${n?`<span class="badge ${c.muted?'mute':''}">${n}</span>`:c.mk?`<span class="badge" style="min-width:12px;height:12px;padding:0"></span>`:''}</span></span></button>`}
 
 function statusHTML(){
@@ -467,7 +482,7 @@ function spCard(p){
   ${media}<div class="spb"><p>${esc(p.caption)}</p>${p.contact?`<div class="spc"><span>${ic('phone',16)} ${esc(p.contact)}</span><button class="tag" data-a="spCopy" data-v="${p.id}">Copy</button></div>`:''}
   <div class="spa"><button data-a="spLike" data-v="${p.id}" class="${p.liked?'on':''}">${ic('star',18)} ${p.likes+(p.liked?1:0)}</button><button data-a="spShare" data-v="${p.id}">${ic('fwd',18)} Share</button><button data-a="spHide" data-v="${p.id}">${ic('x',18)} Hide</button></div></div></article>`}
 function sponsHTML(){
-  const L=SPONS.filter(p=>p.until>Date.now()&&!p.hidden).sort((a,b)=>(b.pinned?1:0)-(a.pinned?1:0)||b.t-a.t);
+  const L=SPONS.filter(p=>p.until>Date.now()&&!p.hidden&&(!p.city||p.city===ME.city)).sort((a,b)=>(b.pinned?1:0)-(a.pinned?1:0)||b.t-a.t);
   const inr=Object.keys(P).filter(k=>reach(k)!=='none').length;
   return `${S.owner?`<div class="card ownerbar">${ic('verified',28)}<span style="flex:1;min-width:0"><b>Owner mode</b><div class="val">Create a post, then copy its data to publish it.</div></span><button class="tag" data-a="ownerOff">Sign out</button></div>`:''}
   <div class="note2">Sponsored posts come from the Whapea owner. They download when your phone is online and stay saved for offline use. ${NATIVE?`<button class="tag" data-a="spRefresh">Refresh</button>`:''}</div>
@@ -530,8 +545,14 @@ function setHTML(){
   ${NATIVE?'':row('storage','db','Manage storage','','Photos, voice notes, documents')}
   ${row('qualityPick','image','Photo quality',SET.quality[0].toUpperCase()+SET.quality.slice(1),'Smaller photos travel faster over Bluetooth')}
   ${NATIVE?row('netAcct','users','Internet account',NET.s?'@'+esc(NET.s.user):'','Chat with anyone over the internet'):''}
+  ${NATIVE?row('plus','verified','Whapea Plus',isPlus()?(ME.plan==='gold'?'Verified':'Active'):'',isPlus()?'Until '+new Date(ME.plan_until).toLocaleDateString():'Badge, longer videos and more'):''}
+  ${NATIVE&&NET.s?row('pickCity','pin','My city',ME.city||'Not set','Used for city posts'):''}
+  ${NATIVE&&NET.s&&ME.city?row('cityPeople','users','People in my city'):''}
+  ${NATIVE?A('tab','near','radar','Nearby phones','Find people over Bluetooth'):''}
   ${NATIVE&&S.owner&&NET.s?row('netOwner','verified','Internet users','','See accounts and block for 3 hours'):''}
-  ${row('appinfo','info','About Whapea','','Version 1.0 · target size under 25 MB')}
+  ${NATIVE&&S.owner&&NET.s?row('ownerPay','db','Plus payments','','Approve or reject payment requests'):''}
+  ${NATIVE&&S.owner&&NET.s?row('ownerRep','ban','Reported posts','','Delete or clear reports'):''}
+  ${row('appinfo','info','About Whapea','','Version 2.9')}
   <div style="height:30px"></div>`}
 
 /* ---------- chat screen ---------- */
@@ -549,7 +570,7 @@ function drawHead(){
   let sub;if(c.typing)sub=`<small class="live">${esc(c.typing)} typing…</small>`;
   else if(c.type==='group')sub=`<small>${c.members.map(m=>P[m].name.split(' ')[0]).join(', ')}, You</small>`;
   else sub=`<small class="${r==='direct'?'live':''}">${r==='direct'?`In range${P[c.cid].dist!=null?' · '+P[c.cid].dist+' m':''}`:r==='relay'?`Reachable via ${esc(P[P[c.cid].via].name.split(' ')[0])} · 2 hops`:'Out of range · messages will wait'}</small>`;
-  $('#chh').innerHTML=`<button class="ib" data-a="closeChat" aria-label="Back">${ic('back')}</button>${av(cHue(c),cName(c),'sm')}<button class="who" data-a="chatInfo"><b>${esc(cName(c))}</b>${sub}</button>${c.type==='dm'?`${NATIVE&&isNet(c.cid)?`<button class="ib" data-a="startVideo" data-v="${c.cid}" aria-label="Video call">${ic('video',21)}</button>`:''}<button class="ib" data-a="startCall" data-v="${c.cid}" aria-label="Voice call">${ic('phone',21)}</button>`:''}<button class="ib" data-a="chatMenu" aria-label="More">${ic('more')}</button>`;
+  $('#chh').innerHTML=`<button class="ib" data-a="closeChat" aria-label="Back">${ic('back')}</button>${av(cHue(c),cName(c),'sm')}<button class="who" data-a="chatInfo"><b>${esc(cName(c))}${c.type==='dm'&&P[c.cid]?bdg(P[c.cid].plan):''}</b>${sub}</button>${c.type==='dm'?`${NATIVE&&isNet(c.cid)?`<button class="ib" data-a="startVideo" data-v="${c.cid}" aria-label="Video call">${ic('video',21)}</button>`:''}<button class="ib" data-a="startCall" data-v="${c.cid}" aria-label="Voice call">${ic('phone',21)}</button>`:''}<button class="ib" data-a="chatMenu" aria-label="More">${ic('more')}</button>`;
 }
 const hl=t=>esc(t).replace(/@(\w+)/g,'<span class="mention">@$1</span>');
 function msgHTML(c,m,i){
@@ -854,7 +875,7 @@ function netStart(){
   if(!NET.s)return;NET.ok=true;
   for(const k in P)if(isNet(k))P[k].range=true;
   try{const g=JSON.parse(Android.netGet()||'null');if(g&&g.rt&&(g.ts||0)>(NET.s.ts||0)){NET.s=g;persistSoon()}}catch(e){}
-  netSave();netSched();rtOpen();clearInterval(NET.rf);NET.rf=setInterval(()=>{if(NET.s)netRefresh()},45*60000);netPull();netPushProfile();setTimeout(()=>{try{stSyncAll()}catch(e){}},2500);refresh()}
+  netSave();netSched();rtOpen();clearInterval(NET.rf);NET.rf=setInterval(()=>{if(NET.s)netRefresh()},45*60000);netPull();netPushProfile();loadMe();setTimeout(()=>{try{stSyncAll()}catch(e){}},2500);refresh()}
 function netSave(){try{if(NET.s){if(!NET.s.ts)NET.s.ts=Date.now();Android.netSession(JSON.stringify(NET.s))}else Android.netSession('')}catch(e){}}
 function netSched(){clearTimeout(NET.poll);if(!NET.s)return;NET.poll=setTimeout(async()=>{await netPull();netSched()},RT.ok?(S.call?3000:10000):(S.call?700:document.hidden?9000:2500))}
 const RT={ws:null,ok:false,n:0,hb:0,retry:0,t:0,topic:'',send:null};
@@ -878,8 +899,8 @@ function netPushProfile(){if(!NET.s)return;sb('/rest/v1/profiles?id=eq.'+NET.s.u
 async function netPeer(uid){
   const key='u:'+uid;
   if(P[key]&&NET.prof[uid]&&Date.now()-NET.prof[uid]<600000)return P[key];
-  try{const r=await sb('/rest/v1/profiles?select=id,username,name,about,avatar&id=eq.'+uid);const a=await r.json();const q=a&&a[0];
-    if(q){const p=ensurePeer(key,q.name||q.username,q.about||('@'+q.username),okImg(q.avatar)?q.avatar:null);p.net=true;p.user=q.username;p.range=NET.ok;NET.prof[uid]=Date.now();return p}}catch(e){}
+  try{const r=await sb('/rest/v1/profiles?select=id,username,name,about,avatar,plan,plan_until&id=eq.'+uid);const a=await r.json();const q=a&&a[0];
+    if(q){const p=ensurePeer(key,q.name||q.username,q.about||('@'+q.username),okImg(q.avatar)?q.avatar:null);p.net=true;p.user=q.username;p.plan=planOf(q);p.range=NET.ok;NET.prof[uid]=Date.now();return p}}catch(e){}
   return P[key]||null}
 async function netTx(uid,s){
   try{const r=await sb('/rest/v1/frames',{m:'POST',h:{Prefer:'return=minimal'},b:{sender:NET.s.uid,receiver:uid,payload:s}});
@@ -897,9 +918,43 @@ async function netPull(){
       persistSoon()}
   }catch(e){}
   NET.busy=false}
+
+/* ---------- city, posts, Plus ---------- */
+const CITIES=['Karachi','Lahore','Islamabad','Rawalpindi','Faisalabad','Multan','Peshawar','Quetta','Hyderabad','Sialkot','Gujranwala','Bahawalpur','Sargodha','Sukkur','Larkana','Abbottabad','Mardan','Mingora','Other'];
+const isPlus=()=>!!(ME.plan&&ME.plan_until&&new Date(ME.plan_until)>new Date());
+const planOf=q=>q&&q.plan&&q.plan_until&&new Date(q.plan_until)>new Date()?q.plan:null;
+const bdg=p=>p?`<span class="vb ${p==='gold'?'gold':'plus'}" title="${p==='gold'?'Verified':'Plus'}">${ic('verified',15)}</span>`:'';
+const ago=t=>{const x=(Date.now()-new Date(t))/1000;return x<60?'now':x<3600?Math.floor(x/60)+'m':x<86400?Math.floor(x/3600)+'h':Math.floor(x/86400)+'d'};
+const PF={scope:'all',items:[],more:false,busy:false,err:'',ok:false};
+async function rpc(n,b){const r=await sb('/rest/v1/rpc/'+n,{m:'POST',b:b||{}});if(!r.ok){let t='';try{t=(await r.json()).message||''}catch(e){}throw new Error(t||('E'+r.status))}try{return await r.json()}catch(e){return null}}
+function rpcErr(e){const m=String(e&&e.message||'');return /banned/.test(m)?'You are blocked for a while for breaking the rules':/limit/.test(m)?'Daily limit reached. Plus gives you more posts':/empty/.test(m)?'Write something or add a photo':/login/.test(m)?'Log in first':'Could not do that. Check internet'}
+async function loadMe(){if(!NET.s)return;try{const r=await sb('/rest/v1/profiles?select=city,plan,plan_until&id=eq.'+NET.s.uid);const a=await r.json();const q=a&&a[0];
+  if(q){ME.city=q.city||'';ME.plan=planOf(q);ME.plan_until=q.plan_until||null;persistSoon();if(!S.chat&&!document.querySelector('.scrim'))render()}}catch(e){}}
+async function loadPosts(reset){
+  if(!NET.s||PF.busy)return;PF.busy=true;PF.err='';
+  if(reset){PF.items=[];PF.more=false}
+  if(S.tab==='posts'&&!S.chat&&!document.querySelector('.scrim'))render();
+  try{const city=PF.scope==='city'?ME.city:null;
+    if(PF.scope==='city'&&!ME.city){PF.busy=false;PF.ok=true;render();return}
+    const a=await rpc('feed',{p_city:city||null,p_before:reset||!PF.items.length?null:PF.items[PF.items.length-1].id,p_limit:10});
+    PF.items=PF.items.concat(a||[]);PF.more=(a||[]).length>=10;PF.ok=true}
+  catch(e){PF.err='Could not load posts. Check internet'}
+  PF.busy=false;if(S.tab==='posts'&&!S.chat)render()}
+function postCard(p){
+  return `<article class="pc"><header>${av0(hueOf(p.username),p.name||p.username,'sm')}<span style="flex:1;min-width:0"><b>${esc(p.name||p.username)}${bdg(p.plan)}</b><div class="val">@${esc(p.username)}${p.city?' · '+esc(p.city):''} · ${ago(p.created_at)}</div></span><button class="ib" data-a="postMenu" data-v="${p.id}" aria-label="More">${ic('more')}</button></header>
+  ${p.image&&okImg(p.image)?`<img class="pim" src="${p.image}" data-a="postImg" data-v="${p.id}" alt="Post photo">`:''}
+  ${p.body?`<p>${esc(p.body)}</p>`:''}
+  <div class="spa"><button data-a="postLike" data-v="${p.id}" class="${p.liked?'on':''}">${ic('star',18)} ${p.likes}</button><button data-a="postCom" data-v="${p.id}">${ic('chat',18)} ${p.comments}</button></div></article>`}
+function postsHTML(){
+  if(!NET.s)return `<div class="empty"><b>Posts need an internet account</b>Create a free account to see what people share and to post yourself.<br><button class="btn" style="margin-top:14px" data-a="netAcct">Create internet account</button></div>`;
+  const seg=`<div class="seg"><button class="chip ${PF.scope==='city'?'on':''}" data-a="postScope" data-v="city">${ME.city?esc(ME.city):'My city'}</button><button class="chip ${PF.scope==='all'?'on':''}" data-a="postScope" data-v="all">Everyone</button><button class="chip" data-a="postRefresh">Refresh</button></div>`;
+  if(PF.scope==='city'&&!ME.city)return seg+`<div class="empty"><b>Choose your city</b>See posts from people near you.<br><button class="btn" style="margin-top:14px" data-a="pickCity">Choose city</button></div>`;
+  return seg+(PF.items.length?PF.items.map(postCard).join(''):(PF.busy?'<div class="note2">Loading…</div>':PF.err?`<div class="note2">${esc(PF.err)}</div>`:`<div class="empty"><b>No posts yet</b>Be the first. Tap + to share something. Posts disappear after 7 days.</div>`))
+   +(PF.more?`<button class="btn" style="margin:10px 16px;width:calc(100% - 32px)" data-a="postMore">${PF.busy?'Loading…':'Load more'}</button>`:'')+'<div style="height:90px"></div>'}
 /* ---------- media, wallpapers, polls, status updates ---------- */
-const okVid=s=>typeof s==='string'&&s.length<3400000&&/^data:video\/(webm|mp4);base64,[A-Za-z0-9+\/=]+$/.test(s);
-const WPG={g1:'linear-gradient(160deg,#1560ff,#7a3cf0)',g2:'linear-gradient(160deg,#fa7e1e,#d62976)',g3:'linear-gradient(160deg,#0f8f5b,#0b3d6b)',g4:'linear-gradient(160deg,#0b1220,#1d2b4a)',g5:'linear-gradient(160deg,#ffd6e0,#ffe9c7)',g6:'linear-gradient(160deg,#d3f2e3,#cfe3ff)',g7:'#111111',g8:'#f5f5f5'};
+const okVid=s=>typeof s==='string'&&s.length<4800000&&/^data:video\/(webm|mp4);base64,[A-Za-z0-9+\/=]+$/.test(s);
+const WPG={g1:'linear-gradient(160deg,#1560ff,#7a3cf0)',g2:'linear-gradient(160deg,#fa7e1e,#d62976)',g3:'linear-gradient(160deg,#0f8f5b,#0b3d6b)',g4:'linear-gradient(160deg,#0b1220,#1d2b4a)',g5:'linear-gradient(160deg,#ffd6e0,#ffe9c7)',g6:'linear-gradient(160deg,#d3f2e3,#cfe3ff)',g7:'#111111',g8:'#f5f5f5',p1:'linear-gradient(160deg,#f7971e,#ffd200 60%,#ff6a00)',p2:'linear-gradient(160deg,#00c6ff,#0072ff 55%,#7a3cf0)',p3:'linear-gradient(160deg,#11998e,#38ef7d)',p4:'linear-gradient(160deg,#41295a,#2f0743 60%,#d62976)'};
+const PLUSWP=['p1','p2','p3','p4'];
 function applyWp(el,c){if(!el)return;const w=(c&&c.wp)||SET.wpx||'';el.className='msgs';el.style.background='';
   if(w.startsWith('data:image/'))el.style.background=`url(${w}) center/cover no-repeat`;
   else if(WPG[w])el.style.background=WPG[w];
@@ -908,15 +963,15 @@ function readImg(f,maxPx,q,cb){const r=new FileReader();r.onload=()=>{const im=n
 function blobToData(b,mime){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res('data:'+mime+';base64,'+String(r.result).split(',')[1]);r.onerror=rej;r.readAsDataURL(b)})}
 function vprog(txt){let e=$('#vprog');if(txt===null){if(e)e.remove();return}if(!e){e=document.createElement('div');e.id='vprog';e.className='vprog';phone.append(e)}e.textContent=txt}
 async function prepVideo(f,onp){
-  if((f.type==='video/mp4'||f.type==='video/webm')&&f.size<1500000){
+  if((f.type==='video/mp4'||f.type==='video/webm')&&f.size<(isPlus()?2800000:1500000)){
     const d=await blobToData(f,f.type);
     if(okVid(d)){const u=URL.createObjectURL(f),v=document.createElement('video');v.src=u;v.preload='metadata';
       const D=await new Promise(res=>{v.onloadedmetadata=()=>res(v.duration);v.onerror=()=>res(0)});URL.revokeObjectURL(u);
-      if(D&&D<=31)return{src:d,dur:Math.round(D)}}}
+      if(D&&D<=(isPlus()?61:31))return{src:d,dur:Math.round(D)}}}
   if(!window.MediaRecorder)throw new Error('nosup');
   const url=URL.createObjectURL(f),v=document.createElement('video');v.src=url;v.playsInline=true;v.preload='auto';
   await new Promise((ok,no)=>{v.onloadedmetadata=ok;v.onerror=()=>no(new Error('open'))});
-  const D=v.duration;if(!isFinite(D)||D>31){URL.revokeObjectURL(url);throw new Error('long')}
+  const D=v.duration;if(!isFinite(D)||D>(isPlus()?61:31)){URL.revokeObjectURL(url);throw new Error('long')}
   const k=Math.min(1,480/Math.max(v.videoWidth,v.videoHeight)),w=Math.max(2,Math.round(v.videoWidth*k/2)*2),h=Math.max(2,Math.round(v.videoHeight*k/2)*2);
   const cv=document.createElement('canvas');cv.width=w;cv.height=h;const cx=cv.getContext('2d'),out=cv.captureStream(24);
   let ac=null;try{ac=new(window.AudioContext||window.webkitAudioContext)();const s=ac.createMediaElementSource(v),d=ac.createMediaStreamDestination();s.connect(d);d.stream.getAudioTracks().forEach(t=>out.addTrack(t));await ac.resume()}catch(e){}
@@ -928,7 +983,7 @@ async function prepVideo(f,onp){
   await v.play();draw();await done;URL.revokeObjectURL(url);try{ac&&ac.close()}catch(e){}
   const d=await blobToData(new Blob(ch,{type:'video/webm'}),'video/webm');if(!okVid(d))throw new Error('big');
   return{src:d,dur:Math.round(D)}}
-function vidErr(e){const m={long:'Videos can be up to 30 seconds',big:'This video is too large. Try a shorter clip',nosup:'This phone cannot prepare videos',open:'Could not open this video'}[e&&e.message];toast(m||'Could not prepare this video')}
+function vidErr(e){const m={long:isPlus()?'Videos can be up to 60 seconds':'Videos can be up to 30 seconds. Plus allows 60',big:'This video is too large. Try a shorter clip',nosup:'This phone cannot prepare videos',open:'Could not open this video'}[e&&e.message];toast(m||'Could not prepare this video')}
 function wire(m){
   const o={t:'msg',id:m.id,type:m.type,text:m.text||'',reply:m.reply||null,fwd:!!m.fwd};
   if(m.type==='img')o.src=m.src;if(m.type==='voice'){o.src=m.src;o.dur=m.dur}if(m.type==='contact')o.name=m.name;
@@ -937,16 +992,16 @@ function wire(m){
   return o}
 function ghead(c){const net=c.members.filter(isNet);return{id:c.id,name:c.name,mem:[NET.s.uid,...net.map(k=>k.slice(2))]}}
 function sendCtl(c,o){if(c.type==='dm'){netSend(c,o);return}if(!NET.s)return;o.g=ghead(c);const j=JSON.stringify(o);c.members.filter(isNet).forEach(k=>tx(k,j))}
-function pruneSt(){if(!NATIVE)return;const lim=Date.now()-864e5;
-  for(const k in STAT){STAT[k]=STAT[k].filter(x=>{const ok=x.t>lim;if(!ok&&x.kind==='video')Android.mediaDel(x.src);return ok});if(!STAT[k].length)delete STAT[k]}
-  for(let i=myStatus.length-1;i>=0;i--)if(myStatus[i].t<=lim){if(myStatus[i].kind==='video')Android.mediaDel(myStatus[i].src);myStatus.splice(i,1)}}
+function pruneSt(){if(!NATIVE)return;const nw=Date.now(),lm=x=>nw-(x.ttl||24)*36e5;
+  for(const k in STAT){STAT[k]=STAT[k].filter(x=>{const ok=x.t>lm(x);if(!ok&&x.kind==='video')Android.mediaDel(x.src);return ok});if(!STAT[k].length)delete STAT[k]}
+  for(let i=myStatus.length-1;i>=0;i--)if(myStatus[i].t<=lm(myStatus[i])){if(myStatus[i].kind==='video')Android.mediaDel(myStatus[i].src);myStatus.splice(i,1)}}
 function stBody(s){const cap=s.text?`<div class="stc">${esc(s.text)}</div>`:'';
   if(s.kind==='img')return `<div class="stm"><img src="${s.src}" alt="Status photo"></div>${cap}`;
   if(s.kind==='video')return `<div class="stm"><video src="${s.src}" autoplay playsinline></video></div>${cap}`;
   return `<div class="txt2">${esc(s.text)}</div>`}
 function stSyncTo(k){if(!NATIVE||!P[k])return;if(!(P[k].range||(isNet(k)&&NET.ok)))return;
   myStatus.forEach(it=>{if(it.to&&it.to[k])return;
-    const o={t:'st',id:it.id,kind:it.kind||'text',text:it.text||'',bg:it.bg};
+    const o={t:'st',id:it.id,kind:it.kind||'text',text:it.text||'',bg:it.bg,x:it.ttl===48?48:24};
     if(it.kind==='img')o.src=it.src;if(it.kind==='video'){o.src=it._d||Android.mediaRead(it.src);o.dur=it.dur||0;if(!o.src)return}
     it.to=it.to||{};it.to[k]=1;tx(k,JSON.stringify(o))});persistSoon()}
 function stDelMine(i){const it=myStatus[i];if(!it)return;if(NATIVE){Object.keys(it.to||{}).forEach(k=>tx(k,JSON.stringify({t:'stdel',id:it.id})));if(it.kind==='video')Android.mediaDel(it.src)}myStatus.splice(i,1);persistSoon()}
@@ -991,9 +1046,9 @@ window.nativeData=(a,raw)=>{
     if(typeof o.id!=='string'||o.id.length>40)return;
     const kind=['text','img','video'].includes(o.kind)?o.kind:'text',L=STAT[a]=STAT[a]||[];
     if(!L.some(x=>x.id===o.id)){
-      const it={id:o.id,kind,text:cl(o.text,200),bg:/^#[0-9a-f]{6}$/i.test(o.bg)?o.bg:'#1f5eff',t:Date.now()};
+      const it={id:o.id,kind,text:cl(o.text,200),bg:/^#[0-9a-f]{6}$/i.test(o.bg)?o.bg:'#1f5eff',t:Date.now(),ttl:(o.x===48&&P[a].plan)?48:24};
       if(kind==='img'){if(!okImg(o.src))return;it.src=o.src}
-      if(kind==='video'){if(!okVid(o.src))return;const p=Android.mediaSave('s'+Date.now()+Math.random().toString(36).slice(2,7),o.src);if(!p)return;it.src=p;it.dur=Math.max(0,Math.min(31,+o.dur||0))}
+      if(kind==='video'){if(!okVid(o.src))return;const p=Android.mediaSave('s'+Date.now()+Math.random().toString(36).slice(2,7),o.src);if(!p)return;it.src=p;it.dur=Math.max(0,Math.min(61,+o.dur||0))}
       L.push(it);seenSt.delete(a);persistSoon();if(S.tab==='status'&&!S.chat)render()}
     return}
   if(o.t==='stdel'&&P[a]){const L=STAT[a];if(L){const i=L.findIndex(x=>x.id===o.id);if(i>=0){if(L[i].kind==='video')Android.mediaDel(L[i].src);L.splice(i,1);if(!L.length)delete STAT[a];persistSoon();if(!S.chat)render()}}return}
@@ -1041,7 +1096,7 @@ function cleanPost(p){
   if(!p||typeof p!=='object')return null;
   const id=cl(p.id,40);if(!id)return null;
   const until=typeof p.until==='number'?p.until:Date.parse(p.until);if(!(until>Date.now()))return null;
-  const o={id,brand:cl(p.brand,40)||'Sponsor',caption:cl(p.caption,300),contact:cl(p.contact,60),t:(typeof p.t==='number'?p.t:Date.parse(p.date))||0,until,likes:0,pinned:!!p.pinned,kind:'text'};
+  const o={id,brand:cl(p.brand,40)||'Sponsor',caption:cl(p.caption,300),contact:cl(p.contact,60),t:(typeof p.t==='number'?p.t:Date.parse(p.date))||0,until,likes:0,pinned:!!p.pinned,kind:'text',city:cl(p.city,30)};
   o.hue=hueOf(o.brand);
   const m=p.media;
   if(m&&typeof m==='object'){
@@ -1085,8 +1140,8 @@ if(NATIVE){
     vote:v=>{const[id,k]=v.split(':'),[c,m]=msgById(id);if(!m||m.type!=='poll')return;const o=m.opts[+k],had=o.v.includes('me');m.opts.forEach(x=>x.v=x.v.filter(y=>y!=='me'));if(!had)o.v.push('me');drawMsgs(false);persistSoon();sendCtl(c,{t:'vote',id,k:had?-1:+k})},
     wpPick:()=>ACT.wpSheet(''),
     cm_wp:v=>{closeSheet();ACT.wpSheet(v)},
-    wpSheet:cid=>{S.wpFor=cid||null;closeSheet();sheet(cid?'Chat wallpaper':'Wallpaper',`<div class="wpg">${[['dots','Dots'],['lines','Lines'],['plain','Plain'],...Object.keys(WPG).map(k=>[k,''])].map(([k,l])=>`<button class="wps" data-a="wpSet" data-v="${k}" style="${WPG[k]?'background:'+WPG[k]:''}" aria-label="${l||'Colour'}">${l}</button>`).join('')}</div>`+A('wpGallery','','image','Choose from gallery','Use your own photo')+A('wpSet','def','x',cid?'Use the default wallpaper':'Reset wallpaper'))},
-    wpSet:v=>{const val=v==='def'?'':v;
+    wpSheet:cid=>{S.wpFor=cid||null;closeSheet();sheet(cid?'Chat wallpaper':'Wallpaper',`<div class="wpg">${[['dots','Dots'],['lines','Lines'],['plain','Plain'],...Object.keys(WPG).map(k=>[k,''])].map(([k,l])=>`<button class="wps${PLUSWP.includes(k)&&!isPlus()?' lockwp':''}" data-a="wpSet" data-v="${k}" style="${WPG[k]?'background:'+WPG[k]:''}" aria-label="${l||'Colour'}">${l}</button>`).join('')}</div>`+A('wpGallery','','image','Choose from gallery','Use your own photo')+A('wpSet','def','x',cid?'Use the default wallpaper':'Reset wallpaper'))},
+    wpSet:v=>{if(PLUSWP.includes(v)&&!isPlus()){ACT.plus();return}const val=v==='def'?'':v;
       if(S.wpFor){const c=chatOf(S.wpFor);if(c){if(val)c.wp=val;else delete c.wp}}
       else{if(val==='dots'||val==='lines'||val==='plain'){SET.wp=val;SET.wpx=''}else SET.wpx=val;applySettings()}
       persistSoon();closeSheet();if(S.chat)applyWp($('#msgs'),chatOf(S.chat));render()},
@@ -1099,7 +1154,7 @@ if(NATIVE){
     stPhoto:()=>pickFile('image/*',f=>readImg(f,720,.6,src=>{S.stm={kind:'img',src};ACT.stShow()})),
     stVideo:()=>pickFile('video/*',async f=>{try{vprog('Preparing video… 0%');const r=await prepVideo(f,p=>vprog('Preparing video… '+p+'%'));vprog(null);S.stm={kind:'video',src:r.src,dur:r.dur};ACT.stShow()}catch(e){vprog(null);vidErr(e)}}),
     postSt:()=>{const t=($('#stt').value||'').trim(),m=S.stm;if(!t&&!m){toast('Write something first');return}
-      const id=newId(),it={id,kind:m?m.kind:'text',text:t,bg:S.stc,t:Date.now(),to:{}};
+      const id=newId(),it={id,kind:m?m.kind:'text',text:t,bg:S.stc,t:Date.now(),to:{},ttl:isPlus()?48:24};
       if(m){if(m.kind==='img')it.src=m.src;else{const p=Android.mediaSave(id,m.src);if(!p){toast('Could not save the video');return}it.src=p;it.dur=m.dur;Object.defineProperty(it,'_d',{value:m.src})}}
       myStatus.push(it);S.stm=null;closeSheet();render();toast('Status posted');stSyncAll()},
 
@@ -1276,10 +1331,10 @@ if(NATIVE){
 
   let aboutTaps=0;
   Object.assign(ACT,{
-    tab:v=>{S.tab=v;render();if(v==='spons')loadFeed(false)},
+    tab:v=>{S.tab=v;render();if(v==='spons')loadFeed(false);if(v==='posts'&&NET.s&&!PF.ok)loadPosts(true)},
     spRefresh:()=>{toast('Checking for new posts…');loadFeed(true)},
     appinfo:()=>{aboutTaps++;if(aboutTaps>=7){aboutTaps=0;ACT.ownerLogin();return}
-      sheet('About Whapea',`<div class="note2" style="font-size:14px">Version 2.8. Chats work without internet, straight from phone to phone over Bluetooth. Sponsored posts and updates download when your phone is online.</div><button class="btn" data-a="updCheck">Check for updates</button>`)},
+      sheet('About Whapea',`<div class="note2" style="font-size:14px">Version 2.9. Chats work without internet, straight from phone to phone over Bluetooth. Sponsored posts and updates download when your phone is online.</div><button class="btn" data-a="updCheck">Check for updates</button>`)},
     spNew:()=>{sheet('New sponsored post',`<div class="field"><input id="spb" placeholder="Brand name" maxlength="40" autocomplete="off"></div><div class="field"><textarea id="spcap" rows="3" maxlength="300" placeholder="What are you promoting?" class="txt"></textarea></div><div class="field"><input id="spct" placeholder="Phone or address (optional)" maxlength="60" autocomplete="off"></div><div class="field"><input id="spv" placeholder="Video file name, e.g. chai.mp4 (optional)" maxlength="80" autocomplete="off" autocapitalize="none"></div><div class="sec" style="padding-top:2px">Runs for</div><div class="chips" id="spdur">${[3,7,14,30,60].map(d=>`<button class="chip ${d===7?'on':''}" data-a="spDur" data-v="${d}">${d} days</button>`).join('')}</div><button class="act" data-a="spPick">${ic('image')}<span class="grow" id="spmi">Add a photo (optional)<small>Photos are made small so they fit in the post</small></span></button><button class="btn" data-a="spPost">Create post data</button>`);S.spm=null;S.spd=7},
     spPick:()=>pickFile('image/*',f=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,640/Math.max(im.width,im.height)),cv=document.createElement('canvas');cv.width=im.width*k;cv.height=im.height*k;cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);const src=cv.toDataURL('image/jpeg',.6);S.spm={kind:'image',src};const e=$('#spmi');if(e)e.innerHTML=`${esc(f.name)}<small>Photo · ${size(src.length*.75)}</small>`};im.src=r.result};r.readAsDataURL(f)}),
     spPost:()=>{
@@ -1326,16 +1381,77 @@ if(NATIVE){
     netOut:()=>{netStop();NET.s=null;netSave();persistSoon();closeSheet();render();toast('Logged out')},
     netFind:()=>{if(!NET.s){ACT.netAcct();return}closeSheet();const s=sheet('Find by username',`<div class="field"><input id="nq" placeholder="Username" maxlength="20" autocapitalize="none" autocomplete="off"></div><button class="btn" data-a="netSearch">Search</button><div id="nres"></div>`);},
     netSearch:async()=>{const q=($('#nq').value||'').trim().toLowerCase().replace(/[^a-z0-9_]/g,'');if(!q)return;const el=$('#nres');el.innerHTML='<div class="note2">Searching…</div>';
-      try{const r=await sb('/rest/v1/profiles?select=id,username,name&username=ilike.'+q+'*&limit=15');const a=(await r.json()).filter(x=>x.id!==NET.s.uid);
-        el.innerHTML=a.length?a.map(x=>`<button class="act" data-a="netOpen" data-v="${esc(x.id)}">${av0(hueOf(x.username),x.name||x.username,'sm')}<span class="grow">${esc(x.name||x.username)}<small>@${esc(x.username)}</small></span></button>`).join(''):'<div class="note2">No one found</div>'}
+      try{const r=await sb('/rest/v1/profiles?select=id,username,name,plan,plan_until&username=ilike.'+q+'*&limit=15');const a=(await r.json()).filter(x=>x.id!==NET.s.uid);
+        el.innerHTML=a.length?a.map(x=>`<button class="act" data-a="netOpen" data-v="${esc(x.id)}">${av0(hueOf(x.username),x.name||x.username,'sm')}<span class="grow">${esc(x.name||x.username)}${bdg(planOf(x))}<small>@${esc(x.username)}</small></span></button>`).join(''):'<div class="note2">No one found</div>'}
       catch(e){el.innerHTML='<div class="note2">Could not search. Check internet</div>'}},
     netOpen:async v=>{const p=await netPeer(v);if(!p){toast('Could not open');return}p.range=NET.ok;ACT.openCid('u:'+v);persistSoon();stSyncTo('u:'+v)},
     netOwner:async()=>{if(!NET.s)return;const el=sheet('Internet users','<div class="note2">Loading…</div>');
       try{if(S.okey){const c=await sb('/rest/v1/rpc/owner_claim',{m:'POST',b:{k:S.okey}});await c.text()}
         const r=await sb('/rest/v1/rpc/owner_users',{m:'POST',b:{}});if(!r.ok)throw 0;const a=await r.json();
-        el.querySelector('.sheet').innerHTML='<div class="grab"></div><h3>Internet users</h3>'+(a.length?a.map(u=>{const b=u.banned_until&&new Date(u.banned_until)>new Date();return `<div class="li"><span class="mid"><span class="nm"><span>${esc(u.name||u.username)} · @${esc(u.username)}</span></span><span class="sub">Joined ${new Date(u.created_at).toLocaleDateString()}${b?' · blocked until '+new Date(u.banned_until).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):''}</span></span><button class="tag ${b?'g':''}" data-a="netBan" data-v="${esc(u.id)}|${b?0:3}">${b?'Unblock':'Block 3h'}</button></div>`}).join(''):'<div class="note2">No users yet</div>')}
+        el.querySelector('.sheet').innerHTML='<div class="grab"></div><h3>Internet users</h3>'+(a.length?a.map(u=>{const b=u.banned_until&&new Date(u.banned_until)>new Date();return `<div class="li"><span class="mid"><span class="nm"><span>${esc(u.name||u.username)} · @${esc(u.username)}</span></span><span class="sub">Joined ${new Date(u.created_at).toLocaleDateString()}${b?' · blocked until '+new Date(u.banned_until).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):''}</span></span><button class="tag" data-a="netPlan" data-v="${esc(u.id)}">Badge</button><button class="tag ${b?'g':''}" data-a="netBan" data-v="${esc(u.id)}|${b?0:3}">${b?'Unblock':'Block 3h'}</button></div>`}).join(''):'<div class="note2">No users yet</div>')}
       catch(e){el.querySelector('.sheet').innerHTML='<div class="grab"></div><div class="note2">Could not load. Unlock owner mode again, then retry.</div>'}},
     netBan:async v=>{const[id,h]=v.split('|');try{const r=await sb('/rest/v1/rpc/owner_ban',{m:'POST',b:{uid:id,hours:+h}});if(!r.ok)throw 0;toast(+h?'Blocked for 3 hours':'Unblocked');closeSheet();ACT.netOwner()}catch(e){toast('Failed')}},
+
+    pickCity:()=>{closeSheet();sheet('My city',CITIES.map(c=>A('setCity',c,null,c,ME.city===c?'Selected':'')).join('')+(ME.city?A('setCity','','x','Remove my city'):''))},
+    setCity:async v=>{if(!NET.s){ACT.netAcct();return}try{const r=await sb('/rest/v1/profiles?id=eq.'+NET.s.uid,{m:'PATCH',h:{Prefer:'return=minimal'},b:{city:v||null}});if(!r.ok)throw 0;ME.city=v;persistSoon();closeSheet();PF.items=[];PF.ok=false;render();toast(v?'City set to '+v:'City removed');if(S.tab==='posts')loadPosts(true)}catch(e){toast('Could not save. Check internet')}},
+    cityPeople:async()=>{if(!ME.city)return;const el=sheet('People in '+ME.city,'<div class="note2">Loading…</div>');
+      try{const r=await sb('/rest/v1/profiles?select=id,username,name,plan,plan_until&city=eq.'+encodeURIComponent(ME.city)+'&limit=40');const a=(await r.json()).filter(x=>x.id!==NET.s.uid);
+        el.querySelector('.sheet').innerHTML='<div class="grab"></div><h3>People in '+esc(ME.city)+'</h3>'+(a.length?a.map(x=>`<button class="act" data-a="netOpen" data-v="${esc(x.id)}">${av0(hueOf(x.username),x.name||x.username,'sm')}<span class="grow">${esc(x.name||x.username)}${bdg(planOf(x))}<small>@${esc(x.username)}</small></span></button>`).join(''):'<div class="note2">No one else in your city yet. Invite friends!</div>')}
+      catch(e){el.querySelector('.sheet').innerHTML='<div class="grab"></div><div class="note2">Could not load</div>'}},
+    postScope:v=>{PF.scope=v;PF.items=[];PF.ok=false;render();loadPosts(true)},
+    postRefresh:()=>loadPosts(true),
+    postMore:()=>loadPosts(false),
+    newPost:()=>{if(!NET.s){ACT.netAcct();return}S.pimg=null;sheet('New post',`<textarea id="ptx" class="pfield" rows="4" maxlength="500" placeholder="What do you want to share?"></textarea><div id="pprev"></div>
+      <div class="note2">${ME.city?'Shown in '+esc(ME.city)+' and Everyone.':'Shown in Everyone. Set your city in Settings to reach people near you.'} Posts disappear after 7 days.</div>
+      ${A('postPhoto','','image','Add a photo')}<button class="btn" id="pgo" data-a="postSend">Post</button>`)},
+    postPhoto:()=>pickFile('image/*',f=>{const go=(px,q)=>readImg(f,px,q,src=>{if(src.length>125000&&px>400){go(Math.round(px*.75),Math.max(.35,q-.1));return}if(src.length>125000){toast('That photo is too large');return}S.pimg=src;const e=$('#pprev');if(e)e.innerHTML=`<img class="pim" style="max-height:220px;border-radius:12px;margin:6px 16px;width:calc(100% - 32px)" src="${src}" alt="">`});go(640,.55)}),
+    postSend:async()=>{const t=($('#ptx').value||'').trim();if(!t&&!S.pimg){toast('Write something or add a photo');return}const b=$('#pgo');b.disabled=true;b.textContent='Posting…';
+      try{await rpc('create_post',{p_body:t,p_image:S.pimg||null,p_city:ME.city||null});S.pimg=null;closeSheet();toast('Posted');PF.scope=PF.scope;loadPosts(true)}
+      catch(e){b.disabled=false;b.textContent='Post';toast(rpcErr(e))}},
+    postImg:v=>{const p=PF.items.find(x=>String(x.id)===v);if(!p)return;const el=document.createElement('div');el.className='mv';phone.append(el);
+      el.innerHTML=`<div class="mvh"><button class="ib" data-x="1" aria-label="Close">${ic('x')}</button><b>${esc(p.name||p.username)}</b></div><div class="mvb"><img src="${p.image}" alt="Photo"></div>${p.body?`<div class="mvc">${esc(p.body)}</div>`:''}`;
+      el.onclick=e=>{if(e.target.closest('[data-x]'))el.remove()}},
+    postLike:async v=>{const p=PF.items.find(x=>String(x.id)===v);if(!p)return;p.liked=!p.liked;p.likes+=p.liked?1:-1;render();
+      try{await rpc('toggle_like',{p_post:+v})}catch(e){p.liked=!p.liked;p.likes+=p.liked?1:-1;render();toast(rpcErr(e))}},
+    postCom:async v=>{const p=PF.items.find(x=>String(x.id)===v);S.pcid=v;const el=sheet('Comments','<div class="note2">Loading…</div>');
+      const paint=async()=>{try{const a=await rpc('post_comments',{p_post:+v});
+        el.querySelector('.sheet').innerHTML='<div class="grab"></div><h3>Comments</h3>'+(a&&a.length?a.map(c=>`<div class="cm"><b>${esc(c.name||c.username)}${bdg(c.plan)}</b> <span class="val">${ago(c.created_at)}</span><div>${esc(c.body)}</div></div>`).join(''):'<div class="note2">No comments yet</div>')+`<div class="field" style="margin:8px 16px"><input id="pcm" maxlength="300" placeholder="Add a comment" autocomplete="off"></div><button class="btn" data-a="postComSend" data-v="${v}">Send</button>`;
+        if(p){p.comments=a?a.length:p.comments;}}catch(e){el.querySelector('.sheet').innerHTML='<div class="grab"></div><div class="note2">Could not load comments</div>'}};
+      S.pcpaint=paint;paint()},
+    postComSend:async v=>{const t=($('#pcm').value||'').trim();if(!t)return;try{await rpc('add_comment',{p_post:+v,p_body:t});const p=PF.items.find(x=>String(x.id)===v);if(p)p.comments++;await S.pcpaint();render()}catch(e){toast(rpcErr(e))}},
+    postMenu:v=>{const p=PF.items.find(x=>String(x.id)===v);if(!p)return;const mine=NET.s&&p.author===NET.s.uid;
+      sheet('',(mine?'':A('netOpen',p.author,'chat','Message @'+p.username))+(mine||S.owner?A('postDel',v,'x','Delete post'):'')+(mine?'':A('postRep',v,'ban','Report post','Hateful, rude or fake')))},
+    postDel:async v=>{try{await rpc('delete_post',{p_post:+v});PF.items=PF.items.filter(x=>String(x.id)!==v);closeSheet();render();toast('Deleted')}catch(e){toast(rpcErr(e))}},
+    postRep:async v=>{try{await rpc('report_post',{p_post:+v,p_reason:''});closeSheet();toast('Reported. Thank you')}catch(e){toast(rpcErr(e))}},
+    plus:async()=>{if(!NET.s){ACT.netAcct();return}closeSheet();const el=sheet('Whapea Plus','<div class="note2">Loading…</div>');
+      let cfg={},pay=[];try{const r=await sb('/rest/v1/app_config?select=key,value');(await r.json()).forEach(x=>cfg[x.key]=x.value)}catch(e){}
+      try{pay=await rpc('my_payments')||[]}catch(e){}loadMe();
+      const act=isPlus()?`<div class="card"><span style="color:#1d8cf8">${ic('verified',28)}</span><span style="flex:1"><b>${ME.plan==='gold'?'Verified':'Plus is active'}</b><div class="val">Until ${new Date(ME.plan_until).toLocaleDateString()}</div></span></div>`:'';
+      el.querySelector('.sheet').innerHTML=`<div class="grab"></div><h3>Whapea Plus</h3>${act}
+      <div class="card" style="display:block"><b style="font-size:20px">${esc(cfg.plus_price||'$15 per month')}</b>
+      <div class="val" style="margin-top:6px;line-height:1.6">✓ Blue Plus badge next to your name<br>✓ Videos up to 60 seconds (free: 30)<br>✓ Status stays 48 hours (free: 24)<br>✓ Exclusive wallpapers<br>✓ 30 posts per day (free: 10)</div></div>
+      <div class="sec">How to pay</div><div class="plist">${esc(cfg.pay_info||'Payment details coming soon.')}</div>
+      <div class="field" style="margin:8px 16px"><select id="pmm" style="width:100%;padding:12px;border-radius:12px;background:var(--surface2);color:var(--text);border:1px solid var(--line)"><option>Easypaisa</option><option>JazzCash</option><option>Bank transfer</option></select></div>
+      <div class="field" style="margin:8px 16px"><input id="pmt" maxlength="60" placeholder="Transaction ID" autocomplete="off"></div>
+      <div class="field" style="margin:8px 16px"><input id="pmn" maxlength="200" placeholder="Note (optional)" autocomplete="off"></div>
+      <button class="btn" data-a="plusSend">I have paid. Send request</button>
+      ${pay.length?'<div class="sec">Your requests</div>'+pay.map(x=>`<div class="li"><span class="mid"><span class="nm"><span>${esc(x.method)} · ${esc(x.txn)}</span></span><span class="sub">${new Date(x.created_at).toLocaleDateString()}</span></span><span class="tag ${x.status==='approved'?'g':''}">${esc(x.status)}</span></div>`).join(''):''}
+      <div class="note2">The owner checks your payment and turns Plus on, usually within a day. Plus is a supporter badge, not identity verification.</div>`},
+    plusSend:async()=>{const t=($('#pmt').value||'').trim();if(!t){toast('Enter the transaction ID');return}
+      try{await rpc('request_plus',{p_method:$('#pmm').value,p_txn:t,p_note:($('#pmn').value||'').trim()});toast('Request sent. We will confirm soon');ACT.plus()}catch(e){toast(/limit/.test(e.message)?'You already have pending requests':rpcErr(e))}},
+    ownerPay:async()=>{closeSheet();const el=sheet('Plus payments','<div class="note2">Loading…</div>');
+      try{if(S.okey){const c=await sb('/rest/v1/rpc/owner_claim',{m:'POST',b:{k:S.okey}});await c.text()}const a=await rpc('owner_payments');
+        el.querySelector('.sheet').innerHTML='<div class="grab"></div><h3>Plus payments</h3>'+(a&&a.length?a.map(x=>`<div class="li" style="align-items:flex-start"><span class="mid"><span class="nm"><span>@${esc(x.username)} · ${esc(x.method)}</span></span><span class="sub">TXN ${esc(x.txn)}${x.note?' · '+esc(x.note):''} · ${new Date(x.created_at).toLocaleDateString()}</span></span>${x.status==='pending'?`<button class="tag g" data-a="payOk" data-v="${x.id}|1">Approve</button><button class="tag" data-a="payOk" data-v="${x.id}|0">Reject</button>`:`<span class="tag">${esc(x.status)}</span>`}</div>`).join(''):'<div class="note2">No requests</div>')}
+      catch(e){el.querySelector('.sheet').innerHTML='<div class="grab"></div><div class="note2">Could not load. Unlock owner mode again, then retry.</div>'}},
+    payOk:async v=>{const[id,ok]=v.split('|');try{await rpc('owner_payment_decide',{p_id:+id,p_approve:ok==='1',p_days:30});toast(ok==='1'?'Plus turned on for 30 days':'Rejected');ACT.ownerPay()}catch(e){toast('Failed')}},
+    ownerRep:async()=>{closeSheet();const el=sheet('Reported posts','<div class="note2">Loading…</div>');
+      try{if(S.okey){const c=await sb('/rest/v1/rpc/owner_claim',{m:'POST',b:{k:S.okey}});await c.text()}const a=await rpc('owner_reports');
+        el.querySelector('.sheet').innerHTML='<div class="grab"></div><h3>Reported posts</h3>'+(a&&a.length?a.map(x=>`<div class="li" style="align-items:flex-start"><span class="mid"><span class="nm"><span>@${esc(x.username)} · ${x.reports} report${x.reports>1?'s':''}</span></span><span class="sub">${esc(x.body||'(photo)')}</span></span><button class="tag" data-a="repDel" data-v="${x.post_id}">Delete</button><button class="tag g" data-a="repClear" data-v="${x.post_id}">Keep</button></div>`).join(''):'<div class="note2">No reports</div>')}
+      catch(e){el.querySelector('.sheet').innerHTML='<div class="grab"></div><div class="note2">Could not load. Unlock owner mode again, then retry.</div>'}},
+    repDel:async v=>{try{await rpc('delete_post',{p_post:+v});toast('Deleted');ACT.ownerRep()}catch(e){toast('Failed')}},
+    repClear:async v=>{try{await rpc('owner_clear_reports',{p_post:+v});ACT.ownerRep()}catch(e){toast('Failed')}},
+    netPlan:v=>{closeSheet();sheet('Badge',A('setPlan',v+'|plus|30','verified','Plus for 30 days')+A('setPlan',v+'|gold|365','verified','Verified (gold) for 1 year')+A('setPlan',v+'|x|0','x','Remove badge'))},
+    setPlan:async v=>{const[id,pl,d]=v.split('|');try{await rpc('owner_set_plan',{p_uid:id,p_plan:pl==='x'?null:pl,p_days:+d});toast('Done');closeSheet()}catch(e){toast('Failed')}},
   });
   if(NET.s)setTimeout(netStart,400);
   loadFeed(true);
