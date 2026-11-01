@@ -5,20 +5,20 @@
 
 /* Layout: one phone-shaped app (tabs, chat screen, sheets) centred on the page; full width on phones. */
 :root{
-  --bg:#e9edf3; --surface:#ffffff; --surface2:#f1f4f8; --ink:#0e1a2b; --muted:#66758a; --line:#e2e8f0;
-  --accent:#1560ff; --accent-ink:#ffffff; --accent-soft:#e3ecff; --out:#d9e6ff; --in:#ffffff; --chatbg:#eef2f7; --dot:#d6dde8;
+  --bg:#ffffff; --surface:#ffffff; --surface2:#efefef; --ink:#0f0f10; --muted:#737373; --line:#dbdbdb;
+  --accent:#0095f6; --accent-ink:#ffffff; --accent-soft:#e6f3fe; --out:#7a3cf0; --in:#efefef; --chatbg:#ffffff; --dot:#e3e3e3;
   --good:#12a15a; --warn:#d99a00; --bad:#e0383e; --read:#1a8cff;
   --font-display:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
   --font-body:"Hanken Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;
   --fs:15px;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#05080d; --surface:#0f1723; --surface2:#172131; --ink:#e8eef8; --muted:#8a99b0; --line:#212e43;
-  --accent:#4d8dff; --accent-ink:#06142e; --accent-soft:#16284a; --out:#17356b; --in:#18222f; --chatbg:#0a111b; --dot:#17222f;
+  --bg:#000000; --surface:#000000; --surface2:#262626; --ink:#f5f5f5; --muted:#a8a8a8; --line:#262626;
+  --accent:#4aa8ff; --accent-ink:#00111f; --accent-soft:#0d2a44; --out:#7a3cf0; --in:#262626; --chatbg:#000000; --dot:#1c1c1c;
   --good:#3cc482; --warn:#f0b429; --bad:#ff6b70; --read:#52b0ff; color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#05080d; --surface:#0f1723; --surface2:#172131; --ink:#e8eef8; --muted:#8a99b0; --line:#212e43;
-  --accent:#4d8dff; --accent-ink:#06142e; --accent-soft:#16284a; --out:#17356b; --in:#18222f; --chatbg:#0a111b; --dot:#17222f;
+  --bg:#000000; --surface:#000000; --surface2:#262626; --ink:#f5f5f5; --muted:#a8a8a8; --line:#262626;
+  --accent:#4aa8ff; --accent-ink:#00111f; --accent-soft:#0d2a44; --out:#7a3cf0; --in:#262626; --chatbg:#000000; --dot:#1c1c1c;
   --good:#3cc482; --warn:#f0b429; --bad:#ff6b70; --read:#52b0ff; color-scheme:dark}
 html,body{height:100%}
 body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:14px;
@@ -219,6 +219,21 @@ img{max-width:100%}
 .phone{max-width:none!important;max-height:none!important;border-radius:0!important;border:0!important;box-shadow:none!important}
 .fab{bottom:78px}
 :root{--font-display:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif}
+/* ---- Gradient Social theme: clean white / true black, thin lines, gradient accents ---- */
+.top{border-bottom:1px solid var(--line);padding-bottom:10px}
+.brand{font-weight:800;letter-spacing:-.045em;font-size:28px}
+.ring{background:linear-gradient(45deg,#feda75,#fa7e1e,#d62976,#962fbf,#4f5bd5)}
+.ring.seen{background:var(--line)}
+.fab{background:linear-gradient(45deg,#fa7e1e,#d62976 55%,#962fbf);color:#fff;box-shadow:0 10px 22px -8px #d62976}
+.chip.on{background:var(--ink);color:var(--bg)}
+.nav button.on{color:var(--ink)}
+.nav button.on .pill{background:none}
+.nav button.on svg{stroke-width:2.6}
+.out .b{background:linear-gradient(135deg,#7a3cf0,#d62976 72%,#fa7e1e);color:#fff;border-radius:18px;box-shadow:none;--ink:#fff;--muted:rgba(255,255,255,.78);--accent:#fff;--accent-ink:#7a3cf0;--read:#fff;--line:rgba(255,255,255,.35)}
+.in .b{border-radius:18px;box-shadow:none}
+.comp .inp{background:transparent;border:1px solid var(--line)}
+.btn{border-radius:10px}
+.sp,.card{border:1px solid var(--line);box-shadow:none}
 </style>
 </head><body>
 
@@ -1051,7 +1066,7 @@ if(NATIVE){
     tab:v=>{S.tab=v;render();if(v==='spons')loadFeed(false)},
     spRefresh:()=>{toast('Checking for new posts…');loadFeed(true)},
     appinfo:()=>{aboutTaps++;if(aboutTaps>=7){aboutTaps=0;ACT.ownerLogin();return}
-      sheet('About Whapea',`<div class="note2" style="font-size:14px">Version 2.1. Chats work without internet, straight from phone to phone over Bluetooth. Sponsored posts and updates download when your phone is online.</div><button class="btn" data-a="updCheck">Check for updates</button>`)},
+      sheet('About Whapea',`<div class="note2" style="font-size:14px">Version 2.2. Chats work without internet, straight from phone to phone over Bluetooth. Sponsored posts and updates download when your phone is online.</div><button class="btn" data-a="updCheck">Check for updates</button>`)},
     spNew:()=>{sheet('New sponsored post',`<div class="field"><input id="spb" placeholder="Brand name" maxlength="40" autocomplete="off"></div><div class="field"><textarea id="spcap" rows="3" maxlength="300" placeholder="What are you promoting?" class="txt"></textarea></div><div class="field"><input id="spct" placeholder="Phone or address (optional)" maxlength="60" autocomplete="off"></div><div class="field"><input id="spv" placeholder="Video file name, e.g. chai.mp4 (optional)" maxlength="80" autocomplete="off" autocapitalize="none"></div><div class="sec" style="padding-top:2px">Runs for</div><div class="chips" id="spdur">${[3,7,14,30,60].map(d=>`<button class="chip ${d===7?'on':''}" data-a="spDur" data-v="${d}">${d} days</button>`).join('')}</div><button class="act" data-a="spPick">${ic('image')}<span class="grow" id="spmi">Add a photo (optional)<small>Photos are made small so they fit in the post</small></span></button><button class="btn" data-a="spPost">Create post data</button>`);S.spm=null;S.spd=7},
     spPick:()=>pickFile('image/*',f=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,640/Math.max(im.width,im.height)),cv=document.createElement('canvas');cv.width=im.width*k;cv.height=im.height*k;cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);const src=cv.toDataURL('image/jpeg',.6);S.spm={kind:'image',src};const e=$('#spmi');if(e)e.innerHTML=`${esc(f.name)}<small>Photo · ${size(src.length*.75)}</small>`};im.src=r.result};r.readAsDataURL(f)}),
     spPost:()=>{
