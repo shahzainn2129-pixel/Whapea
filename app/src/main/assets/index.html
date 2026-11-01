@@ -247,6 +247,18 @@ img{max-width:100%}
 .call.vc .ci .av{display:none}.call.vc .ci h2{font-size:20px}
 .rv{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;background:#000}
 .lv{position:absolute;right:12px;top:70px;width:96px;height:132px;object-fit:cover;border-radius:12px;z-index:3;transform:scaleX(-1);background:#222;border:1px solid rgba(255,255,255,.3)}
+/* ---- stories on the chats page, calls page ---- */
+.stories{display:flex;gap:14px;padding:6px 16px 10px;overflow-x:auto;scrollbar-width:none}
+.stories::-webkit-scrollbar{display:none}
+.st1{display:flex;flex-direction:column;align-items:center;gap:5px;width:66px;flex:none;color:var(--ink)}
+.st1 small{font-size:12px;max-width:66px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.st1 .ring{position:relative}.st1 .ring .av{width:58px;height:58px;font-size:22px}
+.st1 .ring.none{background:transparent;padding:3px}
+.st1 .plus{position:absolute;right:-2px;bottom:-2px;width:22px;height:22px;border-radius:50%;background:var(--accent);color:var(--accent-ink);border:2px solid var(--surface);display:grid;place-items:center;font-style:normal;font-weight:700;font-size:15px;line-height:1}
+.cq{display:flex;gap:10px;padding:8px 16px 4px}
+.cq button{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px 4px;border-radius:16px;border:1px solid var(--line);font-size:13px;font-weight:600;color:var(--ink)}
+.cq button span{width:46px;height:46px;border-radius:50%;display:grid;place-items:center}
+.li .ib{color:var(--ink)}
 /* ---- Gradient Social theme: clean white / true black, thin lines, gradient accents ---- */
 .top{border-bottom:1px solid var(--line);padding-bottom:10px}
 .brand{font-weight:800;letter-spacing:-.045em;font-size:28px}
@@ -416,6 +428,11 @@ function topbar(t,search,menu){
   return `<div class="top"><div class="brand">${t==='Whapea'?`Whapea<i title="Bluetooth on"></i>`:t}</div>${search?`<button class="ib" data-a="toggleSearch" aria-label="Search">${ic('search')}</button>`:''}${menu?`<button class="ib" data-a="chatsMenu" aria-label="Menu">${ic('more')}</button>`:''}</div>
   ${S.tab==='chats'&&S.qOpen?`<div class="searchbar">${ic('search',18)}<input id="q" placeholder="Search chats and messages" value="${esc(S.q)}" autocomplete="off"></div>`:''}`}
 
+function storiesHTML(){
+  pruneSt();
+  const ids=Object.keys(STAT).filter(k=>!mutedSt.has(k)&&P[k]).sort((a,b)=>(seenSt.has(a)?1:0)-(seenSt.has(b)?1:0)||STAT[b][STAT[b].length-1].t-STAT[a][STAT[a].length-1].t);
+  const me=`<button class="st1" data-a="${myStatus.length?'viewSt':'addStatus'}" data-v="me"><span class="ring ${myStatus.length?'':'none'}">${avMe('')}<i class="plus" data-a="addStatus">+</i></span><small>Your story</small></button>`;
+  return `<div class="stories">${me}${ids.map(k=>`<button class="st1" data-a="viewSt" data-v="${esc(k)}"><span class="ring ${seenSt.has(k)?'seen':''}">${av(P[k].hue,P[k].name)}</span><small>${esc(P[k].name.split(' ')[0])}</small></button>`).join('')}</div>`}
 function chatsHTML(){
   let L=chats.filter(c=>!c.archived);
   if(S.filter==='unread')L=L.filter(c=>c.unread||c.mk);if(S.filter==='fav')L=L.filter(c=>c.fav);if(S.filter==='groups')L=L.filter(c=>c.type==='group');
@@ -423,10 +440,10 @@ function chatsHTML(){
   L.sort((a,b)=>(b.pinned?1:0)-(a.pinned?1:0)||last(b)?.t-last(a)?.t);
   const arch=chats.filter(c=>c.archived).length;
   const f=[['all','All'],['unread','Unread'],['fav','Favourites'],['groups','Groups']];
-  return `<div class="chips">${f.map(([k,l])=>`<button class="chip ${S.filter===k?'on':''}" data-a="filter" data-v="${k}">${l}</button>`).join('')}</div>
+  return `${S.q?'':storiesHTML()}<div class="chips">${f.map(([k,l])=>`<button class="chip ${S.filter===k?'on':''}" data-a="filter" data-v="${k}">${l}</button>`).join('')}</div>
   ${arch&&!S.q?`<button class="li" data-a="archived"><span class="av sm" style="--h:210;background:var(--surface2);color:var(--muted)">${ic('archive',18)}</span><span class="mid"><span class="nm">Archived</span></span><span class="val">${arch}</span></button>`:''}
-  ${L.length?L.map(rowHTML).join(''):`<div class="empty"><b>No chats here</b>Tap the chat button to message someone nearby.</div>`}
-  <div class="note2" style="text-align:center;padding-bottom:90px">${ic('lock',14)} Messages travel straight from phone to phone over Bluetooth. No internet, no phone number.</div>`}
+  ${L.length?L.map(rowHTML).join(''):`<div class="empty"><b>No chats here</b>Tap the chat button to find someone by username, or message someone nearby.</div>`}
+  <div class="note2" style="text-align:center;padding-bottom:90px">${ic('lock',14)} ${NATIVE?'Chat over the internet with an account, or with people nearby over Bluetooth.':'Messages travel straight from phone to phone over Bluetooth. No internet, no phone number.'}</div>`}
 function rowHTML(c){
   const m=last(c),n=c.unread,r=chatReach(c);
   const sub=m?`${m.from==='me'&&!m.deleted?tick(m):''}<span>${c.type==='group'&&m.from!=='me'?esc(who(c,m))+': ':''}${m.type==='voice'?'🎙 ':m.type==='img'?'📷 ':''}${esc(prev(m))}</span>`:'';
@@ -472,10 +489,13 @@ function nearHTML(){if(NATIVE)return nearNative();
   <div class="note2" style="padding-bottom:30px">Bluetooth reaches roughly 10 to 100 metres. Mesh relay passes messages through phones in between, up to ${SET.hops} hops, so people beyond your range can still receive them.</div>`}
 
 function callsHTML(){
-  return `<button class="li" data-a="newCall">${`<span class="av sm" style="--h:210;background:var(--accent)">${ic('phone',18)}</span>`}<span class="mid"><span class="nm">Start a voice call</span><span class="sub">Works with people in direct range</span></span></button>
-  <div class="sec">Recent</div>
-  ${calls.filter(c=>P[c.cid]).map((c,i)=>`<button class="li" data-a="callBack" data-v="${c.cid}">${av(P[c.cid].hue,P[c.cid].name)}<span class="mid"><span class="nm" style="${c.missed?'color:var(--bad)':''}"><span>${esc(P[c.cid].name)}</span></span><span class="sub">${c.dir==='in'?'↙':'↗'} ${c.missed?'Missed':c.dir==='in'?'Incoming':'Outgoing'} · ${dayLabel(c.t)}${c.d?' · '+dur(c.d):''}</span></span><span style="color:var(--accent)">${ic('phone',20)}</span></button>`).join('')}
-  <div class="note2" style="padding-bottom:90px">Voice calls stream directly between two phones over Bluetooth, so both people must be near each other and keep Whapea open during the call. Video calls need the internet and are not included.</div>`}
+  const L=calls.filter(c=>P[c.cid]);
+  const online=Object.keys(P).filter(k=>P[k].range);
+  const quick=`<div class="cq"><button data-a="newCall"><span style="background:var(--accent);color:var(--accent-ink)">${ic('phone',22)}</span>Voice call</button><button data-a="newVideo"><span style="background:var(--surface2);color:var(--ink)">${ic('video',22)}</span>Video call</button><button data-a="clearCalls"><span style="background:var(--surface2);color:var(--ink)">${ic('trash',22)}</span>Clear log</button></div>`;
+  const onl=online.length?`<div class="sec">Available to call</div>`+online.map(k=>`<div class="li" data-a="openCid" data-v="${esc(k)}">${av(P[k].hue,P[k].name,'',dotOf(k))}<span class="mid"><span class="nm"><span>${esc(P[k].name)}</span></span><span class="sub">${isNet(k)?'Online':'Nearby'}</span></span><button class="ib" data-a="startCall" data-v="${esc(k)}" aria-label="Voice call">${ic('phone',22)}</button>${isNet(k)?`<button class="ib" data-a="startVideo" data-v="${esc(k)}" aria-label="Video call">${ic('video',22)}</button>`:''}</div>`).join(''):'';
+  const rec=L.length?`<div class="sec">Recent</div>`+L.map(c=>{const col=c.missed?'var(--bad)':c.dir==='in'?'var(--good)':'var(--muted)';
+    return `<div class="li" data-a="callBack" data-v="${esc(c.cid)}">${av(P[c.cid].hue,P[c.cid].name)}<span class="mid"><span class="nm" style="${c.missed?'color:var(--bad)':''}"><span>${esc(P[c.cid].name)}</span></span><span class="sub"><b style="color:${col};font-weight:700">${c.dir==='in'?'↙':'↗'}</b> ${c.missed?'Missed':c.dir==='in'?'Incoming':'Outgoing'}${c.video?' video':''} · ${dayLabel(c.t)}${c.d?' · '+dur(c.d):''}</span></span><button class="ib" data-a="${c.video?'startVideo':'startCall'}" data-v="${esc(c.cid)}" aria-label="Call back">${ic(c.video?'video':'phone',22)}</button></div>`}).join(''):`<div class="empty"><b>No calls yet</b>Tap Voice call or Video call to start one.</div>`;
+  return `${quick}${onl}${rec}<div class="note2" style="padding-bottom:90px">Voice and video calls use the internet. Voice calls also work over Bluetooth when people are nearby.</div>`}
 
 function setHTML(){
   const row=(a,i,l,v,sub)=>`<button class="act" data-a="${a}" data-v="">${ic(i)}<span class="grow">${l}${sub?`<small>${sub}</small>`:''}</span>${v!==undefined?`<span class="val">${v}</span>`:ic('chev',18)}</button>`;
@@ -1218,6 +1238,9 @@ if(NATIVE){
   Object.assign(ACT,{
     startCall:v=>startCallX(v,false),
     startVideo:v=>startCallX(v,true),
+    newVideo:()=>{const ks=Object.keys(P).filter(k=>isNet(k)&&P[k].range);if(!ks.length){toast('Video calls need someone who is online. Find people by username first');return}
+      sheet('Video call',ks.map(k=>`<button class="act" data-a="startVideo" data-v="${esc(k)}">${av(P[k].hue,P[k].name,'sm',dotOf(k))}<span class="grow">${esc(P[k].name)}<small>Online</small></span>${ic('video',21)}</button>`).join(''))},
+    clearCalls:()=>{calls.length=0;persistSoon();render();toast('Call log cleared')},
     callBack:v=>ACT.startCall(v),
     newCall:()=>{const ks=Object.keys(P);if(!ks.length){toast('Find someone first: New chat, Find by username');return}
       sheet('Call someone',ks.map(k=>`<div class="act">${av(P[k].hue,P[k].name,'sm',dotOf(k))}<span class="grow">${esc(P[k].name)}<small>${P[k].range?(isNet(k)?'Online':'Connected'):'Not connected'}</small></span>${P[k].range?`<button class="ib" data-a="startCall" data-v="${esc(k)}" aria-label="Voice call">${ic('phone',21)}</button>${isNet(k)?`<button class="ib" data-a="startVideo" data-v="${esc(k)}" aria-label="Video call">${ic('video',21)}</button>`:''}`:''}</div>`).join(''))},
@@ -1256,7 +1279,7 @@ if(NATIVE){
     tab:v=>{S.tab=v;render();if(v==='spons')loadFeed(false)},
     spRefresh:()=>{toast('Checking for new posts…');loadFeed(true)},
     appinfo:()=>{aboutTaps++;if(aboutTaps>=7){aboutTaps=0;ACT.ownerLogin();return}
-      sheet('About Whapea',`<div class="note2" style="font-size:14px">Version 2.7. Chats work without internet, straight from phone to phone over Bluetooth. Sponsored posts and updates download when your phone is online.</div><button class="btn" data-a="updCheck">Check for updates</button>`)},
+      sheet('About Whapea',`<div class="note2" style="font-size:14px">Version 2.8. Chats work without internet, straight from phone to phone over Bluetooth. Sponsored posts and updates download when your phone is online.</div><button class="btn" data-a="updCheck">Check for updates</button>`)},
     spNew:()=>{sheet('New sponsored post',`<div class="field"><input id="spb" placeholder="Brand name" maxlength="40" autocomplete="off"></div><div class="field"><textarea id="spcap" rows="3" maxlength="300" placeholder="What are you promoting?" class="txt"></textarea></div><div class="field"><input id="spct" placeholder="Phone or address (optional)" maxlength="60" autocomplete="off"></div><div class="field"><input id="spv" placeholder="Video file name, e.g. chai.mp4 (optional)" maxlength="80" autocomplete="off" autocapitalize="none"></div><div class="sec" style="padding-top:2px">Runs for</div><div class="chips" id="spdur">${[3,7,14,30,60].map(d=>`<button class="chip ${d===7?'on':''}" data-a="spDur" data-v="${d}">${d} days</button>`).join('')}</div><button class="act" data-a="spPick">${ic('image')}<span class="grow" id="spmi">Add a photo (optional)<small>Photos are made small so they fit in the post</small></span></button><button class="btn" data-a="spPost">Create post data</button>`);S.spm=null;S.spd=7},
     spPick:()=>pickFile('image/*',f=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,640/Math.max(im.width,im.height)),cv=document.createElement('canvas');cv.width=im.width*k;cv.height=im.height*k;cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);const src=cv.toDataURL('image/jpeg',.6);S.spm={kind:'image',src};const e=$('#spmi');if(e)e.innerHTML=`${esc(f.name)}<small>Photo · ${size(src.length*.75)}</small>`};im.src=r.result};r.readAsDataURL(f)}),
     spPost:()=>{
