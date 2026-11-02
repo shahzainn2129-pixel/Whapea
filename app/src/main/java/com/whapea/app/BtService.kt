@@ -12,6 +12,7 @@ class BtService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     private var receiverOn = false
+    private var wl: android.os.PowerManager.WakeLock? = null
     private val btState = object : android.content.BroadcastReceiver() {
         override fun onReceive(context: android.content.Context, intent: Intent) {
             val st = intent.getIntExtra(android.bluetooth.BluetoothAdapter.EXTRA_STATE, -1)
@@ -59,11 +60,19 @@ class BtService : Service() {
         }
         if (Core.auto && !Core.running && Core.btOn()) Core.start()
         NetWatch.start()
+        try {
+            if (NetWatch.session() != null && wl == null) {
+                wl = (getSystemService(POWER_SERVICE) as android.os.PowerManager).newWakeLock(android.os.PowerManager.PARTIAL_WAKE_LOCK, "whapea:watch")
+                wl?.setReferenceCounted(false); wl?.acquire()
+            }
+        } catch (e: Exception) { }
         return START_STICKY
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        try { wl?.release() } catch (e: Exception) { }
+        wl = null
         if (receiverOn) {
             try { unregisterReceiver(btState) } catch (e: Exception) { }
             receiverOn = false

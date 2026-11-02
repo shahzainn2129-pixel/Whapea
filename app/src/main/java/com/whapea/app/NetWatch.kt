@@ -13,6 +13,7 @@ object NetWatch {
     private const val SB = "https://bmcsvldqgvuahztwkune.supabase.co"
     private const val KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJtY3N2bGRxZ3Z1YWh6dHdrdW5lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM0MjkzMDksImV4cCI6MjEwOTAwNTMwOX0.lejp0HGOgQN4_oWquWXvkKfUJqwUtkayu1ADp3dt5YQ"
     @Volatile private var thread: Thread? = null
+    @Volatile private var ringUntil = 0L
     private val nameCache = HashMap<String, String>()
 
     fun session(): JSONObject? {
@@ -88,12 +89,16 @@ object NetWatch {
                                 val body = when (p.optString("type")) { "img" -> "Photo"; "voice" -> "Voice message"; "contact" -> "Contact"; else -> p.optString("text").take(120) }
                                 Core.notifyMsg(f.getString("sender"), who, body)
                             }
-                            "call" -> if (p.optString("op") == "ring") Core.notifyCallFrom(who)
+                            "call" -> when (p.optString("op")) {
+                                "ring" -> { Core.notifyCallFrom(who); Core.ringStart(); ringUntil = System.currentTimeMillis() + 40000 }
+                                "end", "rej", "busy" -> { Core.ringStop(); Core.clearCallNotice(); ringUntil = 0 }
+                            }
                         }
                     }
                     if (max > last) Core.prefs.edit().putLong("netlast", max).apply()
                 }
-                Thread.sleep(4000)
+                if (ringUntil in 1..System.currentTimeMillis()) { Core.ringStop(); ringUntil = 0 }
+                Thread.sleep(2500)
             } catch (e: InterruptedException) { break } catch (e: Exception) {
                 try { Thread.sleep(10000) } catch (x: InterruptedException) { break }
             }

@@ -109,6 +109,7 @@ object Core {
                 ringtone = android.media.RingtoneManager.getRingtone(app,
                     android.media.RingtoneManager.getDefaultUri(android.media.RingtoneManager.TYPE_RINGTONE))
             }
+            if (Build.VERSION.SDK_INT >= 28) ringtone?.isLooping = true
             ringtone?.play()
         } catch (e: Exception) { }
     }
@@ -117,7 +118,7 @@ object Core {
         try { ringtone?.stop() } catch (e: Exception) { }
     }
 
-    private fun clearCallNotice() {
+    fun clearCallNotice() {
         pendingRing = null
         try { NotificationManagerCompat.from(app).cancel(CALL_ID) } catch (e: SecurityException) { }
     }

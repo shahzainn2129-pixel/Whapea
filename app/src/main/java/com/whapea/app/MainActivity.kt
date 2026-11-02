@@ -125,6 +125,7 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         Core.uiAttached = true
+        Core.ringStop()
         if (NetWatch.session() != null) try { androidx.core.app.NotificationManagerCompat.from(this).cancelAll() } catch (e: SecurityException) { }
         if (pageReady) Core.drainInbox()
         pendingApk?.let { if (packageManager.canRequestPackageInstalls()) { pendingApk = null; openInstaller(it) } }
@@ -337,6 +338,7 @@ class MainActivity : ComponentActivity() {
         fun netSession(s: String) {
             NetWatch.setSession(s)
             if (s.isNotBlank()) {
+                runOnUiThread { askBatteryOnce() }
                 try { ContextCompat.startForegroundService(this@MainActivity, Intent(this@MainActivity, BtService::class.java)) } catch (e: Exception) { }
                 NetWatch.start()
             }
