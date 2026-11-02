@@ -120,11 +120,13 @@ class MainActivity : ComponentActivity() {
     override fun onPause() {
         super.onPause()
         Core.uiAttached = false
+        js("window.appPause&&appPause()")
     }
 
     override fun onResume() {
         super.onResume()
         Core.uiAttached = true
+        js("window.appResume&&appResume()")
         Core.ringStop()
         if (NetWatch.session() != null) try { androidx.core.app.NotificationManagerCompat.from(this).cancelAll() } catch (e: SecurityException) { }
         if (pageReady) Core.drainInbox()
@@ -355,6 +357,43 @@ class MainActivity : ComponentActivity() {
 
         @JavascriptInterface
         fun netGet(): String = NetWatch.session()?.toString() ?: ""
+
+        @JavascriptInterface
+        fun bioOk(): Boolean {
+            if (Build.VERSION.SDK_INT < 29) return false
+            return try {
+                val bm = getSystemService(android.hardware.biometrics.BiometricManager::class.java)
+                if (Build.VERSION.SDK_INT >= 30)
+                    bm.canAuthenticate(android.hardware.biometrics.BiometricManager.Authenticators.BIOMETRIC_WEAK) == android.hardware.biometrics.BiometricManager.BIOMETRIC_SUCCESS
+                else bm.canAuthenticate() == android.hardware.biometrics.BiometricManager.BIOMETRIC_SUCCESS
+            } catch (e: Exception) { false }
+        }
+
+        @JavascriptInterface
+        fun bioAuth() {
+            runOnUiThread {
+                try {
+                    val exec = ContextCompat.getMainExecutor(this@MainActivity)
+                    val cb = object : android.hardware.biometrics.BiometricPrompt.AuthenticationCallback() {
+                        override fun onAuthenticationSucceeded(r: android.hardware.biometrics.BiometricPrompt.AuthenticationResult?) { js("bioDone(true)") }
+                        override fun onAuthenticationError(code: Int, msg: CharSequence?) { js("bioDone(false)") }
+                    }
+                    val p = android.hardware.biometrics.BiometricPrompt.Builder(this@MainActivity)
+                        .setTitle("Unlock Whapea")
+                        .setNegativeButton("Use code", exec) { _, _ -> js("bioDone(false)") }
+                        .build()
+                    p.authenticate(android.os.CancellationSignal(), exec, cb)
+                } catch (e: Exception) { js("bioDone(false)") }
+            }
+        }
+
+        @JavascriptInterface
+        fun secure(on: Boolean) {
+            runOnUiThread {
+                val f = android.view.WindowManager.LayoutParams.FLAG_SECURE
+                if (on) window.setFlags(f, f) else window.clearFlags(f)
+            }
+        }
 
         @JavascriptInterface
         fun camOk(): Boolean {

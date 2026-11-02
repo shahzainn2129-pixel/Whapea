@@ -289,6 +289,14 @@ img{max-width:100%}
 .btn{border-radius:10px}
 .sp,.card{border:1px solid var(--line);box-shadow:none}
 .top{position:relative;justify-content:flex-end;min-height:48px;padding-top:10px}.top .brand{position:absolute;left:56px;right:56px;justify-content:center;text-align:center;font-size:18px;font-weight:700;letter-spacing:-.01em;flex:none;pointer-events:none}.top .ib{position:relative;z-index:1}
+.lockv{position:absolute;inset:0;z-index:9000;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:20px}
+.lockv .lkl{width:64px;height:64px;border-radius:18px;overflow:hidden}.lockv h2{margin:6px 0 0;font:700 19px var(--font-display)}
+.lockv .lke{min-height:18px;color:var(--bad);font-size:13.5px;text-align:center;max-width:290px}
+.lkd{display:flex;gap:14px;margin:6px 0}.lkd i{width:14px;height:14px;border-radius:50%;border:2px solid var(--muted)}.lkd i.on{background:var(--ink);border-color:var(--ink)}
+.lkp{display:grid;grid-template-columns:repeat(3,72px);gap:12px;margin-top:6px}.lkp button{height:72px;border-radius:50%;background:var(--surface2);font:600 24px var(--font-display);display:grid;place-items:center;color:var(--ink)}
+.lkp button.ghost{background:none;font-size:14px;color:var(--muted)}
+.lklink{color:var(--accent);font-weight:600;padding:8px}
+.screen.call{z-index:9100}
 </style>
 </head><body>
 
@@ -369,7 +377,7 @@ const SPONS=[
  {id:'s1',brand:'Noor Chai House',hue:28,kind:'sample',caption:'Garam chai aur taza paratha. Whapea users ke liye 10% discount, code WHAPEA.',contact:'03XX XXXXXXX',t:T0-3*3600e3,until:T0+6*DAY,likes:12,pinned:true},
  {id:'s2',brand:'Skyline Tailors',hue:265,kind:'sample',caption:'Eid collection ki stitching shuru. Naap aur fitting free.',contact:'Main Market, dukaan 14',t:T0-26*3600e3,until:T0+13*DAY,likes:5},
 ];
-const SET={receipts:true,seen:'contacts',appLock:false,chatLock:false,mesh:true,hops:3,saver:false,wifi:true,notif:true,sound:true,vibrate:true,react:true,theme:'system',wp:'dots',fs:15,disap:0,enter:false,autodl:'wifi',quality:'standard'};
+const SET={online:true,typing:true,msgFrom:'all',lockOn:false,lockH:'',lockS:'',bio:false,lockMs:30000,secure:false,lockAsked:false,receipts:true,seen:'contacts',appLock:false,chatLock:false,mesh:true,hops:3,saver:false,wifi:true,notif:true,sound:true,vibrate:true,react:true,theme:'system',wp:'dots',fs:15,disap:0,enter:false,autodl:'wifi',quality:'standard'};
 const KEY=[...Array(4)].map(()=>Math.random().toString(16).slice(2,6).toUpperCase()).join(' ');
 let mid=0;
 const newId=()=>NATIVE?uid()+uid():'m'+(++mid);
@@ -462,7 +470,7 @@ function chatsHTML(){
   <div class="note2" style="text-align:center;padding-bottom:90px">${ic('lock',14)} ${NATIVE?'Chat over the internet with an account, or with people nearby over Bluetooth.':'Messages travel straight from phone to phone over Bluetooth. No internet, no phone number.'}</div>`}
 function rowHTML(c){
   const m=last(c),n=c.unread,r=chatReach(c);
-  const sub=m?`${m.from==='me'&&!m.deleted?tick(m):''}<span>${c.type==='group'&&m.from!=='me'?esc(who(c,m))+': ':''}${m.type==='voice'?'🎙 ':m.type==='img'?'📷 ':''}${esc(prev(m))}</span>`:'';
+  const sub=c.typing&&c.type==='dm'?'<span style="color:var(--accent)">typing…</span>':m?`${m.from==='me'&&!m.deleted?tick(m):''}<span>${c.type==='group'&&m.from!=='me'?esc(who(c,m))+': ':''}${m.type==='voice'?'🎙 ':m.type==='img'?'📷 ':''}${esc(prev(m))}</span>`:'';
   return `<button class="li" data-a="open" data-v="${c.id}" data-lp="${c.id}">${av(cHue(c),cName(c),'',c.type==='dm'?dotOf(c.cid):'')}
   <span class="mid"><span class="nm"><span>${esc(cName(c))}</span>${c.type==='dm'&&P[c.cid]?bdg(P[c.cid].plan):''}${c.fav?ic('star',13):''}</span><span class="sub">${sub}</span></span>
   <span class="rt"><span ${n||c.mk?'style="color:var(--accent);font-weight:600"':''}>${m?dayLabel(m.t):''}</span><span style="display:flex;gap:5px;align-items:center">${c.muted?ic('mute',14):''}${c.pinned?ic('pin',14):''}${n?`<span class="badge ${c.muted?'mute':''}">${n}</span>`:c.mk?`<span class="badge" style="min-width:12px;height:12px;padding:0"></span>`:''}</span></span></button>`}
@@ -525,7 +533,13 @@ function setHTML(){
   <div class="sec">Privacy</div>
   ${sw('receipts','eye','Read receipts','Blue ticks when someone reads your message')}
   ${NATIVE?'':row('seenPick','user','Nearby status',({contacts:'My contacts',nobody:'Nobody',all:'Everyone'})[SET.seen],'Who can see that you are in range')}
-  ${NATIVE?'':sw('appLock','lock','App lock','Fingerprint or face to open Whapea')}
+  ${NATIVE?sw('online','eye','Last seen and online','If off, others cannot see you and you cannot see them'):''}
+  ${NATIVE?sw('typing','edit','Typing indicator','Show when you are typing, and see others typing'):''}
+  ${NATIVE?row('msgPick','chat','Who can message me',SET.msgFrom==='contacts'?'My contacts':'Everyone','Contacts are people you already chat with'):''}
+  ${NATIVE?row('lockMenu','lock','App lock',SET.lockOn?'On':'Off','Code or fingerprint to open Whapea'):sw('appLock','lock','App lock','Fingerprint or face to open Whapea')}
+  ${NATIVE&&SET.lockOn&&bioAvail()?`<button class="act" data-a="bioTog" data-v="">${ic('user')}<span class="grow">Unlock with fingerprint</span>${tg(SET.bio)}</button>`:''}
+  ${NATIVE&&SET.lockOn?row('lockAfter','timer','Lock after',({0:'Immediately',30000:'30 seconds',60000:'1 minute',300000:'5 minutes'})[SET.lockMs]||'30 seconds'):''}
+  ${NATIVE?`<button class="act" data-a="secureTog" data-v="">${ic('shield')}<span class="grow">Hide in recent apps<small>Also blocks screenshots</small></span>${tg(SET.secure)}</button>`:''}
   ${NATIVE?'':sw('chatLock','shield','Chat lock','Hide chosen chats behind your lock')}
   ${NATIVE?'':row('disapPick','timer','Default disappearing messages',({0:'Off',24:'24 hours',168:'7 days',2160:'90 days'})[SET.disap])}
   ${row('blocked','ban','Blocked contacts',chats.filter(c=>c.blocked).length)}
@@ -553,6 +567,7 @@ function setHTML(){
   ${NATIVE&&S.owner&&NET.s?row('netOwner','verified','Internet users','','See accounts and block for 3 hours'):''}
   ${NATIVE&&S.owner&&NET.s?row('ownerPay','db','Plus payments','','Approve or reject payment requests'):''}
   ${NATIVE&&S.owner&&NET.s?row('ownerRep','ban','Reported posts','','Delete or clear reports'):''}
+  ${NATIVE&&S.owner&&NET.s?row('ownerUsr','ban','Reported users','','Block people who are reported'):''}
   ${row('appinfo','info','About Whapea','','Version 2.9')}
   <div style="height:30px"></div>`}
 
@@ -563,12 +578,14 @@ function openChat(id){
   const v=document.createElement('div');v.className='screen';v.id='chatv';
   v.innerHTML=`<div class="ch" id="chh"></div><div class="msgs" id="msgs"></div><div id="aux"></div><div class="comp" id="comp"></div>`;
   phone.append(v);applyWp($('#msgs'),c);drawHead();drawMsgs(true);drawComp();render();
+  if(NATIVE&&c.type==='dm')peerSeen(c.cid);
   if(NATIVE)sendReads(c);else if(SET.receipts)c.msgs.forEach(m=>{if(m.from!=='me'&&m.status!=='read')m.status='read'});
 }
 function closeChat(){S.chat=null;S.rec&&clearInterval(S.rec.iv);S.rec=null;$('#chatv')?.remove();render()}
 function drawHead(){
   const c=chatOf(S.chat);if(!c)return;const r=chatReach(c);
-  let sub;if(c.typing)sub=`<small class="live">${esc(c.typing)} typing…</small>`;
+  let sub;if(c.typing)sub=`<small class="live">${c.type==='dm'?'':esc(c.typing)+' '}typing…</small>`;
+  else if(NATIVE&&c.type==='dm'&&isNet(c.cid)){const q=P[c.cid],sc=q.ls==null||!SET.online?null:q.ls+(Date.now()-(q.lsAt||Date.now()))/1000;sub=sc==null?'<small></small>':sc<100?'<small class="live">online</small>':`<small>last seen ${seenTxt(sc)}</small>`}
   else if(c.type==='group')sub=`<small>${c.members.map(m=>P[m].name.split(' ')[0]).join(', ')}, You</small>`;
   else sub=`<small class="${r==='direct'?'live':''}">${r==='direct'?`In range${P[c.cid].dist!=null?' · '+P[c.cid].dist+' m':''}`:r==='relay'?`Reachable via ${esc(P[P[c.cid].via].name.split(' ')[0])} · 2 hops`:'Out of range · messages will wait'}</small>`;
   $('#chh').innerHTML=`<button class="ib" data-a="closeChat" aria-label="Back">${ic('back')}</button>${av(cHue(c),cName(c),'sm')}<button class="who" data-a="chatInfo"><b>${esc(cName(c))}${c.type==='dm'&&P[c.cid]?bdg(P[c.cid].plan):''}</b>${sub}</button>${c.type==='dm'?`${NATIVE&&isNet(c.cid)?`<button class="ib" data-a="startVideo" data-v="${c.cid}" aria-label="Video call">${ic('video',21)}</button>`:''}<button class="ib" data-a="startCall" data-v="${c.cid}" aria-label="Voice call">${ic('phone',21)}</button>`:''}<button class="ib" data-a="chatMenu" aria-label="More">${ic('more')}</button>`;
@@ -608,7 +625,7 @@ function drawComp(){
   const keep=$('#msgIn')?.value||(S.edit?S.edit.text:'');
   comp.innerHTML=`<button class="ib" data-a="attach" aria-label="Attach">${ic('clip')}</button><div class="inp"><button class="ib" data-a="emoTog" aria-label="Emoji" style="width:36px;height:40px">${ic('smile',22)}</button><textarea id="msgIn" rows="1" placeholder="Message" aria-label="Message"></textarea></div><button class="ib pri" id="sendBtn" data-a="send" aria-label="Send">${ic('send',20)}</button><button class="ib pri" id="micBtn" data-a="recStart" aria-label="Record voice message">${ic('mic',20)}</button>`;
   const ta=$('#msgIn');ta.value=keep;syncSend();
-  ta.addEventListener('input',()=>{ta.style.height='auto';ta.style.height=ta.scrollHeight+'px';syncSend()});
+  ta.addEventListener('input',()=>{ta.style.height='auto';ta.style.height=ta.scrollHeight+'px';syncSend();if(ta.value.trim())typSend()});
   ta.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&SET.enter){e.preventDefault();ACT.send()}});
 }
 function syncSend(){const v=($('#msgIn')?.value||'').trim();const s=$('#sendBtn'),m=$('#micBtn');if(s&&m){s.hidden=!v;m.hidden=!!v}}
@@ -642,7 +659,7 @@ function ctxMenu(id){
   const c=chatOf(id);sheet(cName(c),
    A('cm_pin',id,'pin',c.pinned?'Unpin chat':'Pin chat')+A('cm_fav',id,'star',c.fav?'Remove from favourites':'Add to favourites')+A('cm_mute',id,'mute',c.muted?'Unmute notifications':'Mute notifications')+
    A('cm_arch',id,'archive','Archive chat')+A('cm_unread',id,'chat',c.unread||c.mk?'Mark as read':'Mark as unread')+A('cm_clear',id,'x','Clear chat')+
-   (c.type==='dm'?A('cm_block',id,'ban',c.blocked?'Unblock':'Block and report','','bad'):'')+A('cm_del',id,'trash','Delete chat','','bad'))}
+   (c.type==='dm'?A('cm_block',id,'ban',c.blocked?'Unblock':'Block','','bad')+(NATIVE&&isNet(c.cid)?A('cm_report',id,'ban','Report user','Spam, abuse or fake account','bad'):''):'')+A('cm_del',id,'trash','Delete chat','','bad'))}
 
 const ACT={
  tab:v=>{S.tab=v;render()},
@@ -668,7 +685,7 @@ const ACT={
  cm_arch:v=>{chatOf(v).archived=true;closeSheet();if(S.chat)closeChat();render();toast('Chat archived')},
  cm_unread:v=>{const c=chatOf(v);if(c.unread||c.mk){c.unread=0;c.mk=false}else c.mk=true;closeSheet();render()},
  cm_clear:v=>{chatOf(v).msgs=[];closeSheet();refresh();toast('Chat cleared')},
- cm_block:v=>{const c=chatOf(v);c.blocked=!c.blocked;closeSheet();if(S.chat)drawComp();render();toast(c.blocked?'Blocked and reported':'Unblocked')},
+ cm_block:v=>{const c=chatOf(v);c.blocked=!c.blocked;closeSheet();if(S.chat)drawComp();render();toast(c.blocked?'Blocked. You will not get their messages or calls':'Unblocked')},
  unblock:()=>{chatOf(S.chat).blocked=false;drawComp();render()},
  cm_del:v=>{const i=chats.findIndex(c=>c.id===v);chats.splice(i,1);closeSheet();if(S.chat)closeChat();render();toast('Chat deleted')},
  /* chat screen */
@@ -696,7 +713,7 @@ const ACT={
  star:v=>{const [c,m]=msgById(v);m.star=!m.star;closeSheet();drawMsgs(false);toast(m.star?'Starred':'Unstarred')},
  editMsg:v=>{const [c,m]=msgById(v);S.edit=m;S.reply=null;closeSheet();drawComp();const t=$('#msgIn');t.focus()},
  delMe:v=>{const c=chatOf(S.chat);c.msgs=c.msgs.filter(m=>m.id!==v);closeSheet();drawMsgs(false);render()},
- delAll:v=>{const [c,m]=msgById(v);netSend(c,{t:'del',id:v});Object.assign(m,{deleted:true,text:'',type:'text',rx:{},star:false});closeSheet();drawMsgs(false);render();toast(m.status==='queued'?'Deleted. It will not be delivered':'Deleted for everyone in range')},
+ delAll:v=>{const [c,m]=msgById(v);netSend(c,{t:'del',id:v});Object.assign(m,{deleted:true,text:'',type:'text',rx:{},star:false});closeSheet();drawMsgs(false);render();toast(m.status==='queued'?'Deleted. It will not be delivered':'Deleted for everyone')},
  info:v=>{const [c,m]=msgById(v);closeSheet();sheet('Message info',`<div class="act">${ic('check')}<span class="grow">Sent<small>${fmt(m.t)}</small></span></div><div class="act">${ic('dcheck')}<span class="grow">Delivered<small>${m.status==='queued'?'Waiting for the other phone to come in range':m.status==='sent'?'Pending':fmt(m.tD||m.t)}</small></span></div><div class="act">${ic('eye')}<span class="grow">Read<small>${m.status==='read'?fmt(m.tR||m.t):'Not yet'}</small></span></div>`)},
  fwdPick:v=>{closeSheet();sheet('Forward to',chats.filter(c=>!c.blocked).map(c=>A('fwdTo',v+'|'+c.id,null,cName(c))).join(''))},
  fwdTo:v=>{const [id,cid]=v.split('|'),[c0,m]=msgById(id),c=chatOf(cid);closeSheet();const n={...m,id:newId(),from:'me',t:Date.now(),fwd:true,rx:{},star:false,reply:null};pushMsg(c,n);toast('Forwarded to '+cName(c))},
@@ -771,7 +788,7 @@ const ACT={
  dpPick:()=>pickFile('image/*',f=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const s=Math.min(im.width,im.height),cv=document.createElement('canvas');cv.width=cv.height=256;cv.getContext('2d').drawImage(im,(im.width-s)/2,(im.height-s)/2,s,s,0,0,256,256);ME.dp=cv.toDataURL('image/jpeg',.7);announce();closeSheet();render();toast('Profile photo updated ('+size(ME.dp.length*.75)+'). Contacts get it when you meet')};im.src=r.result};r.readAsDataURL(f)}),
  dpRemove:()=>{ME.dp=null;announce();closeSheet();render()},
  /* settings */
- sw:v=>{SET[v]=!SET[v];if(v==='appLock'&&SET[v])toast('App lock on. You will unlock with your fingerprint or face');render()},
+ sw:v=>{SET[v]=!SET[v];if(v==='online'&&NATIVE)seenPing(SET.online);if(v==='appLock'&&SET[v])toast('App lock on. You will unlock with your fingerprint or face');render()},
  editProfile:()=>sheet('Profile',`<div style="display:grid;place-items:center;gap:10px;padding:4px 0 12px">${avMe('lg')}<div style="display:flex;gap:8px"><button class="chip on" data-a="dpPick">${ME.dp?'Change photo':'Add photo'}</button>${ME.dp?'<button class="chip" data-a="dpRemove">Remove</button>':''}</div></div><div class="field"><input id="pn" value="${esc(ME.name)}" maxlength="25" aria-label="Name"></div><div class="field"><input id="pa" value="${esc(ME.about)}" maxlength="60" aria-label="About"></div><button class="btn" data-a="saveProfile">Save</button>`),
  saveProfile:()=>{ME.name=$('#pn').value.trim()||ME.name;ME.about=$('#pa').value.trim();announce();closeSheet();render()},
  qr:(v,el,e)=>{e?.stopPropagation();let g='';const n=25,sd=KEY.split('').reduce((a,c)=>a*31+c.charCodeAt(0)>>>0,7);let r=sd;const rnd=()=>(r=(r*1664525+1013904223)>>>0)/4294967296;
@@ -825,10 +842,11 @@ function ensurePeer(a,name,about,dp){
   if(name)p.name=cl(name,30);p.about=cl(about,60);p.dp=okImg(dp)?dp:null;
   if(!chatOf(a))chats.push({id:a,type:'dm',cid:a,unread:0,msgs:[]});
   return p}
-function netSend(c,o){if(!NATIVE||!c||c.type!=='dm')return;if(P[c.cid]&&P[c.cid].range)tx(c.cid,JSON.stringify(o))}
+function netSend(c,o){if(!NATIVE||!c||c.type!=='dm')return;if(P[c.cid]&&(P[c.cid].range||isNet(c.cid)))tx(c.cid,JSON.stringify(o))}
 function sendMsg(c,m){
   if(!NATIVE||c.type!=='dm'||!P[c.cid]||!P[c.cid].range)return;
-  const o=wire(m);if(o)tx(c.cid,JSON.stringify(o))}
+  const o=wire(m);if(o){const r=tx(c.cid,JSON.stringify(o));if(r&&r.then)r.then(ok=>{if(ok===false&&m.status==='sent'){m.status='queued';refresh()}})}}
+function netFlush(){chats.forEach(c=>{if(c.type==='dm'&&isNet(c.cid))c.msgs.forEach(m=>{if(m.from==='me'&&!m.deleted&&m.status==='queued'){m.status='sent';sendMsg(c,m)}})})}
 function sendGroup(c,m){
   if(!NET.s)return;
   const o=wire(m);if(!o)return;o.g=ghead(c);
@@ -850,7 +868,7 @@ function announce(){if(!NATIVE)return;for(const k in P)if(P[k].range&&!isNet(k))
 const SB='https://bmcsvldqgvuahztwkune.supabase.co',SBK='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJtY3N2bGRxZ3Z1YWh6dHdrdW5lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM0MjkzMDksImV4cCI6MjEwOTAwNTMwOX0.lejp0HGOgQN4_oWquWXvkKfUJqwUtkayu1ADp3dt5YQ';
 const NET={s:null,ok:false,poll:0,busy:false,prof:{}};
 const isNet=a=>typeof a==='string'&&a.startsWith('u:');
-function tx(a,s){if(isNet(a))netTx(a.slice(2),s);else Android.send(a,s)}
+function tx(a,s){if(isNet(a))return netTx(a.slice(2),s);Android.send(a,s)}
 async function sb(path,o={}){
   const h={apikey:SBK,'Content-Type':'application/json',Authorization:'Bearer '+((NET.s&&NET.s.at)||SBK)};
   const go=()=>fetch(SB+path,{method:o.m||'GET',headers:{...h,...(o.h||{}),Authorization:'Bearer '+((NET.s&&NET.s.at)||SBK)},body:o.b?JSON.stringify(o.b):undefined});
@@ -876,7 +894,7 @@ function netStart(){
   if(!NET.s)return;NET.ok=true;
   for(const k in P)if(isNet(k))P[k].range=true;
   try{const g=JSON.parse(Android.netGet()||'null');if(g&&g.rt&&(g.ts||0)>(NET.s.ts||0)){NET.s=g;persistSoon()}}catch(e){}
-  netSave();netSched();rtOpen();clearInterval(NET.rf);NET.rf=setInterval(()=>{if(NET.s)netRefresh()},45*60000);netPull();netPushProfile();loadMe();setTimeout(()=>{try{stSyncAll()}catch(e){}},2500);refresh()}
+  netSave();netSched();rtOpen();clearInterval(NET.rf);NET.rf=setInterval(()=>{if(NET.s)netRefresh()},45*60000);netPull();netPushProfile();loadMe();seenLoop();setTimeout(netFlush,1800);lockOffer();setTimeout(()=>{try{stSyncAll()}catch(e){}},2500);refresh()}
 function netSave(){try{if(NET.s){if(!NET.s.ts)NET.s.ts=Date.now();Android.netSession(JSON.stringify(NET.s))}else Android.netSession('')}catch(e){}}
 function netSched(){clearTimeout(NET.poll);if(!NET.s)return;NET.poll=setTimeout(async()=>{await netPull();netSched()},RT.ok?(S.call?3000:10000):(S.call?700:document.hidden?9000:2500))}
 const RT={ws:null,ok:false,n:0,hb:0,retry:0,t:0,topic:'',send:null};
@@ -906,19 +924,72 @@ async function netPeer(uid){
 async function netTx(uid,s){
   try{const r=await sb('/rest/v1/frames',{m:'POST',h:{Prefer:'return=minimal'},b:{sender:NET.s.uid,receiver:uid,payload:s}});
     if(r.status===403||r.status===401){const b=await sb('/rest/v1/rpc/am_i_banned',{m:'POST',b:{}});let t=null;try{t=await b.json()}catch(e){}
-      if(t&&new Date(t)>new Date())toast('You are blocked until '+new Date(t).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+' for breaking the rules');else toast('Message not sent')}}
-  catch(e){toast('No internet. Message will wait')}}
+      if(t&&new Date(t)>new Date())toast('You are blocked until '+new Date(t).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+' for breaking the rules');else toast('Message not sent')}
+    if(r.ok)return true;if(r.status>=500)NET.down=true;return false}
+  catch(e){NET.down=true;if(!/^\{"t":"(typ|ack|read)"/.test(s))toast('No internet. Message will wait');return false}}
 async function netPull(){
   if(NET.busy||!NET.s)return;NET.busy=true;
   try{const r=await sb('/rest/v1/frames?select=id,sender,payload&order=id.asc&limit=50');
     if(!r.ok){NET.busy=false;return}
-    NET.ok=true;const rows=await r.json();
+    NET.ok=true;const rows=await r.json();if(NET.down){NET.down=false;setTimeout(netFlush,200)}
     if(rows.length){
       for(const f of rows){const p=await netPeer(f.sender);if(!p)continue;try{window.nativeData('u:'+f.sender,f.payload)}catch(e){}}
       await sb('/rest/v1/frames?id=in.('+rows.map(f=>f.id).join(',')+')',{m:'DELETE',h:{Prefer:'return=minimal'}});
       persistSoon()}
   }catch(e){}
   NET.busy=false}
+
+/* ---------- typing, online, app lock ---------- */
+const TY={};let typT=0,seenI=0;
+function typSend(){if(!NATIVE||!SET.typing)return;const c=chatOf(S.chat);if(!c||c.type!=='dm'||!P[c.cid]||!(P[c.cid].range||isNet(c.cid)))return;if(Date.now()-typT<3500)return;typT=Date.now();tx(c.cid,'{"t":"typ"}')}
+function seenPing(on){if(!NET.s)return;rpc('touch_seen',{p_on:!!on}).catch(()=>{})}
+function seenLoop(){clearInterval(seenI);if(!NET.s)return;seenPing(SET.online);seenI=setInterval(()=>{if(!document.hidden)seenPing(SET.online)},60000)}
+async function peerSeen(k){if(!NATIVE||!isNet(k)||!SET.online||!NET.s||!P[k])return;try{const v=await rpc('peer_seen',{p_user:k.slice(2)});P[k].ls=(typeof v==='number')?v:null;P[k].lsAt=Date.now();const c=S.chat&&chatOf(S.chat);if(c&&c.cid===k)drawHead()}catch(e){}}
+setInterval(()=>{if(S.chat&&!document.hidden){const c=chatOf(S.chat);if(c&&c.type==='dm')peerSeen(c.cid)}},30000);
+function seenTxt(sec){const d=new Date(Date.now()-sec*1000);if(sec<3600)return Math.max(1,Math.round(sec/60))+' min ago';return d.toDateString()===new Date().toDateString()?'today '+fmt(d.getTime()):(Date.now()-d.getTime()<2*864e5?'yesterday '+fmt(d.getTime()):d.toLocaleDateString())}
+const sha256=(()=>{const K=[],H0=[];for(let n=2;K.length<64;n++){let p=true;for(let d=2;d*d<=n;d++)if(n%d===0){p=false;break}if(p){if(H0.length<8)H0.push(Math.sqrt(n)%1*4294967296|0);K.push(Math.cbrt(n)%1*4294967296|0)}}
+ return str=>{const m=unescape(encodeURIComponent(str)),l=m.length,N=((l+8>>6)+1)*16,w=new Array(N).fill(0);for(let i=0;i<l;i++)w[i>>2]|=m.charCodeAt(i)<<(24-i%4*8);w[l>>2]|=128<<(24-l%4*8);w[N-1]=l*8;const h=H0.slice();
+  for(let o=0;o<N;o+=16){const x=w.slice(o,o+16);for(let i=16;i<64;i++){const a=x[i-15],b=x[i-2];x[i]=(x[i-16]+(((a>>>7)|(a<<25))^((a>>>18)|(a<<14))^(a>>>3))+x[i-7]+(((b>>>17)|(b<<15))^((b>>>19)|(b<<13))^(b>>>10)))|0}
+   let[a,b,c,d,e,f,g,j]=h;for(let i=0;i<64;i++){const t1=(j+(((e>>>6)|(e<<26))^((e>>>11)|(e<<21))^((e>>>25)|(e<<7)))+((e&f)^(~e&g))+K[i]+x[i])|0,t2=((((a>>>2)|(a<<30))^((a>>>13)|(a<<19))^((a>>>22)|(a<<10)))+((a&b)^(a&c)^(b&c)))|0;j=g;g=f;f=e;e=(d+t1)|0;d=c;c=b;b=a;a=(t1+t2)|0}
+   const v=[a,b,c,d,e,f,g,j];for(let i=0;i<8;i++)h[i]=(h[i]+v[i])|0}
+  return h.map(v=>(v>>>0).toString(16).padStart(8,'0')).join('')}})();
+const lkHash=(pin,salt)=>{let h=pin+salt;for(let i=0;i<400;i++)h=sha256(h+pin);return h};
+const LK={mode:'',buf:'',tmp:'',err:'',tries:0,until:0,next:'',hiddenAt:0,bioBusy:false,bioFor:''};
+const bioAvail=()=>{try{return !!(NATIVE&&Android.bioOk&&Android.bioOk())}catch(e){return false}};
+function lockClose(){$('#lock')?.remove();LK.mode='';LK.buf='';LK.err=''}
+function lockDraw(){
+  let el=$('#lock');if(!el){el=document.createElement('div');el.id='lock';el.className='lockv';phone.append(el)}
+  if(LK.mode==='forgot'){el.innerHTML=`<div class="lkl">${WLOGO}</div><h2>Forgot your code?</h2><div class="lke" style="color:var(--ink)">You can reset it, but this erases the chats saved on this phone and logs you out of your internet account.</div><button class="btn" style="width:260px" data-a="lkErase">Erase and reset</button><button class="lklink" data-a="lkBack">Back</button>`;return}
+  const t={verify:'Enter your code',old:'Enter your current code',set1:'Choose a 4-digit code',set2:'Repeat the code'}[LK.mode]||'';
+  const wait=LK.until>Date.now(),bio=LK.mode==='verify'&&SET.bio&&bioAvail();
+  const key=d=>`<button data-a="lk" data-v="${d}">${d}</button>`;
+  el.innerHTML=`<div class="lkl">${WLOGO}</div><h2>${t}</h2><div class="lkd">${[0,1,2,3].map(i=>`<i class="${i<LK.buf.length?'on':''}"></i>`).join('')}</div><div class="lke">${esc(wait?'Too many tries. Wait a little':LK.err)}</div>
+  <div class="lkp">${[1,2,3,4,5,6,7,8,9].map(key).join('')}${bio?`<button class="ghost" data-a="lkBio" aria-label="Fingerprint">${ic('user',26)}</button>`:(LK.mode==='verify'?'<span></span>':'<button class="ghost" data-a="lkCancel">Cancel</button>')}${key(0)}<button class="ghost" data-a="lkDel" aria-label="Delete">${ic('back',24)}</button></div>
+  ${LK.mode==='verify'?'<button class="lklink" data-a="lkForgot">Forgot code?</button>':''}`}
+function lockShow(){LK.mode='verify';LK.buf='';LK.err='';lockDraw();if(SET.bio&&bioAvail()&&!LK.bioBusy){setTimeout(()=>{if($('#lock')&&LK.mode==='verify'){LK.bioBusy=true;LK.bioFor='unlock';try{Android.bioAuth()}catch(e){LK.bioBusy=false}}},350)}}
+function lockSubmit(){const b=LK.buf;LK.buf='';
+  if(LK.mode==='verify'||LK.mode==='old'){
+    if(lkHash(b,SET.lockS)===SET.lockH){LK.tries=0;LK.err='';
+      if(LK.mode==='verify'){lockClose();return}
+      if(LK.next==='off'){SET.lockOn=false;SET.bio=false;SET.lockH='';persistSoon();lockClose();render();toast('App lock is off');return}
+      LK.mode='set1';LK.err='';lockDraw();return}
+    LK.tries++;try{navigator.vibrate&&navigator.vibrate(150)}catch(e){}LK.err='Wrong code';
+    if(LK.tries>=5){LK.tries=0;LK.until=Date.now()+30000;LK.err='';setTimeout(()=>{if($('#lock'))lockDraw()},30100)}
+    lockDraw();return}
+  if(LK.mode==='set1'){LK.tmp=b;LK.mode='set2';LK.err='';lockDraw();return}
+  if(LK.mode==='set2'){if(b!==LK.tmp){LK.mode='set1';LK.err='Codes did not match. Try again';lockDraw();return}
+    SET.lockS=Math.random().toString(36).slice(2,12);SET.lockH=lkHash(b,SET.lockS);SET.lockOn=true;persistSoon();lockClose();render();toast('App lock is on');
+    if(bioAvail()&&!SET.bio)sheet('Use fingerprint too?','<div class="note2">Open Whapea with your fingerprint instead of typing the code. The code still works as a backup.</div>'+A('bioTog','','user','Turn on fingerprint')+A('lockSkip','','x','Not now'))}}
+window.bioDone=ok=>{LK.bioBusy=false;const f=LK.bioFor;LK.bioFor='';
+  if(f==='unlock'){if(ok){LK.tries=0;lockClose()}}
+  else if(f==='enable'){if(ok){SET.bio=true;persistSoon();render();toast('Fingerprint unlock is on')}else toast('Fingerprint was not confirmed')}};
+window.appPause=()=>{if(LK.bioBusy)return;LK.hiddenAt=Date.now();if(NET.s)seenPing(SET.online)};
+window.appResume=()=>{if(LK.bioBusy)return;
+  if(SET.lockOn&&LK.hiddenAt&&!$('#lock')&&!S.call&&Date.now()-LK.hiddenAt>=SET.lockMs)lockShow();
+  LK.hiddenAt=0;if(NET.s){seenPing(SET.online);const c=S.chat&&chatOf(S.chat);if(c&&c.type==='dm')peerSeen(c.cid)}};
+document.addEventListener('visibilitychange',()=>{document.hidden?window.appPause():window.appResume()});
+function lockOffer(){if(SET.lockOn||SET.lockAsked||!NATIVE)return;SET.lockAsked=true;persistSoon();
+  setTimeout(()=>{if(!$('#lock')&&!S.chat&&!document.querySelector('.scrim'))sheet('Protect your chats',`<div class="note2">Add a 4-digit code${bioAvail()?' and fingerprint':''} so only you can open Whapea. You can change this any time in Settings.</div>`+A('lockMenu','','lock','Set up app lock')+A('lockSkip','','x','Not now'))},2500)}
 
 /* ---------- city, posts, Plus ---------- */
 const CITIES=['Karachi','Lahore','Islamabad','Rawalpindi','Faisalabad','Multan','Peshawar','Quetta','Hyderabad','Sialkot','Gujranwala','Bahawalpur','Sargodha','Sukkur','Larkana','Abbottabad','Mardan','Mingora','Other'];
@@ -1042,7 +1113,8 @@ window.nativeData=(a,raw)=>{
   let o;try{o=JSON.parse(raw)}catch(e){return}
   if(!o||typeof o!=='object')return;
   if(o.t==='hi'){const p=ensurePeer(a,o.name,o.about,o.dp);const was=p.range;p.range=true;flushQ(a);stSyncTo(a);if(!was)toast('Connected to '+p.name);refresh();return}
-  if(o.t==='call'){if(P[a])callRx(a,o);return}
+  if(o.t==='typ'){if(P[a]&&SET.typing){const c0=chats.find(x=>x.id===a&&x.type==='dm');if(c0&&!c0.blocked){c0.typing=P[a].name.split(' ')[0];clearTimeout(TY[a]);TY[a]=setTimeout(()=>{c0.typing=null;if(S.chat===c0.id)drawHead();else if(!S.chat)render()},5000);if(S.chat===c0.id)drawHead();else if(!S.chat)render()}}return}
+  if(o.t==='call'){if(P[a]){const bc=chats.find(x=>x.id===a&&x.type==='dm');if(bc&&bc.blocked){if(o.op==='ring')tx(a,JSON.stringify({t:'call',op:'rej'}));return}callRx(a,o)}return}
   if(o.t==='st'&&P[a]){
     if(typeof o.id!=='string'||o.id.length>40)return;
     const kind=['text','img','video'].includes(o.kind)?o.kind:'text',L=STAT[a]=STAT[a]||[];
@@ -1054,9 +1126,11 @@ window.nativeData=(a,raw)=>{
     return}
   if(o.t==='stdel'&&P[a]){const L=STAT[a];if(L){const i=L.findIndex(x=>x.id===o.id);if(i>=0){if(L[i].kind==='video')Android.mediaDel(L[i].src);L.splice(i,1);if(!L.length)delete STAT[a];persistSoon();if(!S.chat)render()}}return}
   const c=(o.g&&isNet(a)&&P[a])?groupChat(o.g,a):(P[a]?chatOf(a):null);if(!c)return;
+  if(c.type==='dm'&&c.blocked&&['msg','rx','edit','del','vote','read','ack'].includes(o.t))return;
   if(o.t==='vote'&&typeof o.id==='string'){const m=c.msgs.find(x=>x.id===o.id&&x.type==='poll');
     if(m){m.opts.forEach(x=>x.v=x.v.filter(y=>y!==a));const k=Number.isInteger(o.k)?o.k:-1;if(k>=0&&m.opts[k])m.opts[k].v.push(a);persistSoon();refresh()}return}
   if(o.t==='msg'&&typeof o.id==='string'&&o.id.length<=40){
+    if(c.type==='dm'&&isNet(a)&&SET.msgFrom==='contacts'&&!c.known&&!c.msgs.some(x=>x.from==='me')){if(!c.msgs.length){const i=chats.indexOf(c);if(i>=0)chats.splice(i,1)}return}
     if(!c.msgs.some(m=>m.id===o.id)){
       const type=['text','img','contact','voice','video','poll'].includes(o.type)?o.type:'text';
       const m={id:o.id,from:a,type,text:cl(o.text,4000),t:Date.now(),status:'read'};
@@ -1067,7 +1141,7 @@ window.nativeData=(a,raw)=>{
       if(type==='poll'){if(typeof o.q!=='string'||!Array.isArray(o.opts)||o.opts.length<2||o.opts.length>6)return;m.q=cl(o.q,120);m.opts=o.opts.map(t=>({t:cl(String(t),60),v:[]}))}
       if(o.fwd)m.fwd=true;
       if(o.reply&&typeof o.reply==='object')m.reply={who:cl(o.reply.who,30),text:cl(o.reply.text,200)};
-      c.msgs.push(m);
+      c.msgs.push(m);c.typing=null;clearTimeout(TY[a]);
       if(S.chat===c.id){sendReads(c)}else{c.unread=(c.unread||0)+1;toast(P[a].name+': '+prev(m))}
     }
     if(c.type==='dm')tx(a,JSON.stringify({t:'ack',id:cl(o.id,40)}));
@@ -1081,6 +1155,7 @@ window.nativeData=(a,raw)=>{
   if(o.t==='del'){const m=theirs(o.id);if(m)Object.assign(m,{deleted:true,text:'',type:'text',rx:{},star:false})}
   refresh()};
 window.nativeBack=()=>{
+  if($('#lock')){if(LK.mode==='verify')return false;if(LK.mode==='forgot'){LK.mode='verify';lockDraw();return true}lockClose();return true}
   const mv=document.querySelector('.mv');if(mv){mv.querySelector('[data-x]').click();return true}
   const sv=document.querySelector('.sv');if(sv){const x=sv.querySelector('[data-x]');if(x)x.click();return true}
   if(document.querySelector('.scrim')){closeSheet();return true}
@@ -1335,7 +1410,7 @@ if(NATIVE){
     tab:v=>{S.tab=v;render();if(v==='spons')loadFeed(false);if(v==='posts'&&NET.s&&!PF.ok)loadPosts(true)},
     spRefresh:()=>{toast('Checking for new posts…');loadFeed(true)},
     appinfo:()=>{aboutTaps++;if(aboutTaps>=7){aboutTaps=0;ACT.ownerLogin();return}
-      sheet('About Whapea',`<div class="note2" style="font-size:14px">Version 2.9.1. Chats work without internet, straight from phone to phone over Bluetooth. Sponsored posts and updates download when your phone is online.</div><button class="btn" data-a="updCheck">Check for updates</button>`)},
+      sheet('About Whapea',`<div class="note2" style="font-size:14px">Version 3.0. Chats work without internet, straight from phone to phone over Bluetooth. Sponsored posts and updates download when your phone is online.</div><button class="btn" data-a="updCheck">Check for updates</button>`)},
     spNew:()=>{sheet('New sponsored post',`<div class="field"><input id="spb" placeholder="Brand name" maxlength="40" autocomplete="off"></div><div class="field"><textarea id="spcap" rows="3" maxlength="300" placeholder="What are you promoting?" class="txt"></textarea></div><div class="field"><input id="spct" placeholder="Phone or address (optional)" maxlength="60" autocomplete="off"></div><div class="field"><input id="spv" placeholder="Video file name, e.g. chai.mp4 (optional)" maxlength="80" autocomplete="off" autocapitalize="none"></div><div class="sec" style="padding-top:2px">Runs for</div><div class="chips" id="spdur">${[3,7,14,30,60].map(d=>`<button class="chip ${d===7?'on':''}" data-a="spDur" data-v="${d}">${d} days</button>`).join('')}</div><button class="act" data-a="spPick">${ic('image')}<span class="grow" id="spmi">Add a photo (optional)<small>Photos are made small so they fit in the post</small></span></button><button class="btn" data-a="spPost">Create post data</button>`);S.spm=null;S.spd=7},
     spPick:()=>pickFile('image/*',f=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,640/Math.max(im.width,im.height)),cv=document.createElement('canvas');cv.width=im.width*k;cv.height=im.height*k;cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);const src=cv.toDataURL('image/jpeg',.6);S.spm={kind:'image',src};const e=$('#spmi');if(e)e.innerHTML=`${esc(f.name)}<small>Photo · ${size(src.length*.75)}</small>`};im.src=r.result};r.readAsDataURL(f)}),
     spPost:()=>{
@@ -1385,13 +1460,40 @@ if(NATIVE){
       try{const r=await sb('/rest/v1/profiles?select=id,username,name,plan,plan_until&username=ilike.'+q+'*&limit=15');const a=(await r.json()).filter(x=>x.id!==NET.s.uid);
         el.innerHTML=a.length?a.map(x=>`<button class="act" data-a="netOpen" data-v="${esc(x.id)}">${av0(hueOf(x.username),x.name||x.username,'sm')}<span class="grow">${esc(x.name||x.username)}${bdg(planOf(x))}<small>@${esc(x.username)}</small></span></button>`).join(''):'<div class="note2">No one found</div>'}
       catch(e){el.innerHTML='<div class="note2">Could not search. Check internet</div>'}},
-    netOpen:async v=>{const p=await netPeer(v);if(!p){toast('Could not open');return}p.range=NET.ok;ACT.openCid('u:'+v);persistSoon();stSyncTo('u:'+v)},
+    netOpen:async v=>{const p=await netPeer(v);if(!p){toast('Could not open');return}p.range=NET.ok;ACT.openCid('u:'+v);{const kc=chats.find(x=>x.id==='u:'+v);if(kc)kc.known=true}persistSoon();stSyncTo('u:'+v)},
     netOwner:async()=>{if(!NET.s)return;const el=sheet('Internet users','<div class="note2">Loading…</div>');
       try{if(S.okey){const c=await sb('/rest/v1/rpc/owner_claim',{m:'POST',b:{k:S.okey}});await c.text()}
         const r=await sb('/rest/v1/rpc/owner_users',{m:'POST',b:{}});if(!r.ok)throw 0;const a=await r.json();
         el.querySelector('.sheet').innerHTML='<div class="grab"></div><h3>Internet users</h3>'+(a.length?a.map(u=>{const b=u.banned_until&&new Date(u.banned_until)>new Date();return `<div class="li"><span class="mid"><span class="nm"><span>${esc(u.name||u.username)} · @${esc(u.username)}</span></span><span class="sub">Joined ${new Date(u.created_at).toLocaleDateString()}${b?' · blocked until '+new Date(u.banned_until).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):''}</span></span><button class="tag" data-a="netPlan" data-v="${esc(u.id)}">Badge</button><button class="tag ${b?'g':''}" data-a="netBan" data-v="${esc(u.id)}|${b?0:3}">${b?'Unblock':'Block 3h'}</button></div>`}).join(''):'<div class="note2">No users yet</div>')}
       catch(e){el.querySelector('.sheet').innerHTML='<div class="grab"></div><div class="note2">Could not load. Unlock owner mode again, then retry.</div>'}},
     netBan:async v=>{const[id,h]=v.split('|');try{const r=await sb('/rest/v1/rpc/owner_ban',{m:'POST',b:{uid:id,hours:+h}});if(!r.ok)throw 0;toast(+h?'Blocked for 3 hours':'Unblocked');closeSheet();ACT.netOwner()}catch(e){toast('Failed')}},
+
+    lockMenu:()=>{closeSheet();if(!SET.lockOn){LK.mode='set1';LK.buf='';LK.err='';lockDraw();return}
+      sheet('App lock',A('lockChange','','edit','Change code')+A('lockOff','','x','Turn off app lock','You will enter your code first','bad'))},
+    lockChange:()=>{closeSheet();LK.mode='old';LK.next='change';LK.buf='';LK.err='';lockDraw()},
+    lockOff:()=>{closeSheet();LK.mode='old';LK.next='off';LK.buf='';LK.err='';lockDraw()},
+    lockSkip:()=>closeSheet(),
+    lk:d=>{if(LK.until>Date.now()||LK.buf.length>=4)return;LK.buf+=d;lockDraw();if(LK.buf.length===4)setTimeout(lockSubmit,120)},
+    lkDel:()=>{LK.buf=LK.buf.slice(0,-1);lockDraw()},
+    lkCancel:()=>{lockClose()},
+    lkBio:()=>{if(LK.bioBusy)return;LK.bioBusy=true;LK.bioFor='unlock';try{Android.bioAuth()}catch(e){LK.bioBusy=false}},
+    lkForgot:()=>{LK.mode='forgot';lockDraw()},
+    lkBack:()=>{LK.mode='verify';LK.err='';lockDraw()},
+    lkErase:()=>{netStop();NET.s=null;netSave();chats.length=0;Object.keys(P).forEach(k=>delete P[k]);myStatus.length=0;Object.keys(STAT).forEach(k=>delete STAT[k]);
+      SET.lockOn=false;SET.bio=false;SET.lockH='';persistSoon();lockClose();render();toast('Lock removed. Log in again to chat online')},
+    bioTog:()=>{closeSheet();if(SET.bio){SET.bio=false;persistSoon();render();return}if(!bioAvail()){toast('No fingerprint is set up on this phone');return}LK.bioBusy=true;LK.bioFor='enable';try{Android.bioAuth()}catch(e){LK.bioBusy=false}},
+    secureTog:()=>{SET.secure=!SET.secure;try{Android.secure(SET.secure)}catch(e){}persistSoon();render()},
+    lockAfter:()=>sheet('Lock after',[[0,'Immediately'],[30000,'30 seconds'],[60000,'1 minute'],[300000,'5 minutes']].map(([v,l])=>A('setLockMs',v,null,l,+SET.lockMs===v?'Selected':'')).join('')),
+    setLockMs:v=>{SET.lockMs=+v;persistSoon();closeSheet();render()},
+    msgPick:()=>sheet('Who can message me',A('setMsgFrom','all',null,'Everyone',SET.msgFrom!=='contacts'?'Selected':'')+A('setMsgFrom','contacts',null,'My contacts only',SET.msgFrom==='contacts'?'Selected':'People you have chatted with. Others are ignored')),
+    setMsgFrom:v=>{SET.msgFrom=v;persistSoon();closeSheet();render()},
+    cm_report:v=>{const c=chatOf(v);closeSheet();sheet('Report '+cName(c),['Spam','Rude or abusive','Fake account or scam','Inappropriate content'].map(r=>A('repUser',c.cid+'|'+r,'ban',r)).join('')+'<div class="note2">The owner reviews reports. You can also block this person from the chat menu.</div>')},
+    repUser:async v=>{const i=v.indexOf('|'),cid=v.slice(0,i),r=v.slice(i+1);try{await rpc('report_user',{p_user:cid.slice(2),p_reason:r});closeSheet();toast('Reported. Thank you')}catch(e){toast(rpcErr(e))}},
+    ownerUsr:async()=>{closeSheet();const el=sheet('Reported users','<div class="note2">Loading…</div>');
+      try{if(S.okey){const c=await sb('/rest/v1/rpc/owner_claim',{m:'POST',b:{k:S.okey}});await c.text()}const a=await rpc('owner_user_reports');
+        el.querySelector('.sheet').innerHTML='<div class="grab"></div><h3>Reported users</h3>'+(a&&a.length?a.map(x=>`<div class="li" style="align-items:flex-start"><span class="mid"><span class="nm"><span>${esc(x.name||x.username)} · @${esc(x.username)}</span></span><span class="sub">${x.reports} report${x.reports>1?'s':''} · ${esc(x.reason||'')}</span></span><button class="tag" data-a="netBan" data-v="${esc(x.user_id)}|3">Block 3h</button><button class="tag g" data-a="repUClear" data-v="${esc(x.user_id)}">Clear</button></div>`).join(''):'<div class="note2">No reports</div>')}
+      catch(e){el.querySelector('.sheet').innerHTML='<div class="grab"></div><div class="note2">Could not load. Unlock owner mode again, then retry.</div>'}},
+    repUClear:async v=>{try{await rpc('owner_clear_user_reports',{p_user:v});ACT.ownerUsr()}catch(e){toast('Failed')}},
 
     pickCity:()=>{closeSheet();sheet('My city',CITIES.map(c=>A('setCity',c,null,c,ME.city===c?'Selected':'')).join('')+(ME.city?A('setCity','','x','Remove my city'):''))},
     setCity:async v=>{if(!NET.s){ACT.netAcct();return}try{const r=await sb('/rest/v1/profiles?id=eq.'+NET.s.uid,{m:'PATCH',h:{Prefer:'return=minimal'},b:{city:v||null}});if(!r.ok)throw 0;ME.city=v;persistSoon();closeSheet();PF.items=[];PF.ok=false;render();toast(v?'City set to '+v:'City removed');if(S.tab==='posts')loadPosts(true)}catch(e){toast('Could not save. Check internet')}},
@@ -1455,6 +1557,8 @@ if(NATIVE){
     setPlan:async v=>{const[id,pl,d]=v.split('|');try{await rpc('owner_set_plan',{p_uid:id,p_plan:pl==='x'?null:pl,p_days:+d});toast('Done');closeSheet()}catch(e){toast('Failed')}},
   });
   if(NET.s)setTimeout(netStart,400);
+  try{if(SET.secure)Android.secure(true)}catch(e){}
+  if(SET.lockOn&&SET.lockH)lockShow();
   loadFeed(true);
   if(ME.name&&SET.bt)setTimeout(()=>Android.start(),300);
 }

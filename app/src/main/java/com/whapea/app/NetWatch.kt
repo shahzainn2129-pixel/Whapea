@@ -88,6 +88,13 @@ object NetWatch {
                             "msg" -> {
                                 val body = when (p.optString("type")) { "img" -> "Photo"; "voice" -> "Voice message"; "contact" -> "Contact"; else -> p.optString("text").take(120) }
                                 Core.notifyMsg(f.getString("sender"), who, body)
+                                try {
+                                    val mid = p.optString("id")
+                                    if (mid.isNotBlank() && !p.has("g") && s.optString("uid").isNotBlank()) {
+                                        val ack = JSONObject().put("t", "ack").put("id", mid).toString()
+                                        call("/rest/v1/frames", "POST", JSONObject().put("sender", s.optString("uid")).put("receiver", f.getString("sender")).put("payload", ack).toString(), s.optString("at"))
+                                    }
+                                } catch (e: Exception) { }
                             }
                             "call" -> when (p.optString("op")) {
                                 "ring" -> { Core.notifyCallFrom(who); Core.ringStart(); ringUntil = System.currentTimeMillis() + 40000 }
