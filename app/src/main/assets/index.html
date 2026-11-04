@@ -314,9 +314,92 @@ img{max-width:100%}
 .splash .sl{width:88px;height:88px;animation:spIn .5s cubic-bezier(.2,1.4,.4,1)}.splash b{font:800 28px var(--font-display);letter-spacing:-.03em}
 @keyframes spIn{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}@keyframes spOut{to{opacity:0;visibility:hidden}}
 .pfb .val .ic{display:inline-block;vertical-align:-2px}
+
+/* ===== v3.2 professional pass ===== */
+:root{--r:20px}
+.tabin{animation:none}
+.av{background:linear-gradient(135deg,hsl(var(--h) 72% 60%),hsl(calc(var(--h) + 38) 68% 42%))}
+.pfv-av{background:linear-gradient(135deg,hsl(var(--h) 72% 60%),hsl(calc(var(--h) + 38) 68% 42%))}
+.top{backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);background:color-mix(in srgb,var(--surface) 88%,transparent);position:relative;z-index:5}
+.brand.wm{background:linear-gradient(45deg,#fa7e1e,#d62976 55%,#7a3cf0);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:800;letter-spacing:-.04em}
+.top .brand.wm{font-size:24px}
+.searchbar{margin:2px 16px 8px;height:40px;border-radius:12px;background:var(--surface2);transition:box-shadow .2s}
+.searchbar:focus-within{box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 45%,transparent)}
+.chips{padding:2px 16px 8px}.chip{font-size:13.5px;font-weight:600;padding:6px 14px;background:var(--surface2);color:var(--ink);transition:all .2s}.chip.on{background:var(--ink);color:var(--bg)}
+.li{padding:11px 18px;border-radius:0;transition:background .15s}.li .av{width:56px;height:56px;font-size:22px}
+.li .nm{font-size:16px;font-weight:700}.li .sub{font-size:14px}
+.badge{background:linear-gradient(135deg,#d62976,#7a3cf0);box-shadow:0 4px 10px -3px #d62976aa}
+.stories{padding:8px 14px 10px;gap:12px}.st1{width:74px}.st1 .ring .av{width:64px;height:64px;font-size:24px}
+.ring{padding:2.5px;border-radius:50%;background:conic-gradient(from 210deg,#feda75,#fa7e1e,#d62976,#962fbf,#4f5bd5,#feda75)}
+.ring .av{border:2.5px solid var(--surface)}
+.ring:not(.seen):not(.none){animation:ringp 3s ease-in-out infinite}@keyframes ringp{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+.ring.sm{display:inline-grid;padding:2px;flex:none}.ring.sm .av{width:34px;height:34px;border-width:2px}
+.nav{padding:4px 8px 6px;border-top:1px solid var(--line);background:color-mix(in srgb,var(--surface) 92%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.nav button{font-size:0;gap:0;padding:8px 0 10px}
+.pill{width:48px;height:30px}
+.nav button svg{transition:transform .25s cubic-bezier(.3,1.6,.5,1),color .2s}
+.nav button.on svg{transform:scale(1.14)}
+.nav button.on::after{content:"";position:absolute;bottom:2px;left:50%;width:5px;height:5px;margin-left:-2.5px;border-radius:50%;background:linear-gradient(45deg,#fa7e1e,#d62976,#7a3cf0);animation:dotin .3s cubic-bezier(.3,1.6,.5,1)}
+@keyframes dotin{from{transform:scale(0)}to{transform:scale(1)}}
+.nav .badge{font-size:11px}
+.fab{border-radius:50%;width:58px;height:58px;box-shadow:0 12px 26px -8px #d62976cc;animation:fabin .45s cubic-bezier(.3,1.6,.5,1)}@keyframes fabin{from{transform:scale(0) rotate(-40deg)}to{transform:none}}
+.tabin>*{animation:rise .42s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i,0)*38ms)}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.sheet{animation:sheetin .34s cubic-bezier(.2,.95,.3,1.04)}@keyframes sheetin{from{transform:translateY(40px);opacity:.4}to{transform:none;opacity:1}}
+.scrim{animation:fade .2s}
+.sheet .act,.sheet .li{padding-block:13px}
+/* chat screen */
+.ch{padding:8px 8px 8px 4px;backdrop-filter:blur(14px);background:color-mix(in srgb,var(--surface) 90%,transparent)}
+.ch .who b{font-weight:700}
+.msgs{padding:14px 12px 10px;gap:4px}
+.note{background:var(--surface2);border-radius:99px;padding:6px 14px;font-size:12px}
+.out .b{border-radius:22px 22px 6px 22px;padding:9px 13px 6px;box-shadow:0 6px 16px -10px #7a3cf0}
+.in .b{border-radius:22px 22px 22px 6px;padding:9px 13px 6px;background:var(--surface2)}
+.mrow.pop{animation:bpop .32s cubic-bezier(.2,1.3,.4,1) both;transform-origin:bottom}.mrow.out.pop{transform-origin:bottom right}.mrow.in.pop{transform-origin:bottom left}
+@keyframes bpop{from{opacity:0;transform:translateY(10px) scale(.88)}to{opacity:1;transform:none}}
+.comp{padding:8px 10px 10px;background:var(--surface)}
+.comp .inp{border-radius:26px;background:var(--surface2);box-shadow:none}
+/* posts, instagram style */
+.seg2{display:flex;align-items:stretch;border-bottom:1px solid var(--line);margin-top:2px}
+.seg2 button{flex:1;padding:12px 4px;font-weight:600;font-size:14px;color:var(--muted);position:relative;transition:color .2s}
+.seg2 button.on{color:var(--ink)}
+.seg2 button.on::after{content:"";position:absolute;left:18%;right:18%;bottom:-1px;height:2.5px;border-radius:2px;background:linear-gradient(90deg,#fa7e1e,#d62976,#7a3cf0);animation:ul .25s ease-out}
+@keyframes ul{from{transform:scaleX(0)}to{transform:none}}
+.seg2 .rf{flex:none;width:44px;height:auto;border-radius:0}.seg2 .rf:active svg{transform:rotate(180deg)}.seg2 .rf svg{transition:transform .4s}
+.pc,.sp{margin:0 0 6px;border:0;border-radius:0;border-bottom:1px solid var(--line);background:var(--surface);box-shadow:none;overflow:visible}
+.pc header,.sp header{display:flex;gap:10px;align-items:center;padding:10px 12px 10px 12px}
+.pc header b,.sp header b{font-size:14.5px;font-weight:700}
+.pc header .val,.sp header .val{font-size:12px}
+.pim,.spm{width:100%;display:block;aspect-ratio:4/5;max-height:520px;object-fit:cover;background:var(--surface2);border-radius:0}
+.spm.poster{height:auto}
+.ptile{aspect-ratio:1/1;display:grid;place-items:center;padding:28px;text-align:center;color:#fff;font:700 24px/1.3 var(--font-display);word-break:break-word;background:linear-gradient(135deg,hsl(var(--h) 75% 58%),hsl(calc(var(--h) + 55) 70% 40%))}
+.ptile span{display:-webkit-box;-webkit-line-clamp:7;-webkit-box-orient:vertical;overflow:hidden}
+.pact{display:flex;align-items:center;gap:4px;padding:8px 8px 2px}
+.pact button{width:44px;height:44px;display:grid;place-items:center;border-radius:50%;color:var(--ink);transition:transform .15s}
+.pact button:active{transform:scale(.85)}
+.pact button.on{color:#ed4956}.pact button.on svg{fill:#ed4956;stroke:#ed4956}
+.pl{padding:2px 14px 2px;font-weight:700;font-size:14px}
+.pcap{padding:2px 14px;font-size:14.5px;line-height:1.4;word-break:break-word;white-space:pre-wrap}.pcap b{font-weight:700}
+.pvc{padding:3px 14px;color:var(--muted);font-size:14px;text-align:left}
+.pend{padding:4px 14px 12px;color:var(--muted);font-size:11.5px;text-transform:uppercase;letter-spacing:.04em}
+.pc article,.pc{padding-bottom:12px}
+.cta{display:flex;align-items:center;gap:10px;width:100%;padding:12px 14px;background:linear-gradient(90deg,#feda75 -40%,#fa7e1e,#d62976 70%,#962fbf);color:#fff;font-weight:700;font-size:14.5px;text-align:left}
+.cta small{font-weight:500;opacity:.85;font-size:12px}
+.spnote{padding:8px 16px;color:var(--muted);font-size:12.5px;display:flex;gap:8px;align-items:center}
+.sp .spc,.sp .spb,.sp .spa{display:none}
+/* settings tiles */
+.act>svg.ic:first-child{width:36px;height:36px;padding:8px;box-sizing:border-box;border-radius:12px;background:var(--surface2);flex:none}
+.act{gap:14px}
+.card{border-radius:18px}
+/* onboarding */
+.btn{border-radius:14px;font-weight:700;background:linear-gradient(135deg,#fa7e1e,#d62976 55%,#7a3cf0);color:#fff;box-shadow:0 10px 22px -10px #d62976;border:0}
+.lockv .lkl,.splash .sl{filter:drop-shadow(0 10px 18px rgba(214,41,118,.35))}
+.splash .sl{animation:spIn .55s cubic-bezier(.2,1.4,.4,1),float 3s ease-in-out .6s infinite}@keyframes float{50%{transform:translateY(-4px)}}
+#sendBtn,#micBtn{background:linear-gradient(135deg,#7a3cf0,#d62976);color:#fff;box-shadow:0 8px 18px -8px #d62976}
 </style>
 </head><body>
 
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><radialGradient id="igrad" cx=".3" cy="1.07" r="1.15"><stop offset="0" stop-color="#feda75"/><stop offset=".22" stop-color="#fa7e1e"/><stop offset=".5" stop-color="#d62976"/><stop offset=".78" stop-color="#962fbf"/><stop offset="1" stop-color="#4f5bd5"/></radialGradient></defs></svg>
 <div class="stage"><div class="phone" id="phone" data-wp="dots">
   <div id="main" style="display:flex;flex-direction:column;flex:1;min-height:0"></div>
 </div></div>
@@ -370,6 +453,8 @@ video:'<rect x="3" y="6" width="13" height="12" rx="2"/><path d="M16 10l5-3v10l-
 camera:'<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>',
 verified:'<path d="M12 3l2.4 1.8 3-.1.9 2.9 2.4 1.8-1 2.8 1 2.8-2.4 1.8-.9 2.9-3-.1L12 21l-2.4-1.8-3 .1-.9-2.9-2.4-1.8 1-2.8-1-2.8 2.4-1.8.9-2.9 3 .1z"/><path d="M8.5 12l2.5 2.5 4.5-5"/>',
 };
+I.heart='<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>';
+I.refresh='<polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>';
 const ic=(n,s=22)=>`<svg class="ic" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${I[n]||''}</svg>`;
 const fmt=t=>new Date(t).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
 const dayLabel=t=>{const d=new Date(t),n=new Date();if(d.toDateString()===n.toDateString())return fmt(t);const y=new Date(n-864e5);return d.toDateString()===y.toDateString()?'Yesterday':d.toLocaleDateString([], {day:'numeric',month:'short'})};
@@ -457,7 +542,7 @@ function render(){persistSoon();if(NATIVE&&!ME.name){$('#main').innerHTML=obHTML
   if(S.tab==='chats'){top=topbar('Whapea',true,true);body=chatsHTML();fab=`<button class="fab" data-a="newChat" aria-label="New chat">${ic('chat',24)}</button>`}
   if(S.tab==='status'){top=topbar('Status',false,false);body=statusHTML();fab=`<button class="fab" data-a="addStatus" aria-label="Add status">${ic('edit',24)}</button>`}
   if(S.tab==='spons'){top=topbar('Sponsors',false,false);body=sponsHTML();fab=S.owner?`<button class="fab" data-a="spNew" aria-label="New sponsored post">${ic('plus',24)}</button>`:''}
-  if(S.tab==='posts'){top=topbar('Posts',false,false);body=postsHTML();fab=NET.s?`<button class="fab" data-a="newPost" aria-label="New post">${ic('plus',24)}</button>`:''}
+  if(S.tab==='posts'){top=topbar('Posts',false,false);body=(NET.s?storiesHTML():'')+postsHTML();fab=NET.s?`<button class="fab" data-a="newPost" aria-label="New post">${ic('plus',24)}</button>`:''}
   if(S.tab==='near'){top=topbar('Nearby',false,false);body=nearHTML()}
   if(S.tab==='calls'){top=topbar('Calls',false,false);body=callsHTML();fab=`<button class="fab" data-a="newCall" aria-label="New call">${ic('phone',24)}</button>`}
   if(S.tab==='set'){top=topbar('Settings',false,false);body=setHTML()}
@@ -466,8 +551,8 @@ function render(){persistSoon();if(NATIVE&&!ME.name){$('#main').innerHTML=obHTML
   m.querySelector('.body').scrollTop=sc;if(qv){const q=$('#q');q.focus();q.setSelectionRange(q.value.length,q.value.length)}
 }
 function topbar(t,search,menu){
-  return `<div class="top"><div class="brand">${t==='Whapea'?`Whapea<i title="Bluetooth on"></i>`:t}</div>${search?`<button class="ib" data-a="toggleSearch" aria-label="Search">${ic('search')}</button>`:''}${menu?`<button class="ib" data-a="chatsMenu" aria-label="Menu">${ic('more')}</button>`:''}</div>
-  ${S.tab==='chats'&&S.qOpen?`<div class="searchbar">${ic('search',18)}<input id="q" placeholder="Search chats and messages" value="${esc(S.q)}" autocomplete="off"></div>`:''}`}
+  return `<div class="top"><div class="brand${t==='Whapea'?' wm':''}">${t==='Whapea'?`Whapea`:t}</div>${menu?`<button class="ib" data-a="chatsMenu" aria-label="Menu">${ic('more')}</button>`:''}</div>
+  ${S.tab==='chats'?`<div class="searchbar">${ic('search',18)}<input id="q" placeholder="Search" value="${esc(S.q)}" autocomplete="off"></div>`:''}`}
 
 function storiesHTML(){
   pruneSt();
@@ -483,8 +568,8 @@ function chatsHTML(){
   const f=[['all','All'],['unread','Unread'],['fav','Favourites'],['groups','Groups']];
   return `${S.q?'':storiesHTML()}<div class="chips">${f.map(([k,l])=>`<button class="chip ${S.filter===k?'on':''}" data-a="filter" data-v="${k}">${l}</button>`).join('')}</div>
   ${arch&&!S.q?`<button class="li" data-a="archived"><span class="av sm" style="--h:210;background:var(--surface2);color:var(--muted)">${ic('archive',18)}</span><span class="mid"><span class="nm">Archived</span></span><span class="val">${arch}</span></button>`:''}
-  ${L.length?L.map(rowHTML).join(''):`<div class="empty"><b>No chats here</b>Tap the chat button to find someone by username, or message someone nearby.</div>`}
-  <div class="note2" style="text-align:center;padding-bottom:90px">${ic('lock',14)} ${NATIVE?'Chat over the internet with an account, or with people nearby over Bluetooth.':'Messages travel straight from phone to phone over Bluetooth. No internet, no phone number.'}</div>`}
+  ${L.length?L.map(rowHTML).join(''):`<div class="empty"><b>No chats here</b>Tap the chat button to find someone by username and start chatting.</div>`}
+  <div style="height:96px"></div>`}
 function rowHTML(c){
   const m=last(c),n=c.unread,r=chatReach(c);
   const sub=c.typing&&c.type==='dm'?'<span style="color:var(--accent)">typing…</span>':m?`${m.from==='me'&&!m.deleted?tick(m):''}<span>${c.type==='group'&&m.from!=='me'?esc(who(c,m))+': ':''}${m.type==='voice'?'🎙 ':m.type==='img'?'📷 ':''}${esc(prev(m))}</span>`:'';
@@ -504,14 +589,17 @@ function statusHTML(){
 function spCard(p){
   const left=Math.max(1,Math.ceil((p.until-Date.now())/DAY));
   const media=p.kind==='text'?'':p.kind==='video'?`<video class="spm" controls playsinline preload="metadata" src="${p.src}#t=0.1"></video>`:p.kind==='image'?`<img class="spm" src="${p.src}" alt="${esc(p.brand)}">`:`<button class="spm poster" style="--h:${p.hue}" data-a="spSample" aria-label="Play sample video"><span class="play">${ic('play',30)}</span><span>${esc(p.brand)}</span></button>`;
-  return `<article class="sp"><header><span class="av sm" style="background:none;border-radius:12px;overflow:hidden;display:block">${WLOGO}</span><span style="flex:1;min-width:0"><b>${esc(p.brand)} ${ic('verified',15)}</b><div class="val">Sponsored${p.pinned?' · Pinned':''} · ends in ${left} day${left>1?'s':''}</div></span>${S.owner&&!NATIVE?`<button class="ib" data-a="spMenu" data-v="${p.id}" aria-label="Manage post">${ic('more')}</button>`:''}</header>
-  ${media}<div class="spb"><p>${esc(p.caption)}</p>${p.contact?`<div class="spc"><span>${ic('phone',16)} ${esc(p.contact)}</span><button class="tag" data-a="spCopy" data-v="${p.id}">Copy</button></div>`:''}
-  <div class="spa"><button data-a="spLike" data-v="${p.id}" class="${p.liked?'on':''}">${ic('star',18)} ${p.likes+(p.liked?1:0)}</button><button data-a="spShare" data-v="${p.id}">${ic('fwd',18)} Share</button><button data-a="spHide" data-v="${p.id}">${ic('x',18)} Hide</button></div></div></article>`}
+  const n=p.likes+(p.liked?1:0);
+  return `<article class="sp"><header><span class="ring sm"><span class="av sm" style="background:none;overflow:hidden;display:block">${WLOGO}</span></span><span style="flex:1;min-width:0"><b>${esc(p.brand)} ${ic('verified',15)}</b><div class="val">Sponsored${p.pinned?' · Featured':''}</div></span>${S.owner&&!NATIVE?`<button class="ib" data-a="spMenu" data-v="${p.id}" aria-label="Manage post">${ic('more')}</button>`:''}</header>
+  ${p.kind==='text'?`<div class="ptile" style="--h:${p.hue}"><span>${esc(p.caption)}</span></div>`:media}
+  ${p.contact?`<button class="cta" data-a="spCopy" data-v="${p.id}">${ic('phone',18)}<span class="grow">${esc(p.contact)}</span><small>Tap to copy</small></button>`:''}
+  <div class="pact"><button data-a="spLike" data-v="${p.id}" class="${p.liked?'on':''}" aria-label="Like">${ic('heart',27)}</button><button data-a="spShare" data-v="${p.id}" aria-label="Send">${ic('fwd',25)}</button><span style="flex:1"></span><button data-a="spHide" data-v="${p.id}" aria-label="Hide">${ic('x',22)}</button></div>
+  <div class="pl">${n?n+(n===1?' like':' likes'):'Sponsored'}</div>${p.kind==='text'?'':`<div class="pcap"><b>${esc(p.brand)}</b> ${esc(p.caption)}</div>`}<div class="pend">Ends in ${left} day${left>1?'s':''}</div></article>`}
 function sponsHTML(){
   const L=SPONS.filter(p=>p.until>Date.now()&&!p.hidden&&(!p.city||p.city===ME.city)).sort((a,b)=>(b.pinned?1:0)-(a.pinned?1:0)||b.t-a.t);
   const inr=Object.keys(P).filter(k=>reach(k)!=='none').length;
   return `${S.owner?`<div class="card ownerbar">${ic('verified',28)}<span style="flex:1;min-width:0"><b>Owner mode</b><div class="val">Create a post, then copy its data to publish it.</div></span><button class="tag" data-a="ownerOff">Sign out</button></div>`:''}
-  <div class="note2">Sponsored posts come from the Whapea owner. They download when your phone is online and stay saved for offline use. ${NATIVE?`<button class="tag" data-a="spRefresh">Refresh</button>`:''}</div>
+  <div class="spnote">Partner posts${NATIVE?` <button class="tag" data-a="spRefresh">Refresh</button>`:''}</div>
   ${L.length?L.map(spCard).join(''):`<div class="empty"><b>No sponsored posts</b>${NATIVE?'Posts download when your phone is online.':(S.owner?'Tap + to post your first brand video.':'Check again later.')}</div>`}
   <div style="height:90px"></div>`}
 function nearHTML(){if(NATIVE)return nearNative();
@@ -546,7 +634,7 @@ function setHTML(){
   ${S.owner?row('ownerOff','verified','Owner mode is on','','Tap to sign out'):(NATIVE?'':row('ownerLogin','verified','Owner sign-in','','Only the owner can post sponsored videos'))}
   <div class="sec">Account</div>
   ${NATIVE?'':row('myKey','shield','Device key','',`Your identity: ${KEY.slice(0,9)}…`)}
-  <div class="note2" style="margin-top:-2px">No phone number or email needed. Friends find you nearby over Bluetooth.</div>
+  <div class="note2" style="margin-top:-2px">Find friends by their username. No phone number needed.</div>
   <div class="sec">Privacy</div>
   ${sw('receipts','eye','Read receipts','Blue ticks when someone reads your message')}
   ${NATIVE?'':row('seenPick','user','Nearby status',({contacts:'My contacts',nobody:'Nobody',all:'Everyone'})[SET.seen],'Who can see that you are in range')}
@@ -575,7 +663,7 @@ function setHTML(){
   ${NATIVE?'':sw('wifi','down','Faster photos and files','Upgrade to Wi-Fi Direct for large transfers')}
   <div class="sec">Storage and data</div>
   ${NATIVE?'':row('storage','db','Manage storage','','Photos, voice notes, documents')}
-  ${row('qualityPick','image','Photo quality',SET.quality[0].toUpperCase()+SET.quality.slice(1),'Smaller photos travel faster over Bluetooth')}
+  ${row('qualityPick','image','Photo quality',SET.quality[0].toUpperCase()+SET.quality.slice(1),'Smaller photos use less data')}
   ${NATIVE?row('netAcct','users','Internet account',NET.s?'@'+esc(NET.s.user):'','Chat with anyone over the internet'):''}
   ${NATIVE?row('plus','verified','Whapea Plus',isPlus()?(ME.plan==='gold'?'Verified':'Active'):'',isPlus()?'Until '+new Date(ME.plan_until).toLocaleDateString():'Badge, longer videos and more'):''}
   ${NATIVE&&NET.s?row('myProf','user','My profile','','Your posts, followers and bio'):''}
@@ -625,13 +713,13 @@ function msgHTML(c,m,i){
   }
   const q=m.reply?`<div class="quote"><b>${esc(m.reply.who)}</b>${esc(m.reply.text)}</div>`:'';
   const rx=Object.entries(m.rx||{}).map(([e,n])=>`<span>${e}${n>1?' '+n:''}</span>`).join('');
-  return `<div class="mrow ${own?'out':'in'}" style="--h:${own?0:P[m.from].hue}"><div class="b" role="button" tabindex="0" data-a="msg" data-v="${m.id}">${g&&!own?`<div class="who">${esc(P[m.from].name)}</div>`:''}${m.fwd?`<div class="fwd">${ic('fwd',13)} Forwarded</div>`:''}${q}${body}<span class="meta">${m.star?ic('star',12):''}${m.edited&&!m.deleted?'edited':''}${c.disap?ic('timer',12):''}${fmt(m.t)}${own?tick(m):''}</span></div>${rx?`<div class="rx">${rx}</div>`:''}</div>`}
+  return `<div class="mrow ${own?'out':'in'}${Date.now()-m.t<800?' pop':''}" style="--h:${own?0:P[m.from].hue}"><div class="b" role="button" tabindex="0" data-a="msg" data-v="${m.id}">${g&&!own?`<div class="who">${esc(P[m.from].name)}</div>`:''}${m.fwd?`<div class="fwd">${ic('fwd',13)} Forwarded</div>`:''}${q}${body}<span class="meta">${m.star?ic('star',12):''}${m.edited&&!m.deleted?'edited':''}${c.disap?ic('timer',12):''}${fmt(m.t)}${own?tick(m):''}</span></div>${rx?`<div class="rx">${rx}</div>`:''}</div>`}
 function drawMsgs(scroll){
   const c=chatOf(S.chat);if(!c)return;const el=$('#msgs');if(!el)return;
   const q=c.find?c.find.toLowerCase():'';
   const list=c.msgs.filter(m=>!q||(m.text||'').toLowerCase().includes(q));
   const nearBottom=el.scrollHeight-el.scrollTop-el.clientHeight<120;
-  el.innerHTML=`<div class="note">${ic('lock',14)}<span>Messages travel straight from phone to phone over Bluetooth.${c.disap?` Disappearing messages: ${({24:'24 hours',168:'7 days',2160:'90 days'})[c.disap]}.`:''}</span></div>`+
+  el.innerHTML=`<div class="note">${ic('lock',14)}<span>${NATIVE&&c.type==='dm'&&isNet(c.cid)?'Say hello 👋':'Messages travel straight from phone to phone over Bluetooth.'}${c.disap?` Disappearing messages: ${({24:'24 hours',168:'7 days',2160:'90 days'})[c.disap]}.`:''}</span></div>`+
    list.map((m,i)=>msgHTML(c,m,i)).join('')+(c.typing?`<div class="typing"><i></i><i></i><i></i></div>`:'');
   if(scroll||nearBottom)el.scrollTop=el.scrollHeight;
 }
@@ -848,7 +936,7 @@ const NS={running:false,scanning:false,text:'Not started',found:[],btOn:true};
 const hueOf=s=>{let h=0;for(const ch of String(s))h=(h*31+ch.charCodeAt(0))>>>0;return h%360};
 const okImg=s=>typeof s==='string'&&s.length<400000&&/^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/.test(s);
 const okAud=s=>typeof s==='string'&&s.length<700000&&/^data:audio\/mp4;base64,[A-Za-z0-9+\/=]+$/.test(s);
-const WLOGO=`<svg width="100%" height="100%" viewBox="0 0 108 108" aria-label="Whapea"><defs><linearGradient id="wg1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fa7e1e"/><stop offset=".5" stop-color="#d62976"/><stop offset="1" stop-color="#7a3cf0"/></linearGradient></defs><rect width="108" height="108" rx="26" fill="url(#wg1)"/><polyline points="25,34 39,74 54,46 69,74 83,34" fill="none" stroke="#fff" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const WLOGO=`<svg width="100%" height="100%" viewBox="0 0 108 108" aria-label="Whapea"><rect width="108" height="108" rx="26" fill="url(#igrad)"/><path d="M54 21C73 21 87 34 87 51C87 68 73 81 54 81C50 81 46.4 80.4 43 79.3L27 87L31.5 71.5C25.5 66.8 21 59.5 21 51C21 34 35 21 54 21Z" fill="none" stroke="#fff" stroke-width="6.5" stroke-linejoin="round"/><polyline points="37,42 45.5,61 54,47 62.5,61 71,42" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 const RXOK=['👍','❤️','😂','😮','😢','🙏'];
 const cl=(s,n)=>String(s==null?'':s).slice(0,n);
 const copyText=async t=>{if(NATIVE){Android.copy(t);return}await navigator.clipboard.writeText(t)};
@@ -1011,12 +1099,12 @@ function lockOffer(){if(SET.lockOn||SET.lockAsked||!NATIVE)return;SET.lockAsked=
 
 /* ---------- polish: motion, skeletons, profiles, follow ---------- */
 function splash(){const e=document.createElement('div');e.className='splash';e.innerHTML=`<div class="sl">${WLOGO}</div><b>Whapea</b>`;phone.append(e);setTimeout(()=>e.remove(),1200)}
-function tabAnim(){const b=$('#body');if(!b)return;b.classList.remove('tabin');void b.offsetWidth;b.classList.add('tabin')}
+function tabAnim(){const b=$('#body');if(!b)return;b.classList.remove('tabin');let i=0;b.querySelectorAll('.li,.pc,.sp,.act,.card,.st1,.sec').forEach(e=>{if(i<14)e.style.setProperty('--i',i++)});void b.offsetWidth;b.classList.add('tabin')}
 const skel=n=>Array(n).fill(0).map(()=>`<div class="pc"><header><span class="av sm skb"></span><span style="flex:1"><i class="skl" style="width:40%"></i><i class="skl" style="width:25%;margin-top:6px"></i></span></header><div class="skb" style="height:210px"></div><div style="padding:12px 14px"><i class="skl" style="width:80%"></i></div></div>`).join('');
 let PROF=null;
 const postFind=v=>PF.items.find(x=>String(x.id)===v)||((PROF&&PROF.items)||[]).find(x=>String(x.id)===v);
 function postRedraw(popId){render();if($('#pfv'))pfDraw();if(popId){const b=document.querySelector('[data-a=postLike][data-v="'+popId+'"] svg');if(b)b.classList.add('pop')}}
-function heartOn(v){const im=document.querySelector('.pim[data-v="'+v+'"]');if(!im)return;const art=im.closest('.pc'),r=im.getBoundingClientRect(),a=art.getBoundingClientRect();
+function heartOn(v){const im=document.querySelector('.pim[data-v="'+v+'"],.ptile[data-v="'+v+'"]');if(!im)return;const art=im.closest('.pc'),r=im.getBoundingClientRect(),a=art.getBoundingClientRect();
   const h=document.createElement('div');h.className='bigheart';h.innerHTML=ic('star',90);h.style.left=(r.left-a.left+r.width/2-45)+'px';h.style.top=(r.top-a.top+r.height/2-45)+'px';art.append(h);setTimeout(()=>h.remove(),800)}
 const avatarOf=q=>`<span class="pfv-av" style="--h:${hueOf(q.username||'x')}">${okImg(q.avatar)?`<img src="${q.avatar}" alt="">`:esc((q.name||q.username||'?')[0].toUpperCase())}</span>`;
 async function openProf(uid){
@@ -1060,13 +1148,17 @@ async function loadPosts(reset){
   catch(e){PF.err='Could not load posts. Check internet'}
   PF.busy=false;if(S.tab==='posts'&&!S.chat)render()}
 function postCard(p){
-  return `<article class="pc"><header><button class="pfl" data-a="openProf" data-v="${p.author}">${av0(hueOf(p.username),p.name||p.username,'sm')}<span style="flex:1;min-width:0"><b>${esc(p.name||p.username)}${bdg(p.plan)}</b><div class="val">@${esc(p.username)}${p.city?' · '+esc(p.city):''} · ${ago(p.created_at)}</div></span></button><button class="ib" data-a="postMenu" data-v="${p.id}" aria-label="More">${ic('more')}</button></header>
-  ${p.image&&okImg(p.image)?`<img class="pim" src="${p.image}" data-a="postImg" data-v="${p.id}" alt="Post photo">`:''}
-  ${p.body?`<p>${esc(p.body)}</p>`:''}
-  <div class="spa"><button data-a="postLike" data-v="${p.id}" class="${p.liked?'on':''}">${ic('star',18)} ${p.likes}</button><button data-a="postCom" data-v="${p.id}">${ic('chat',18)} ${p.comments}</button></div></article>`}
+  const nm=esc(p.name||p.username),imgOk=p.image&&okImg(p.image),n=+p.likes||0;
+  const media=imgOk?`<img class="pim" src="${p.image}" data-a="postImg" data-v="${p.id}" alt="Post photo">`:(p.body?`<div class="ptile" style="--h:${hueOf(p.username)}" data-a="postImg" data-v="${p.id}"><span>${esc(p.body)}</span></div>`:'');
+  const cap=imgOk&&p.body?`<div class="pcap"><b>${esc(p.username)}</b> ${esc(p.body)}</div>`:'';
+  return `<article class="pc"><header><button class="pfl" data-a="openProf" data-v="${p.author}"><span class="ring sm">${av0(hueOf(p.username),p.name||p.username,'sm')}</span><span style="flex:1;min-width:0"><b>${nm}${bdg(p.plan)}</b><div class="val">${p.city?esc(p.city)+' · ':''}${ago(p.created_at)}</div></span></button><button class="ib" data-a="postMenu" data-v="${p.id}" aria-label="More">${ic('more')}</button></header>
+  ${media}
+  <div class="pact"><button data-a="postLike" data-v="${p.id}" class="${p.liked?'on':''}" aria-label="Like">${ic('heart',27)}</button><button data-a="postCom" data-v="${p.id}" aria-label="Comments">${ic('chat',26)}</button><button data-a="postShare" data-v="${p.id}" aria-label="Send">${ic('fwd',25)}</button></div>
+  <div class="pl">${n?n+(n===1?' like':' likes'):'Be the first to like this'}</div>${cap}
+  ${p.comments?`<button class="pvc" data-a="postCom" data-v="${p.id}">View all ${p.comments} comment${p.comments>1?'s':''}</button>`:''}</article>`}
 function postsHTML(){
   if(!NET.s)return `<div class="empty"><b>Posts need an internet account</b>Create a free account to see what people share and to post yourself.<br><button class="btn" style="margin-top:14px" data-a="netAcct">Create internet account</button></div>`;
-  const seg=`<div class="seg"><button class="chip ${PF.scope==='city'?'on':''}" data-a="postScope" data-v="city">${ME.city?esc(ME.city):'My city'}</button><button class="chip ${PF.scope==='all'?'on':''}" data-a="postScope" data-v="all">Everyone</button><button class="chip ${PF.scope==='follow'?'on':''}" data-a="postScope" data-v="follow">Following</button><button class="chip" data-a="postRefresh">Refresh</button></div>`;
+  const seg=`<div class="seg2"><button class="${PF.scope==='city'?'on':''}" data-a="postScope" data-v="city">${ME.city?esc(ME.city):'My city'}</button><button class="${PF.scope==='all'?'on':''}" data-a="postScope" data-v="all">Everyone</button><button class="${PF.scope==='follow'?'on':''}" data-a="postScope" data-v="follow">Following</button><button class="ib rf" data-a="postRefresh" aria-label="Refresh">${ic('refresh',19)}</button></div>`;
   if(PF.scope==='city'&&!ME.city)return seg+`<div class="empty"><b>Choose your city</b>See posts from people near you.<br><button class="btn" style="margin-top:14px" data-a="pickCity">Choose city</button></div>`;
   return seg+(PF.items.length?PF.items.map(postCard).join(''):(PF.busy?skel(3):PF.err?`<div class="note2">${esc(PF.err)}</div>`:`<div class="empty"><b>${PF.scope==='follow'?'Nothing here yet':'No posts yet'}</b>${PF.scope==='follow'?'Open someone\'s profile and tap Follow to see their posts here.':'Be the first. Tap + to share something. Posts disappear after 7 days.'}</div>`))
    +(PF.more?`<button class="btn" style="margin:10px 16px;width:calc(100% - 32px)" data-a="postMore">${PF.busy?'Loading…':'Load more'}</button>`:'')+'<div style="height:90px"></div>'}
@@ -1133,9 +1225,9 @@ function mediaViewer(m){
   el.onclick=e=>{if(e.target.closest('[data-x]')){const v=el.querySelector('video');if(v)v.pause();el.remove();return}
     const b=e.target.closest('[data-e]');if(b){ACT.react(m.id+'|'+b.dataset.e);paint()}}}
 function obHTML(){return `<div style="flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:14px;padding:32px 28px">
- <svg width="84" height="84" viewBox="0 0 108 108" aria-label="Whapea"><defs><linearGradient id="wg2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fa7e1e"/><stop offset=".5" stop-color="#d62976"/><stop offset="1" stop-color="#7a3cf0"/></linearGradient></defs><rect width="108" height="108" rx="26" fill="url(#wg2)"/><polyline points="25,34 39,74 54,46 69,74 83,34" fill="none" stroke="#fff" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/></svg>
+ <svg width="84" height="84" viewBox="0 0 108 108" aria-label="Whapea"><rect width="108" height="108" rx="26" fill="url(#igrad)"/><path d="M54 21C73 21 87 34 87 51C87 68 73 81 54 81C50 81 46.4 80.4 43 79.3L27 87L31.5 71.5C25.5 66.8 21 59.5 21 51C21 34 35 21 54 21Z" fill="none" stroke="#fff" stroke-width="6.5" stroke-linejoin="round"/><polyline points="37,42 45.5,61 54,47 62.5,61 71,42" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>
  <h1 style="font-size:60px;font-weight:800;letter-spacing:-.03em;line-height:1">Whapea</h1>
- <div class="val" style="font-size:16px;line-height:1.45">Chat with anyone over the internet, or with people near you over Bluetooth. No phone number needed.</div>
+ <div class="val" style="font-size:16px;line-height:1.45">Chat, share moments and connect with people around you. No phone number needed.</div>
  <div class="field" style="margin:10px 0 0;width:100%"><input id="obn" placeholder="Your name" maxlength="24" autocomplete="off" aria-label="Your name"></div>
  <button class="btn" style="margin:0;width:100%" data-a="obGo">Continue</button>
  <button class="btn" style="margin:0;width:100%;background:transparent;color:var(--accent,#3b82ff);border:1.5px solid currentColor" data-a="netAcct">Create internet account</button></div>`}
@@ -1458,7 +1550,7 @@ if(NATIVE){
     tab:v=>{S.tab=v;render();if(v==='spons')loadFeed(false);if(v==='posts'&&NET.s&&!PF.ok)loadPosts(true);tabAnim()},
     spRefresh:()=>{toast('Checking for new posts…');loadFeed(true)},
     appinfo:()=>{aboutTaps++;if(aboutTaps>=7){aboutTaps=0;ACT.ownerLogin();return}
-      sheet('About Whapea',`<div class="note2" style="font-size:14px">Version 3.1. Chats work without internet, straight from phone to phone over Bluetooth. Sponsored posts and updates download when your phone is online.</div><button class="btn" data-a="updCheck">Check for updates</button>`)},
+      sheet('About Whapea',`<div class="note2" style="font-size:14px">Version 3.2. Chat, post and call over the internet, or with people nearby over Bluetooth. Sponsored posts and updates download when your phone is online.</div><button class="btn" data-a="updCheck">Check for updates</button>`)},
     spNew:()=>{sheet('New sponsored post',`<div class="field"><input id="spb" placeholder="Brand name" maxlength="40" autocomplete="off"></div><div class="field"><textarea id="spcap" rows="3" maxlength="300" placeholder="What are you promoting?" class="txt"></textarea></div><div class="field"><input id="spct" placeholder="Phone or address (optional)" maxlength="60" autocomplete="off"></div><div class="field"><input id="spv" placeholder="Video file name, e.g. chai.mp4 (optional)" maxlength="80" autocomplete="off" autocapitalize="none"></div><div class="sec" style="padding-top:2px">Runs for</div><div class="chips" id="spdur">${[3,7,14,30,60].map(d=>`<button class="chip ${d===7?'on':''}" data-a="spDur" data-v="${d}">${d} days</button>`).join('')}</div><button class="act" data-a="spPick">${ic('image')}<span class="grow" id="spmi">Add a photo (optional)<small>Photos are made small so they fit in the post</small></span></button><button class="btn" data-a="spPost">Create post data</button>`);S.spm=null;S.spd=7},
     spPick:()=>pickFile('image/*',f=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,640/Math.max(im.width,im.height)),cv=document.createElement('canvas');cv.width=im.width*k;cv.height=im.height*k;cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);const src=cv.toDataURL('image/jpeg',.6);S.spm={kind:'image',src};const e=$('#spmi');if(e)e.innerHTML=`${esc(f.name)}<small>Photo · ${size(src.length*.75)}</small>`};im.src=r.result};r.readAsDataURL(f)}),
     spPost:()=>{
@@ -1552,6 +1644,9 @@ if(NATIVE){
     pfFollow:async()=>{if(!PROF||!PROF.stats)return;const st=PROF.stats,was=st.am_following;st.am_following=!was;st.followers+=was?-1:1;pfDraw();if(PF.scope==='follow')PF.ok=false;
       try{await rpc('toggle_follow',{p_user:PROF.uid})}catch(e){st.am_following=was;st.followers+=was?1:-1;pfDraw();toast(rpcErr(e))}},
 
+    postShare:v=>{const p=postFind(v);if(!p)return;sheet('Send to',chats.filter(c=>!c.blocked).map(c=>A('postShareTo',v+'|'+c.id,null,cName(c))).join('')||'<div class="note2">No chats yet</div>')},
+    postShareTo:v=>{const[id,cid]=v.split('|'),p=postFind(id),c=chatOf(cid);if(!p||!c)return;closeSheet();pushMsg(c,M('me','Post by @'+p.username+': '+(p.body||'(photo)'),0,{t:Date.now(),fwd:true}));toast('Sent to '+cName(c))},
+
     pickCity:()=>{closeSheet();sheet('My city',CITIES.map(c=>A('setCity',c,null,c,ME.city===c?'Selected':'')).join('')+(ME.city?A('setCity','','x','Remove my city'):''))},
     setCity:async v=>{if(!NET.s){ACT.netAcct();return}try{const r=await sb('/rest/v1/profiles?id=eq.'+NET.s.uid,{m:'PATCH',h:{Prefer:'return=minimal'},b:{city:v||null}});if(!r.ok)throw 0;ME.city=v;persistSoon();closeSheet();PF.items=[];PF.ok=false;render();toast(v?'City set to '+v:'City removed');if(S.tab==='posts')loadPosts(true)}catch(e){toast('Could not save. Check internet')}},
     cityPeople:async()=>{if(!ME.city)return;const el=sheet('People in '+ME.city,'<div class="note2">Loading…</div>');
@@ -1570,7 +1665,7 @@ if(NATIVE){
       catch(e){b.disabled=false;b.textContent='Post';toast(rpcErr(e))}},
     postImg:v=>{const now=Date.now();if(S.tapV===v&&now-S.tapT<320){clearTimeout(S.tapO);S.tapT=0;const p=postFind(v);if(p&&!p.liked){p.liked=true;p.likes++;postRedraw(v);rpc('toggle_like',{p_post:+v}).catch(()=>{p.liked=false;p.likes--;postRedraw()})}heartOn(v);return}
       S.tapV=v;S.tapT=now;S.tapO=setTimeout(()=>ACT.postView(v),320)},
-    postView:v=>{const p=postFind(v);if(!p)return;const el=document.createElement('div');el.className='mv';phone.append(el);
+    postView:v=>{const p=postFind(v);if(!p||!p.image)return;const el=document.createElement('div');el.className='mv';phone.append(el);
       el.innerHTML=`<div class="mvh"><button class="ib" data-x="1" aria-label="Close">${ic('x')}</button><b>${esc(p.name||p.username)}</b></div><div class="mvb"><img src="${p.image}" alt="Photo"></div>${p.body?`<div class="mvc">${esc(p.body)}</div>`:''}`;
       el.onclick=e=>{if(e.target.closest('[data-x]'))el.remove()}},
     postLike:async v=>{const p=postFind(v);if(!p)return;p.liked=!p.liked;p.likes+=p.liked?1:-1;postRedraw(p.liked?v:null);
@@ -1619,6 +1714,7 @@ if(NATIVE){
   try{if(SET.secure)Android.secure(true)}catch(e){}
   if(SET.lockOn&&SET.lockH)lockShow();
   try{splash()}catch(e){}
+  setTimeout(tabAnim,60);
   loadFeed(true);
   if(ME.name&&SET.bt)setTimeout(()=>Android.start(),300);
 }
