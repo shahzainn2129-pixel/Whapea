@@ -445,6 +445,13 @@ img.spm{aspect-ratio:auto;height:auto;max-height:560px;object-fit:contain}
 .lalt{display:flex;gap:6px;align-items:center;color:var(--muted)}.lalt button{color:#4f5bd5;font-weight:700;font-size:16px;padding:6px}
 .lfrom{position:absolute;bottom:26px;left:0;right:0;color:var(--muted);font-size:13px}.lfrom b{display:block;font-size:17px;background:linear-gradient(45deg,#fa7e1e,#d62976 55%,#7a3cf0);-webkit-background-clip:text;background-clip:text;color:transparent}
 .st1 .plus{background:#000;color:#fff;border:2.5px solid var(--bg)}[data-theme=dark] .st1 .plus,.dark .st1 .plus{background:#fff;color:#000}
+
+/* v3.3.1 full-size post photos: any shape, never cropped */
+.pim{aspect-ratio:auto!important;height:auto;max-height:78vh!important;object-fit:contain!important;background:var(--surface2);min-height:120px}
+[data-theme=dark] .pim,.dark .pim{background:#000}
+@media (prefers-color-scheme:dark){.pim{background:#000}}
+.pc .ptile{aspect-ratio:1/1}
+.pim.sk{min-height:260px}
 </style>
 </head><body>
 
@@ -722,7 +729,7 @@ function setNative(row,sw){
   ${o?`<div class="sec">Owner</div>${row('ownerOff','verified','Owner mode is on','','Tap to sign out')}
   ${NET.s?row('netOwner','verified','Internet users','','See accounts and block for 3 hours')+row('ownerPay','db','Plus payments','','Approve or reject payment requests')+row('ownerRep','ban','Reported posts','','Delete or clear reports')+row('ownerUsr','ban','Reported users','','Block people who are reported'):''}`:''}
   <div class="sec">More info and support</div>
-  ${row('appinfo','info','About Whapea','','Version 3.3')}
+  ${row('appinfo','info','About Whapea','','Version 3.3.1')}
   ${NET.s?`<button class="act bad" data-a="netOut" data-v=""><span class="grow">Log out</span></button>`:''}
   <div style="height:40px"></div>`}
 function setHTML(){
@@ -1707,7 +1714,7 @@ if(NATIVE){
     tab:v=>{S.tab=v;render();if(v==='spons')loadFeed(false);if(v==='posts'){loadFeed(false);if(NET.s&&!PF.ok)loadPosts(true)}if(v==='explore'&&NET.s&&!EX.ok)loadExplore(true);if(v==='me'&&NET.s&&Date.now()-PS.at>45000)loadMyProf();tabAnim()},
     spRefresh:()=>{toast('Checking for new posts…');loadFeed(true)},
     appinfo:()=>{aboutTaps++;if(aboutTaps>=7){aboutTaps=0;ACT.ownerLogin();return}
-      sheet('About Whapea',`<div class="note2" style="font-size:14px">Version 3.3. Chat, post and call over the internet, or with people nearby over Bluetooth. Sponsored posts and updates download when your phone is online.</div><button class="btn" data-a="updCheck">Check for updates</button>`)},
+      sheet('About Whapea',`<div class="note2" style="font-size:14px">Version 3.3.1. Chat, post and call over the internet, or with people nearby over Bluetooth. Sponsored posts and updates download when your phone is online.</div><button class="btn" data-a="updCheck">Check for updates</button>`)},
     spNew:()=>{sheet('New sponsored post',`<div class="field"><input id="spb" placeholder="Brand name" maxlength="40" autocomplete="off"></div><div class="field"><textarea id="spcap" rows="3" maxlength="300" placeholder="What are you promoting?" class="txt"></textarea></div><div class="field"><input id="spct" placeholder="Phone or address (optional)" maxlength="60" autocomplete="off"></div><div class="field"><input id="spv" placeholder="Video file name, e.g. chai.mp4 (optional)" maxlength="80" autocomplete="off" autocapitalize="none"></div><div class="sec" style="padding-top:2px">Runs for</div><div class="chips" id="spdur">${[3,7,14,30,60].map(d=>`<button class="chip ${d===7?'on':''}" data-a="spDur" data-v="${d}">${d} days</button>`).join('')}</div><button class="act" data-a="spPick">${ic('image')}<span class="grow" id="spmi">Add a photo (optional)<small>Photos are made small so they fit in the post</small></span></button><button class="btn" data-a="spPost">Create post data</button>`);S.spm=null;S.spd=7},
     spPick:()=>pickFile('image/*',f=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,640/Math.max(im.width,im.height)),cv=document.createElement('canvas');cv.width=im.width*k;cv.height=im.height*k;cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);const src=cv.toDataURL('image/jpeg',.6);S.spm={kind:'image',src};const e=$('#spmi');if(e)e.innerHTML=`${esc(f.name)}<small>Photo · ${size(src.length*.75)}</small>`};im.src=r.result};r.readAsDataURL(f)}),
     spPost:()=>{
@@ -1821,7 +1828,7 @@ if(NATIVE){
     newPost:()=>{if(!NET.s){ACT.netAcct();return}S.pimg=null;sheet('New post',`<textarea id="ptx" class="pfield" rows="4" maxlength="500" placeholder="What do you want to share?"></textarea><div id="pprev"></div>
       <div class="note2">${ME.city?'Shown in '+esc(ME.city)+' and Everyone.':'Shown in Everyone. Set your city in Settings to reach people near you.'} Posts disappear after 7 days.</div>
       ${A('postPhoto','','image','Add a photo')}<button class="btn" id="pgo" data-a="postSend">Post</button>`)},
-    postPhoto:()=>pickFile('image/*',f=>{const go=(px,q)=>readImg(f,px,q,src=>{if(src.length>125000&&px>400){go(Math.round(px*.75),Math.max(.35,q-.1));return}if(src.length>125000){toast('That photo is too large');return}S.pimg=src;const e=$('#pprev');if(e)e.innerHTML=`<img class="pim" style="max-height:220px;border-radius:12px;margin:6px 16px;width:calc(100% - 32px)" src="${src}" alt="">`});go(640,.55)}),
+    postPhoto:()=>pickFile('image/*',f=>{const go=(px,q)=>readImg(f,px,q,src=>{if(src.length>195000&&px>480){go(Math.round(px*.82),Math.max(.5,q-.06));return}if(src.length>195000){toast('That photo is too large');return}S.pimg=src;const e=$('#pprev');if(e)e.innerHTML=`<img class="pim" style="max-height:260px;aspect-ratio:auto;object-fit:contain;border-radius:12px;margin:6px 16px;width:calc(100% - 32px)" src="${src}" alt="">`});go(1280,.78)}),
     postSend:async()=>{const t=($('#ptx').value||'').trim();if(!t&&!S.pimg){toast('Write something or add a photo');return}const b=$('#pgo');b.disabled=true;b.textContent='Posting…';
       try{await rpc('create_post',{p_body:t,p_image:S.pimg||null,p_city:ME.city||null});S.pimg=null;closeSheet();toast('Posted');PS.ok=false;EX.ok=false;loadPosts(true)}
       catch(e){b.disabled=false;b.textContent='Post';toast(rpcErr(e))}},
