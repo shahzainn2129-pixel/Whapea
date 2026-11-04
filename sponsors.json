@@ -1,29 +1,29 @@
 {
   "posts": [
     {
-      "id": "founder1",
+      "id": "founder2",
       "brand": "Whapea",
-      "caption": "Welcome to Whapea. Chat with the people around you over Bluetooth, with no internet. - Shah Zain, Founder of Whapea",
+      "caption": "Welcome to Whapea. Chat, share moments and stay close to the people who matter. - Shah Zain, Founder of Whapea",
       "contact": "",
-      "date": "2026-10-23",
+      "date": "2026-11-04",
       "until": "2027-12-31",
       "pinned": true,
       "media": {
         "type": "image",
-        "url": "https://raw.githubusercontent.com/shahzainn2129-pixel/Whapea/main/sponsor-media/founder-welcome.jpg"
+        "url": "https://raw.githubusercontent.com/shahzainn2129-pixel/Whapea/main/sponsor-media/founder-welcome2.jpg"
       }
     },
     {
-      "id": "welcome2",
+      "id": "welcome3",
       "brand": "Whapea",
-      "caption": "Whapea ki taraf se aap ko dil se khush aamdeed! Bina internet, sirf Bluetooth se apno se baat karein.",
+      "caption": "Whapea ki taraf se aap ko dil se khush aamdeed! Posts share karein, doston ko follow karein aur apne shehar ke logon se milein.",
       "contact": "",
-      "date": "2026-10-22",
+      "date": "2026-11-03",
       "until": "2027-12-31",
       "pinned": false,
       "media": {
         "type": "image",
-        "url": "https://raw.githubusercontent.com/shahzainn2129-pixel/Whapea/main/sponsor-media/welcome.jpg"
+        "url": "https://raw.githubusercontent.com/shahzainn2129-pixel/Whapea/main/sponsor-media/welcome3.jpg"
       }
     }
   ]

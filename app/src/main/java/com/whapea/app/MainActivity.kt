@@ -77,6 +77,7 @@ class MainActivity : ComponentActivity() {
         setContentView(web)
         web.settings.javaScriptEnabled = true
         web.settings.domStorageEnabled = true
+        web.settings.textZoom = 100
         web.settings.allowFileAccess = true
         web.settings.mediaPlaybackRequiresUserGesture = false
         web.addJavascriptInterface(Bridge(), "Android")
