@@ -452,6 +452,28 @@ img.spm{aspect-ratio:auto;height:auto;max-height:560px;object-fit:contain}
 @media (prefers-color-scheme:dark){.pim{background:#000}}
 .pc .ptile{aspect-ratio:1/1}
 .pim.sk{min-height:260px}
+
+/* v3.4 */
+.sug{border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:12px 0 14px;margin:6px 0;background:var(--surface)}
+.sugh{padding:0 16px 10px;font-size:15px}
+.sugs{display:flex;gap:10px;overflow-x:auto;padding:0 16px 2px;scrollbar-width:none;scroll-snap-type:x proximity}.sugs::-webkit-scrollbar{display:none}
+.sgc{position:relative;flex:none;width:150px;border:1px solid var(--line);border-radius:14px;padding:16px 10px 12px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;scroll-snap-align:start;background:var(--bg)}
+.sgp{display:flex;flex-direction:column;align-items:center;gap:2px;width:100%;min-width:0}
+.sgp .pfv-av{width:72px;height:72px;font-size:28px;margin-bottom:6px}
+.sgp b{font-size:14px;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sgp small{font-size:12.5px;color:var(--muted);max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sgp small.rs{margin-top:2px}
+.sgx{position:absolute;right:6px;top:6px;width:26px;height:26px;display:grid;place-items:center;color:var(--muted)}
+.sgf{width:100%;padding:8px;border-radius:9px;background:linear-gradient(135deg,#fa7e1e,#d62976 55%,#7a3cf0);color:#fff;font-weight:700;font-size:14px}
+.sgf.on{background:var(--surface2);color:var(--ink)}
+.epcard{display:flex;align-items:center;gap:16px;background:var(--surface2);border-radius:20px;padding:16px;margin:8px 0 16px}
+.epcard b{font-size:17px}.eplinks{display:flex;gap:14px;margin-top:4px}.eplinks button{color:#4f5bd5;font-weight:700;font-size:15px;padding:2px 0}
+.epf{display:block;position:relative;border:1px solid var(--line);border-radius:14px;padding:9px 14px 8px;margin-bottom:12px;background:var(--bg)}
+.epf span{display:block;font-size:12.5px;color:var(--muted)}.epf em{position:absolute;right:14px;top:9px;font-size:12.5px;color:var(--muted);font-style:normal}
+.epf input,.epf textarea{width:100%;border:0;outline:0;background:none;color:var(--ink);font:inherit;font-size:16px;padding:2px 0;resize:none}
+.eprow{display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px;font-size:16px}
+.eprow span{flex:1}.eprow em{font-style:normal;color:var(--muted)}.eprow small{display:block;font-size:13px;color:var(--muted);margin-top:3px;line-height:1.35}
+.ephd{font-weight:800;font-size:17px;margin:14px 0 8px}.eph{font-size:13px;color:var(--muted);margin:6px 2px 14px}
+.epg{display:flex;flex-wrap:wrap;gap:8px}.epg button{padding:9px 14px;border-radius:20px;border:1px solid var(--line);font-size:14.5px}.epg button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 </style>
 </head><body>
 
@@ -701,7 +723,7 @@ function setNative(row,sw){
   const rows=[];
   const o=S.owner;
   return `<div class="sec">How you use Whapea</div>
-  ${row('editProfile','user','Edit profile','','Name, about and photo')}
+  ${row('editProfile','user','Edit profile','','Name, bio, website and photo')}
   ${row('myProf2','image','Your profile and posts')}
   ${row('plus','verified','Whapea Plus',isPlus()?(ME.plan==='gold'?'Verified':'Active'):'',isPlus()?'Until '+new Date(ME.plan_until).toLocaleDateString():'Badge, longer videos and more')}
   ${NET.s?row('pickCity','pin','My city',ME.city||'Not set','Used for city posts'):''}
@@ -729,7 +751,7 @@ function setNative(row,sw){
   ${o?`<div class="sec">Owner</div>${row('ownerOff','verified','Owner mode is on','','Tap to sign out')}
   ${NET.s?row('netOwner','verified','Internet users','','See accounts and block for 3 hours')+row('ownerPay','db','Plus payments','','Approve or reject payment requests')+row('ownerRep','ban','Reported posts','','Delete or clear reports')+row('ownerUsr','ban','Reported users','','Block people who are reported'):''}`:''}
   <div class="sec">More info and support</div>
-  ${row('appinfo','info','About Whapea','','Version 3.3.1')}
+  ${row('appinfo','info','About Whapea','','Version 3.4')}
   ${NET.s?`<button class="act bad" data-a="netOut" data-v=""><span class="grow">Log out</span></button>`:''}
   <div style="height:40px"></div>`}
 function setHTML(){
@@ -998,12 +1020,19 @@ const ACT={
  spShare:v=>sheet('Share with',chats.filter(c=>!c.blocked).map(c=>A('spShareTo',v+'|'+c.id,null,cName(c))).join('')),
  spShareTo:v=>{const [id,cid]=v.split('|'),p=SPONS.find(x=>x.id===id),c=chatOf(cid);closeSheet();pushMsg(c,M('me','Sponsored by '+p.brand+': '+p.caption+(p.contact?' ('+p.contact+')':''),0,{t:Date.now(),fwd:true}));toast('Shared with '+cName(c))},
  /* profile photo */
- dpPick:()=>pickFile('image/*',f=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const s=Math.min(im.width,im.height),cv=document.createElement('canvas');cv.width=cv.height=256;cv.getContext('2d').drawImage(im,(im.width-s)/2,(im.height-s)/2,s,s,0,0,256,256);ME.dp=cv.toDataURL('image/jpeg',.7);announce();closeSheet();render();toast('Profile photo updated ('+size(ME.dp.length*.75)+'). Contacts get it when you meet')};im.src=r.result};r.readAsDataURL(f)}),
- dpRemove:()=>{ME.dp=null;announce();closeSheet();render()},
+ dpPick:()=>pickFile('image/*',f=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const s=Math.min(im.width,im.height),cv=document.createElement('canvas');cv.width=cv.height=256;cv.getContext('2d').drawImage(im,(im.width-s)/2,(im.height-s)/2,s,s,0,0,256,256);ME.dp=cv.toDataURL('image/jpeg',.7);announce();closeSheet();render();if($('#epv'))epDraw();toast('Profile photo updated ('+size(ME.dp.length*.75)+'). Contacts get it when you meet')};im.src=r.result};r.readAsDataURL(f)}),
+ dpRemove:()=>{ME.dp=null;announce();closeSheet();render();if($('#epv'))epDraw()},
  /* settings */
  sw:v=>{SET[v]=!SET[v];if(v==='online'&&NATIVE)seenPing(SET.online);if(v==='appLock'&&SET[v])toast('App lock on. You will unlock with your fingerprint or face');render()},
- editProfile:()=>sheet('Profile',`<div style="display:grid;place-items:center;gap:10px;padding:4px 0 12px">${avMe('lg')}<div style="display:flex;gap:8px"><button class="chip on" data-a="dpPick">${ME.dp?'Change photo':'Add photo'}</button>${ME.dp?'<button class="chip" data-a="dpRemove">Remove</button>':''}</div></div><div class="field"><input id="pn" value="${esc(ME.name)}" maxlength="25" aria-label="Name"></div><div class="field"><input id="pa" value="${esc(ME.about)}" maxlength="60" aria-label="About"></div><button class="btn" data-a="saveProfile">Save</button>`),
- saveProfile:()=>{ME.name=$('#pn').value.trim()||ME.name;ME.about=$('#pa').value.trim();announce();closeSheet();render()},
+ editProfile:()=>{$('#epv')?.remove();const v=document.createElement('div');v.className='screen';v.id='epv';phone.append(v);ED=null;epDraw()},
+ epBack:()=>{$('#epv')?.remove();ED=null},
+ epGender:v=>{epRead();ED.gender=v;epDraw()},
+ epSug:()=>{epRead();ED.suggest=!ED.suggest;epDraw()},
+ epCity:()=>{epRead();ACT.pickCity()},
+ openLink:v=>{try{Android.openUrl(v)}catch(e){}},
+ epSave:()=>{epRead();const d=ED;let w=(d.website||'').trim();if(w&&!/^https?:\/\//i.test(w))w='https://'+w;if(w&&!/^https?:\/\/[^\s.]+\.[^\s]+$/i.test(w)){toast('That website link does not look right');return}
+  ME.name=d.name.trim()||ME.name;ME.about=d.about.trim().slice(0,150);ME.website=w.slice(0,100);ME.pronouns=d.pronouns.trim().slice(0,20);ME.gender=d.gender;ME.suggest=d.suggest;persistSoon();announce();netPushProfile();$('#epv')?.remove();ED=null;PS.ok=false;render();if(S.tab==='me')loadMyProf();toast('Profile saved')},
+ saveProfile:()=>ACT.epSave(),
  qr:(v,el,e)=>{e?.stopPropagation();let g='';const n=25,sd=KEY.split('').reduce((a,c)=>a*31+c.charCodeAt(0)>>>0,7);let r=sd;const rnd=()=>(r=(r*1664525+1013904223)>>>0)/4294967296;
    const fnd=(x,y)=>(x<8&&y<8)||(x>n-9&&y<8)||(x<8&&y>n-9);
    for(let y=0;y<n;y++)for(let x=0;x<n;x++){let on;if(fnd(x,y)){const lx=x>n-9?x-(n-7):x,ly=y>n-9?y-(n-7):y;const a=x<8?x:x-(n-8),b=y<8?y:y-(n-8);on=a===7||b===7?false:(a===0||a===6||b===0||b===6||(a>=2&&a<=4&&b>=2&&b<=4))}else on=rnd()>.52;if(on)g+=`<rect x="${x}" y="${y}" width="1" height="1"/>`}
@@ -1107,7 +1136,7 @@ function netStart(){
   if(!NET.s)return;NET.ok=true;if(!ME.name){ME.name=NET.s.user;persistSoon();render()}
   for(const k in P)if(isNet(k))P[k].range=true;
   try{const g=JSON.parse(Android.netGet()||'null');if(g&&g.rt&&(g.ts||0)>(NET.s.ts||0)){NET.s=g;persistSoon()}}catch(e){}
-  netSave();netSched();rtOpen();clearInterval(NET.rf);NET.rf=setInterval(()=>{if(NET.s)netRefresh()},45*60000);netPull();netPushProfile();loadMe();seenLoop();if(S.tab==='posts'&&!PF.ok)loadPosts(true);setTimeout(netFlush,1800);lockOffer();setTimeout(()=>{try{stSyncAll()}catch(e){}},2500);refresh()}
+  netSave();netSched();rtOpen();clearInterval(NET.rf);NET.rf=setInterval(()=>{if(NET.s)netRefresh()},45*60000);netPull();netPushProfile();loadMe();seenLoop();if(S.tab==='posts'&&!PF.ok)loadPosts(true);loadSug(true);setTimeout(netFlush,1800);lockOffer();setTimeout(()=>{try{stSyncAll()}catch(e){}},2500);refresh()}
 function netSave(){try{if(NET.s){if(!NET.s.ts)NET.s.ts=Date.now();Android.netSession(JSON.stringify(NET.s))}else Android.netSession('')}catch(e){}}
 function netSched(){clearTimeout(NET.poll);if(!NET.s)return;NET.poll=setTimeout(async()=>{await netPull();netSched()},RT.ok?(S.call?3000:10000):(S.call?700:document.hidden?9000:2500))}
 const RT={ws:null,ok:false,n:0,hb:0,retry:0,t:0,topic:'',send:null};
@@ -1127,7 +1156,7 @@ function rtOpen(){
 function rtClose(){clearTimeout(RT.t);clearInterval(RT.hb);const w=RT.ws;RT.ws=null;RT.ok=false;if(w)try{w.close()}catch(e){}}
 function netStop(){rtClose();clearTimeout(NET.poll);NET.ok=false;for(const k in P)if(isNet(k))P[k].range=false}
 document.addEventListener('visibilitychange',()=>{if(NET.s&&NET.ok){if(!document.hidden){rtClose();rtOpen();netPull()}netSched()}});
-function netPushProfile(){if(!NET.s)return;sb('/rest/v1/profiles?id=eq.'+NET.s.uid,{m:'PATCH',h:{Prefer:'return=minimal'},b:{name:cl(ME.name,40),about:cl(ME.about,60),avatar:ME.dp&&ME.dp.length<150000?ME.dp:null}}).catch(()=>{})}
+function netPushProfile(){if(!NET.s)return;sb('/rest/v1/profiles?id=eq.'+NET.s.uid,{m:'PATCH',h:{Prefer:'return=minimal'},b:{name:cl(ME.name,40),about:cl(ME.about,150),website:ME.website?cl(ME.website,100):null,pronouns:ME.pronouns?cl(ME.pronouns,20):null,gender:({male:1,female:1,custom:1,none:1})[ME.gender]?ME.gender:null,show_suggest:ME.suggest!==false,avatar:ME.dp&&ME.dp.length<150000?ME.dp:null}}).catch(()=>{})}
 async function netPeer(uid){
   const key='u:'+uid;
   if(P[key]&&NET.prof[uid]&&Date.now()-NET.prof[uid]<600000)return P[key];
@@ -1218,7 +1247,7 @@ async function openProf(uid){
   if(!NET.s){ACT.netAcct();return}
   closeSheet();$('#pfv')?.remove();const v=document.createElement('div');v.className='screen';v.id='pfv';phone.append(v);
   PROF={uid,info:null,stats:null,items:[],more:false,busy:true};pfDraw();
-  try{const[r,st]=await Promise.all([sb('/rest/v1/profiles?select=id,username,name,about,avatar,city,plan,plan_until&id=eq.'+uid).then(x=>x.json()),rpc('profile_stats',{p_user:uid})]);PROF.info=r&&r[0];PROF.stats=st&&st[0]}catch(e){}
+  try{const[r,st]=await Promise.all([sb('/rest/v1/profiles?select=id,username,name,about,avatar,city,plan,plan_until,website,pronouns&id=eq.'+uid).then(x=>x.json()),rpc('profile_stats',{p_user:uid})]);PROF.info=r&&r[0];PROF.stats=st&&st[0]}catch(e){}
   await pfPosts(true)}
 async function pfPosts(reset){if(!PROF)return;const me=PROF;me.busy=true;pfDraw();
   try{const a=await rpc('user_posts',{p_user:me.uid,p_before:reset||!me.items.length?null:me.items[me.items.length-1].id,p_limit:10});me.items=(reset?[]:me.items).concat(a||[]);me.more=(a||[]).length>=10}catch(e){}
@@ -1260,7 +1289,7 @@ function profBody(q,s,items,busy,mine){
   const av=q?`<span class="pfv-av" style="--h:${hueOf(q.username||'x')}">${okImg(q.avatar)?`<img src="${q.avatar}" alt="">`:esc((q.name||q.username||'?')[0].toUpperCase())}</span>`:'<span class="pfv-av skb"></span>';
   const btns=mine?`<button class="pbtn" data-a="editProfile">Edit profile</button><button class="pbtn" data-a="plus">${isPlus()?'Whapea Plus ✓':'Whapea Plus'}</button>`:`<button class="pbtn ${s.am_following?'':'pri'}" data-a="pfFollow">${s.am_following?'Following':'Follow'}</button><button class="pbtn" data-a="pfMsg">Message</button>`;
   return `<div class="pfh">${av}<div class="pfs"><div><b>${s.posts||0}</b><small>posts</small></div><div><b>${s.followers||0}</b><small>followers</small></div><div><b>${s.following||0}</b><small>following</small></div></div></div>
-  ${q?`<div style="padding:2px 18px 0"><b style="font-size:15.5px">${esc(q.name||q.username)}${bdg(planOf(q))}</b>${q.about?`<div style="margin-top:2px;white-space:pre-wrap;font-size:14.5px">${esc(q.about)}</div>`:''}${q.city?`<div class="val" style="margin-top:3px">${ic('pin',13)} ${esc(q.city)}</div>`:''}</div><div class="pfa">${btns}</div>`:''}
+  ${q?`<div style="padding:2px 18px 0"><b style="font-size:15.5px">${esc(q.name||q.username)}${bdg(planOf(q))}</b>${q.pronouns?` <span class="val" style="font-size:13px">${esc(q.pronouns)}</span>`:''}${q.about?`<div style="margin-top:2px;white-space:pre-wrap;font-size:14.5px">${esc(q.about)}</div>`:''}${q.website&&/^https?:\/\//i.test(q.website)?`<button class="lklink" style="margin-top:3px;display:block;text-align:left;padding:0" data-a="openLink" data-v="${esc(q.website)}">${esc(q.website.replace(/^https?:\/\//i,''))}</button>`:''}${q.city?`<div class="val" style="margin-top:3px">${ic('pin',13)} ${esc(q.city)}</div>`:''}</div><div class="pfa">${btns}</div>`:''}
   <div class="ptabs"><span class="on">${ic('grid',24)}</span></div>
   <div class="grid3">${items.map(gtile).join('')}${busy&&!items.length?Array(6).fill('<i class="gt skb"></i>').join(''):''}</div>
   ${!busy&&!items.length?`<div class="empty"><b>${mine?'Share your first post':'No posts yet'}</b>${mine?'Tap + to post a photo or a thought.<br><button class="btn" style="margin-top:12px" data-a="newPost">New post</button>':'Posts will show here.'}</div>`:''}`}
@@ -1268,7 +1297,7 @@ function meHTML(){
   if(!NET.s){return `<div class="pfh"><span class="pfv-av" style="--h:${hueOf(ME.name||'x')}">${okImg(ME.dp)?`<img src="${ME.dp}" alt="">`:esc((ME.name||'?')[0].toUpperCase())}</span><div style="flex:1"><b style="font-size:18px">${esc(ME.name)}</b><div class="val">${esc(ME.about||'')}</div></div></div>
    <div class="pfa"><button class="pbtn" data-a="editProfile">Edit profile</button></div>
    <div class="empty"><b>Join the community</b>Create a free account to post, follow friends and chat online.<br><button class="btn" style="margin-top:14px" data-a="netAcct">Create internet account</button><button class="lklink" style="margin-top:8px" data-a="netAcct">Log in</button></div>`}
-  const q={username:NET.s.user,name:ME.name,about:ME.about,avatar:ME.dp,city:ME.city,plan:ME.plan,plan_until:ME.plan_until};
+  const q={username:NET.s.user,name:ME.name,about:ME.about,avatar:ME.dp,city:ME.city,plan:ME.plan,plan_until:ME.plan_until,website:ME.website,pronouns:ME.pronouns};
   return profBody(q,PS.stats,PS.items,PS.busy&&!PS.ok,true)}
 function pvOpen(id){$('#pov')?.remove();const v=document.createElement('div');v.className='screen';v.id='pov';v.dataset.pid=id;phone.append(v);pvDraw()}
 function pvDraw(){const v=$('#pov');if(!v)return;const p=postFind(v.dataset.pid);if(!p){v.remove();return}
@@ -1276,6 +1305,32 @@ function pvDraw(){const v=$('#pov');if(!v)return;const p=postFind(v.dataset.pid)
 document.addEventListener('input',e=>{const t=e.target;if(t.id==='xq'){clearTimeout(EX.dt);EX.dt=setTimeout(()=>exSearch(t.value.trim()),320)}
   if(t.id==='sq'){const q=t.value.trim().toLowerCase();document.querySelectorAll('#body .act').forEach(b=>{b.style.display=!q||b.textContent.toLowerCase().includes(q)?'':'none'})}});
 function navTab(k){return ({calls:'chats',near:'chats',set:'me'})[k]||k}
+
+/* ---------- v3.4 edit profile + suggestions ---------- */
+let ED=null;
+function epRead(){if(!ED)return;const g=i=>document.getElementById(i);if(g('epn'))ED.name=g('epn').value;if(g('epp'))ED.pronouns=g('epp').value;if(g('epw'))ED.website=g('epw').value;if(g('epb'))ED.about=g('epb').value}
+function epDraw(){const v=$('#epv');if(!v)return;if(ED)epRead();else ED={name:ME.name||'',pronouns:ME.pronouns||'',website:ME.website||'',about:ME.about||'',gender:ME.gender||'none',suggest:ME.suggest!==false};
+  const sc=v.querySelector('.body')?.scrollTop||0,d=ED,gs=[['none','Prefer not to say'],['male','Male'],['female','Female'],['custom','Custom']];
+  v.innerHTML=`<div class="ch"><button class="ib" data-a="epBack" aria-label="Back">${ic('back')}</button><b style="flex:1;font-size:16px;text-align:center;margin-right:44px">Edit profile</b></div>
+  <div class="body" style="overflow-y:auto;flex:1;padding:6px 16px 40px">
+   <div class="epcard">${avMe('lg')}<div><b>${esc(NET.s?NET.s.user:ME.name)}</b><div class="eplinks"><button data-a="dpPick">${ME.dp?'Change photo':'Add photo'}</button>${ME.dp?'<button data-a="dpRemove" style="color:var(--muted)">Remove</button>':''}</div></div></div>
+   <label class="epf"><span>Name</span><input id="epn" value="${esc(d.name)}" maxlength="25" autocomplete="off"></label>
+   <label class="epf"><span>Pronouns</span><input id="epp" value="${esc(d.pronouns)}" maxlength="20" placeholder="e.g. he/him" autocomplete="off"></label>
+   <label class="epf"><span>Website</span><input id="epw" value="${esc(d.website)}" maxlength="100" placeholder="https://" inputmode="url" autocomplete="off" autocapitalize="none"></label>
+   <label class="epf tall"><span>Bio</span><em>${d.about.length} / 150</em><textarea id="epb" rows="3" maxlength="150">${esc(d.about)}</textarea></label>
+   ${NET.s?`<button class="eprow" data-a="epCity"><span>City</span><em>${esc(ME.city||'Choose')}</em>${ic('chev',16)}</button>`:''}
+   <div class="ephd">Gender</div><div class="epg">${gs.map(([k,l])=>`<button class="${d.gender===k?'on':''}" data-a="epGender" data-v="${k}">${l}</button>`).join('')}</div><div class="eph">This won't be part of your public profile.</div>
+   <button class="eprow tgr" data-a="epSug"><span>Show account suggestions<small>Let Whapea suggest your account to other people.</small></span>${tg(d.suggest)}</button>
+   <div class="eph" style="margin-top:14px">Your name, bio, website and pronouns are visible to everyone.</div>
+   <button class="btn" style="margin-top:10px" data-a="epSave">Submit</button></div>`;
+  const b=v.querySelector('.body');if(b)b.scrollTop=sc;
+  const t=$('#epb');if(t)t.oninput=()=>{const e=t.parentElement.querySelector('em');if(e)e.textContent=t.value.length+' / 150'}}
+const SG={items:[],ok:false,at:0,busy:false,hid:(()=>{try{return JSON.parse(localStorage.getItem('sghid')||'[]')}catch(e){return[]}})(),fl:{}};
+async function loadSug(force){if(!NET.s||SG.busy||ME.suggest===false&&false)return;if(!force&&SG.ok&&Date.now()-SG.at<300000)return;SG.busy=true;
+  try{const a=await rpc('suggest_people',{p_limit:14});SG.items=a||[];SG.ok=true;SG.at=Date.now()}catch(e){}
+  SG.busy=false;if(S.tab==='posts'&&!document.querySelector('.scrim,#pfv,#pov,#epv'))render()}
+function sugRow(){const L=SG.items.filter(x=>!SG.hid.includes(x.id));if(!NET.s||!L.length)return '';
+  return `<section class="sug"><div class="sugh"><b>Suggested for you</b></div><div class="sugs">${L.map(x=>`<div class="sgc"><button class="sgx" data-a="sgHide" data-v="${esc(x.id)}" aria-label="Dismiss">${ic('x',14)}</button><button class="sgp" data-a="openProf" data-v="${esc(x.id)}">${avatarOf(x)}<b>${esc(x.username)}${bdg(planOf(x))}</b><small>${esc(x.name||'')}</small><small class="rs">${esc(x.reason)}</small></button><button class="sgf${SG.fl[x.id]?' on':''}" data-a="sgFollow" data-v="${esc(x.id)}">${SG.fl[x.id]?'Following':'Follow'}</button></div>`).join('')}</div></section>`}
 
 /* ---------- city, posts, Plus ---------- */
 const CITIES=['Karachi','Lahore','Islamabad','Rawalpindi','Faisalabad','Multan','Peshawar','Quetta','Hyderabad','Sialkot','Gujranwala','Bahawalpur','Sargodha','Sukkur','Larkana','Abbottabad','Mardan','Mingora','Other'];
@@ -1287,7 +1342,7 @@ const PF={scope:'all',items:[],more:false,busy:false,err:'',ok:false};
 async function rpc(n,b){const r=await sb('/rest/v1/rpc/'+n,{m:'POST',b:b||{}});if(!r.ok){let t='';try{t=(await r.json()).message||''}catch(e){}throw new Error(t||('E'+r.status))}try{return await r.json()}catch(e){return null}}
 function rpcErr(e){const m=String(e&&e.message||'');return /banned/.test(m)?'You are blocked for a while for breaking the rules':/limit/.test(m)?'Daily limit reached. Plus gives you more posts':/empty/.test(m)?'Write something or add a photo':/login/.test(m)?'Log in first':'Could not do that. Check internet'}
 async function loadMe(){if(!NET.s)return;try{const r=await sb('/rest/v1/profiles?select=city,plan,plan_until&id=eq.'+NET.s.uid);const a=await r.json();const q=a&&a[0];
-  if(q){ME.city=q.city||'';ME.plan=planOf(q);ME.plan_until=q.plan_until||null;persistSoon();if(!S.chat&&!document.querySelector('.scrim'))render()}}catch(e){}}
+  if(q){ME.city=q.city||'';ME.plan=planOf(q);ME.plan_until=q.plan_until||null;try{const e=await rpc('my_extra',{});const x=e&&e[0];if(x){ME.gender=x.gender||'none';ME.suggest=x.show_suggest!==false;ME.website=x.website||ME.website||'';ME.pronouns=x.pronouns||ME.pronouns||''}}catch(e){}persistSoon();if(!S.chat&&!document.querySelector('.scrim'))render()}}catch(e){}}
 async function loadPosts(reset){
   if(!NET.s||PF.busy)return;PF.busy=true;PF.err='';
   if(reset){PF.items=[];PF.more=false}
@@ -1312,7 +1367,7 @@ function postsHTML(){
   if(!NET.s)return `<div class="empty"><b>Posts need an internet account</b>Create a free account to see what people share and to post yourself.<br><button class="btn" style="margin-top:14px" data-a="netAcct">Create internet account</button></div>`;
   const seg=`<div class="seg2"><button class="${PF.scope==='city'?'on':''}" data-a="postScope" data-v="city">${ME.city?esc(ME.city):'My city'}</button><button class="${PF.scope==='all'?'on':''}" data-a="postScope" data-v="all">Everyone</button><button class="${PF.scope==='follow'?'on':''}" data-a="postScope" data-v="follow">Following</button><button class="ib rf" data-a="postRefresh" aria-label="Refresh">${ic('refresh',19)}</button></div>`;
   if(PF.scope==='city'&&!ME.city)return seg+`<div class="empty"><b>Choose your city</b>See posts from people near you.<br><button class="btn" style="margin-top:14px" data-a="pickCity">Choose city</button></div>`;
-  return seg+(PF.items.length?PF.items.map((p,i)=>postCard(p)+(i%5===4&&liveSp().length?spCard(liveSp()[Math.floor(i/5)%liveSp().length]):'')).join(''):(PF.busy?skel(3):PF.err?`<div class="note2">${esc(PF.err)}</div>`:`<div class="empty"><b>${PF.scope==='follow'?'Nothing here yet':'No posts yet'}</b>${PF.scope==='follow'?'Open someone\'s profile and tap Follow to see their posts here.':'Be the first. Tap + to share something. Posts disappear after 7 days.'}</div>`))
+  return seg+(PF.items.length?PF.items.map((p,i)=>postCard(p)+(i===1?sugRow():'')+(i%5===4&&liveSp().length?spCard(liveSp()[Math.floor(i/5)%liveSp().length]):'')).join('')+(PF.items.length<2?sugRow():''):(PF.busy?skel(3):PF.err?`<div class="note2">${esc(PF.err)}</div>`:`<div class="empty"><b>${PF.scope==='follow'?'Nothing here yet':'No posts yet'}</b>${PF.scope==='follow'?'Open someone\'s profile and tap Follow to see their posts here.':'Be the first. Tap + to share something. Posts disappear after 7 days.'}</div>`))
    +(PF.more?`<button class="btn" style="margin:10px 16px;width:calc(100% - 32px)" data-a="postMore">${PF.busy?'Loading…':'Load more'}</button>`:'')+'<div style="height:90px"></div>'}
 /* ---------- media, wallpapers, polls, status updates ---------- */
 const okVid=s=>typeof s==='string'&&s.length<4800000&&/^data:video\/(webm|mp4);base64,[A-Za-z0-9+\/=]+$/.test(s);
@@ -1457,6 +1512,7 @@ window.nativeBack=()=>{
   if(document.querySelector('.scrim')){closeSheet();return true}
   if(document.getElementById('callv'))return true;
   if(S.chat){closeChat();return true}
+  if($('#epv')){$('#epv').remove();ED=null;return true}
   if($('#pov')){$('#pov').remove();return true}
   if($('#pfv')){$('#pfv').remove();PROF=null;return true}
   if(S.tab==='set'){S.tab='me';render();return true}
@@ -1711,10 +1767,10 @@ if(NATIVE){
 
   let aboutTaps=0;
   Object.assign(ACT,{
-    tab:v=>{S.tab=v;render();if(v==='spons')loadFeed(false);if(v==='posts'){loadFeed(false);if(NET.s&&!PF.ok)loadPosts(true)}if(v==='explore'&&NET.s&&!EX.ok)loadExplore(true);if(v==='me'&&NET.s&&Date.now()-PS.at>45000)loadMyProf();tabAnim()},
+    tab:v=>{S.tab=v;render();if(v==='spons')loadFeed(false);if(v==='posts'){loadFeed(false);loadSug(false);if(NET.s&&!PF.ok)loadPosts(true)}if(v==='explore'&&NET.s&&!EX.ok)loadExplore(true);if(v==='me'&&NET.s&&Date.now()-PS.at>45000)loadMyProf();tabAnim()},
     spRefresh:()=>{toast('Checking for new posts…');loadFeed(true)},
     appinfo:()=>{aboutTaps++;if(aboutTaps>=7){aboutTaps=0;ACT.ownerLogin();return}
-      sheet('About Whapea',`<div class="note2" style="font-size:14px">Version 3.3.1. Chat, post and call over the internet, or with people nearby over Bluetooth. Sponsored posts and updates download when your phone is online.</div><button class="btn" data-a="updCheck">Check for updates</button>`)},
+      sheet('About Whapea',`<div class="note2" style="font-size:14px">Version 3.4. Chat, post and call over the internet, or with people nearby over Bluetooth. Sponsored posts and updates download when your phone is online.</div><button class="btn" data-a="updCheck">Check for updates</button>`)},
     spNew:()=>{sheet('New sponsored post',`<div class="field"><input id="spb" placeholder="Brand name" maxlength="40" autocomplete="off"></div><div class="field"><textarea id="spcap" rows="3" maxlength="300" placeholder="What are you promoting?" class="txt"></textarea></div><div class="field"><input id="spct" placeholder="Phone or address (optional)" maxlength="60" autocomplete="off"></div><div class="field"><input id="spv" placeholder="Video file name, e.g. chai.mp4 (optional)" maxlength="80" autocomplete="off" autocapitalize="none"></div><div class="sec" style="padding-top:2px">Runs for</div><div class="chips" id="spdur">${[3,7,14,30,60].map(d=>`<button class="chip ${d===7?'on':''}" data-a="spDur" data-v="${d}">${d} days</button>`).join('')}</div><button class="act" data-a="spPick">${ic('image')}<span class="grow" id="spmi">Add a photo (optional)<small>Photos are made small so they fit in the post</small></span></button><button class="btn" data-a="spPost">Create post data</button>`);S.spm=null;S.spd=7},
     spPick:()=>pickFile('image/*',f=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,640/Math.max(im.width,im.height)),cv=document.createElement('canvas');cv.width=im.width*k;cv.height=im.height*k;cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);const src=cv.toDataURL('image/jpeg',.6);S.spm={kind:'image',src};const e=$('#spmi');if(e)e.innerHTML=`${esc(f.name)}<small>Photo · ${size(src.length*.75)}</small>`};im.src=r.result};r.readAsDataURL(f)}),
     spPost:()=>{
@@ -1810,6 +1866,9 @@ if(NATIVE){
 
     postShare:v=>{const p=postFind(v);if(!p)return;sheet('Send to',chats.filter(c=>!c.blocked).map(c=>A('postShareTo',v+'|'+c.id,null,cName(c))).join('')||'<div class="note2">No chats yet</div>')},
     postShareTo:v=>{const[id,cid]=v.split('|'),p=postFind(id),c=chatOf(cid);if(!p||!c)return;closeSheet();pushMsg(c,M('me','Post by @'+p.username+': '+(p.body||'(photo)'),0,{t:Date.now(),fwd:true}));toast('Sent to '+cName(c))},
+
+    sgHide:v=>{SG.hid.push(v);try{localStorage.setItem('sghid',JSON.stringify(SG.hid.slice(-200)))}catch(e){}render()},
+    sgFollow:async v=>{const on=!SG.fl[v];SG.fl[v]=on;render();try{await rpc('toggle_follow',{p_user:v})}catch(e){SG.fl[v]=!on;render();toast('No connection')}},
 
     gtOpen:v=>pvOpen(v),
     pvClose:()=>$('#pov')?.remove(),
