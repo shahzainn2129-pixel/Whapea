@@ -1,17 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="108dp" android:height="108dp"
     android:viewportWidth="108" android:viewportHeight="108">
-    <path android:pathData="M0,0h108v108h-108z">
-        <aapt:attr name="android:fillColor">
-            <gradient android:type="radial" android:centerX="32" android:centerY="116" android:gradientRadius="124">
-                <item android:offset="0.0" android:color="#FFFEDA75" />
-                <item android:offset="0.22" android:color="#FFFA7E1E" />
-                <item android:offset="0.5" android:color="#FFD62976" />
-                <item android:offset="0.78" android:color="#FF962FBF" />
-                <item android:offset="1.0" android:color="#FF4F5BD5" />
-            </gradient>
-        </aapt:attr>
-    </path>
+    <path android:fillColor="#FF0E1116" android:pathData="M0,0h108v108h-108z" />
 </vector>

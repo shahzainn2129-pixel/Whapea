@@ -490,6 +490,33 @@ img.spm{aspect-ratio:auto;height:auto;max-height:560px;object-fit:contain}
 .mvm{display:block!important;overflow-y:auto;text-align:center}.mvm img{display:block;margin:0 auto 8px;max-height:none!important}
 .pshare{display:flex;align-items:center;gap:10px;text-align:left;padding:4px 2px;min-width:200px}.pshare .fi{width:40px;height:40px;border-radius:10px;background:rgba(127,127,127,.2);display:grid;place-items:center;flex:none}.pshare small{display:block;opacity:.75;font-size:12.5px}
 .ptabs button{flex:1;display:grid;place-items:center;padding:10px;color:var(--muted);position:relative}.ptabs button.on{color:var(--ink)}.ptabs button.on::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--ink)}
+
+/* v3.6 */
+.sv{background:#000;animation:svin .22s cubic-bezier(.2,.8,.2,1)}.sv.out{animation:svout .16s ease-in forwards}
+@keyframes svin{from{opacity:0;transform:scale(.96)}}@keyframes svout{to{opacity:0;transform:scale(.96)}}
+.svtop{position:relative;z-index:2;background:linear-gradient(rgba(0,0,0,.55),rgba(0,0,0,0));padding-bottom:18px}
+.svh{display:flex;align-items:center;gap:10px;padding:10px 10px 0 12px}.svh .ib{color:#fff}
+.svn{flex:1;min-width:0;display:flex;flex-direction:column}.svn b{font-size:15px;text-shadow:0 1px 3px rgba(0,0,0,.5)}.svn small{opacity:.8;font-size:12.5px}
+.sv .stm{flex:1;min-height:0;display:grid;place-items:center;margin-top:-64px}.sv .stm img,.sv .stm video{max-width:100%;max-height:100%;object-fit:contain}
+.sv .stc{position:absolute;left:0;right:0;bottom:150px;text-align:center;padding:10px 20px;font-size:17px;font-weight:600;text-shadow:0 1px 6px rgba(0,0,0,.7)}
+.sv .txt2{margin-top:-64px;font-size:30px;line-height:1.25}
+.svbot{position:relative;z-index:2;padding-top:30px;background:linear-gradient(rgba(0,0,0,0),rgba(0,0,0,.6));display:flex;flex-direction:column}
+.svq{display:flex;justify-content:space-around;padding:0 14px 4px}.svq button{font-size:26px;padding:4px 6px;transition:transform .12s}.svq button:active{transform:scale(1.4)}
+.sv .rep{padding:6px 12px 16px}.sv .rep input{background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.55);font-size:15.5px;padding:11px 16px}.sv .rep input::placeholder{color:rgba(255,255,255,.75)}
+.svbot:has(.svb){flex-direction:row;align-items:center;justify-content:space-between;padding:30px 18px 22px}
+.svb{display:flex;flex-direction:column;align-items:center;gap:2px;color:#fff}.svb small{font-size:12px}.svs{display:flex;gap:6px;align-items:center;opacity:.9}
+.sv.paused .prog i.cur b{animation-play-state:paused}.sv.paused .svq,.sv.paused .svh .ib{opacity:0;transition:opacity .15s}
+.sv .ring.sm{padding:2px}
+.pbtn.plusb{display:flex;align-items:center;justify-content:center;gap:6px;background:var(--surface2);border:1px solid var(--line)}
+.pbtn.plusb.act{background:linear-gradient(var(--surface2),var(--surface2)) padding-box,linear-gradient(135deg,#fa7e1e,#d62976 55%,#7a3cf0) border-box;border:1.5px solid transparent}
+.pbtn.plusb .vb{display:inline-flex;margin:0}.pbtn.plusb .vb.plus svg,.pbtn.plusb .vb.plus{color:#1d8cf8}.pbtn.plusb .vb.gold{color:#e0a800}.pbtn.plusb .vb svg{width:18px;height:18px}
+.earlier{display:block;margin:8px auto;padding:7px 14px;border-radius:16px;background:var(--surface2);font-size:13px;font-weight:600}
+.li{content-visibility:auto;contain-intrinsic-size:auto 72px}
+.cm.sub{margin-left:34px;border-left:2px solid var(--line);padding-left:10px}
+.cmr{color:var(--muted);font-size:13px;font-weight:700;padding:4px 0}
+.cmb{display:flex;align-items:center;justify-content:space-between;margin:6px 16px 0;padding:6px 12px;border-radius:10px;background:var(--surface2);font-size:13.5px}.cmb button{color:var(--muted)}
+.pfs button{text-align:center;display:flex;flex-direction:column}.pfs button:active{opacity:.6}
+.fllist{max-height:60vh;overflow-y:auto}.fllist .li{display:flex;align-items:center;gap:8px}.flp{display:flex;align-items:center;gap:12px;flex:1;min-width:0;text-align:left}.flb{width:auto;padding:7px 16px;flex:none}
 </style>
 </head><body>
 
@@ -769,7 +796,7 @@ function setNative(row,sw){
   ${o?`<div class="sec">Owner</div>${row('ownerOff','verified','Owner mode is on','','Tap to sign out')}
   ${NET.s?row('netOwner','verified','Internet users','','See accounts and block for 3 hours')+row('ownerPay','db','Plus payments','','Approve or reject payment requests')+row('ownerRep','ban','Reported posts','','Delete or clear reports')+row('ownerUsr','ban','Reported users','','Block people who are reported'):''}`:''}
   <div class="sec">More info and support</div>
-  ${row('appinfo','info','About Whapea','','Version 3.5')}
+  ${row('appinfo','info','About Whapea','','Version 3.6')}
   ${NET.s?`<button class="act bad" data-a="netOut" data-v=""><span class="grow">Log out</span></button>`:''}
   <div style="height:40px"></div>`}
 function setHTML(){
@@ -864,10 +891,10 @@ function msgHTML(c,m,i){
 function drawMsgs(scroll){
   const c=chatOf(S.chat);if(!c)return;const el=$('#msgs');if(!el)return;
   const q=c.find?c.find.toLowerCase():'';
-  const list=c.msgs.filter(m=>!q||(m.text||'').toLowerCase().includes(q));
+  let list=c.msgs.filter(m=>!q||(m.text||'').toLowerCase().includes(q));const lim=c._lim||120,more=list.length>lim;if(more)list=list.slice(-lim);
   const nearBottom=el.scrollHeight-el.scrollTop-el.clientHeight<120;
   el.innerHTML=`<div class="note">${ic('lock',14)}<span>${NATIVE&&c.type==='dm'&&isNet(c.cid)?'Say hello 👋':'Messages travel straight from phone to phone over Bluetooth.'}${c.disap?` Disappearing messages: ${({24:'24 hours',168:'7 days',2160:'90 days'})[c.disap]}.`:''}</span></div>`+
-   list.map((m,i)=>msgHTML(c,m,i)).join('')+(c.typing?`<div class="typing"><i></i><i></i><i></i></div>`:'');
+   (more?`<button class="earlier" data-a="earlier">Load earlier messages</button>`:'')+list.map((m,i)=>msgHTML(c,m,i)).join('')+(c.typing?`<div class="typing"><i></i><i></i><i></i></div>`:'');
   if(scroll||nearBottom)el.scrollTop=el.scrollHeight;
 }
 function drawComp(){
@@ -884,9 +911,13 @@ function drawComp(){
 function syncSend(){const v=($('#msgIn')?.value||'').trim();const s=$('#sendBtn'),m=$('#micBtn');if(s&&m){s.hidden=!v;m.hidden=!!v}}
 
 /* ---------- sending and simulated delivery ---------- */
+function appendMsg(c,m){const el=$('#msgs');
+  if(!el||!S.chat||S.chat!==c.id||c.find){drawMsgs(true);if(!S.chat)render();return}
+  el.querySelector('.typing')?.remove();
+  el.insertAdjacentHTML('beforeend',msgHTML(c,m,c.msgs.length-1)+(c.typing?'<div class="typing"><i></i><i></i><i></i></div>':''));el.scrollTop=el.scrollHeight}
 function pushMsg(c,m){
   m.status=chatReach(c)==='none'?'queued':'sent';c.msgs.push(m);c.pinned&&0;
-  drawMsgs(true);render();
+  appendMsg(c,m);
   if(m.status!=='queued')deliver(c,m);
 }
 function deliver(c,m){
@@ -901,7 +932,7 @@ function replyLater(c){
   sleep(()=>{c.typing=null;c.msgs.push(M(who,REPLIES[Math.floor(Math.random()*REPLIES.length)],0,{t:Date.now(),status:'read'}));
     if(S.chat!==c.id){c.unread++;if(SET.notif)toast(P[who].name.split(' ')[0]+': '+prev(last(c)))}refresh()},2300);
 }
-function refresh(){if(S.chat){drawHead();drawMsgs(false)}render()}
+let _rfq=0;function refresh(){if(_rfq)return;_rfq=requestAnimationFrame(()=>{_rfq=0;if(S.chat){drawHead();drawMsgs(false)}else render()})}
 function flushQueue(cid){chats.forEach(c=>{if(chatReach(c)!=='none')c.msgs.forEach(m=>{if(m.from==='me'&&m.status==='queued'){m.status='sent';deliver(c,m)}})});refresh()}
 
 /* ---------- actions ---------- */
@@ -960,6 +991,7 @@ const ACT={
    sheet('',`<div class="rxrow">${['👍','❤️','😂','😮','😢','🙏'].map(e=>`<button data-a="react" data-v="${v}|${e}">${e}</button>`).join('')}</div>`+
    A('replyTo',v,'reply','Reply')+(m.type==='text'?A('copy',v,'copy','Copy'):'')+A('fwdPick',v,'fwd','Forward')+A('star',v,'star',m.star?'Unstar':'Star')+
    (editable?A('editMsg',v,'edit','Edit','Available for 15 minutes'):'')+(own?A('info',v,'info','Message info'):'')+A('delMe',v,'trash','Delete for me')+(own?A('delAll',v,'trash','Delete for everyone','','bad'):''))},
+ earlier:()=>{const c=chatOf(S.chat);if(!c)return;const el=$('#msgs'),h=el.scrollHeight;c._lim=(c._lim||120)+150;drawMsgs(false);el.scrollTop=el.scrollHeight-h},
  react:v=>{const [id,e]=v.split('|'),[c,m]=msgById(id);m.rx=m.rx||{};m.rx[e]=(m.rx[e]||0)+1;netSend(c,{t:'rx',id,e});closeSheet();drawMsgs(false)},
  replyTo:v=>{const [c,m]=msgById(v);S.reply={who:who(c,m),text:prev(m)};S.edit=null;closeSheet();drawComp();$('#msgIn')?.focus()},
  copy:async v=>{const [c,m]=msgById(v);closeSheet();try{await copyText(m.text);toast('Copied')}catch(e){toast('Press and hold the text to copy')}},
@@ -1005,14 +1037,27 @@ const ACT={
  addStatus:()=>{const cols=['#1f5eff','#0f766e','#c2410c','#6d28d9','#be185d','#334155'];S.stc=cols[0];sheet('New status',`<div class="field"><textarea id="stt" rows="3" maxlength="140" placeholder="What is on your mind?" style="background:${cols[0]};color:#fff;font-size:20px;font-family:var(--font-display);text-align:center;border-radius:14px;border:0;width:100%;padding:18px" autocomplete="off"></textarea></div><div class="sw">${cols.map((c,i)=>`<button data-a="stCol" data-v="${c}" class="${i?'':'on'}" style="background:${c}" aria-label="Colour"></button>`).join('')}</div><div class="note2" style="margin-top:0">Visible to: My contacts · lasts 24 hours</div><button class="btn" data-a="postSt">Post status</button>`)},
  stCol:(v,el)=>{S.stc=v;$('#stt').style.background=v;el.parentNode.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b===el))},
  postSt:()=>{const t=$('#stt').value.trim();if(!t){toast('Write something first');return}myStatus.push({text:t,bg:S.stc,t:Date.now()});closeSheet();render();toast('Status posted')},
- viewSt:v=>{const L=v==='me'?myStatus:STAT[v];let i=0;const el=document.createElement('div');el.className='sv';phone.append(el);
-   const draw=()=>{const s=L[i];el.style.background=s.kind==='img'||s.kind==='video'?'#000':s.bg;el.innerHTML=`<div class="prog">${L.map((_,k)=>`<i class="${k<i?'done':k===i?'cur':''}"><b></b></i>`).join('')}</div><div style="display:flex;align-items:center;gap:10px;padding:12px 14px">${v==='me'?avMe('sm'):av(P[v].hue,P[v].name,'sm')}<b style="flex:1">${v==='me'?'My status':esc(P[v].name)}<div style="font-weight:400;font-size:12px;opacity:.8">${dayLabel(s.t)}</div></b><button class="ib" style="color:#fff" data-x="1" aria-label="Close">${ic('x')}</button></div>${stBody(s)}${v==='me'?`<div class="rep"><button class="ib" style="color:#fff" data-del="1">${ic('trash')}</button><span style="flex:1;opacity:.8;align-self:center">Seen by 0 so far</span></div>`:`<div class="rep"><input placeholder="Reply" id="sr" aria-label="Reply to status" autocomplete="off"><button class="ib" style="color:#fff" data-rp="1" aria-label="Send">${ic('send')}</button></div>`}`;
-     clearTimeout(el._t);const vv=el.querySelector('video');if(vv){vv.onended=next;const pi=el.querySelector('.prog i.cur');if(pi&&s.dur)pi.style.setProperty('--d',s.dur+'s')}else el._t=sleep(next,4000)};
-   const close=()=>{clearTimeout(el._t);el.remove();if(v!=='me')seenSt.add(v);render()};
+ viewSt:v=>{const L=v==='me'?myStatus:STAT[v];if(!L||!L.length)return;let i=0;const el=document.createElement('div');el.className='sv';phone.append(el);
+   let t0=0,left=4000,held=false,hT=0,y0=0;
+   const dly=ms=>{clearTimeout(el._t);left=ms;t0=Date.now();el._t=setTimeout(next,ms)};
+   const draw=()=>{const s=L[i];el.classList.remove('paused');el.style.background=s.kind==='img'||s.kind==='video'?'#000':s.bg;
+     const who=v==='me'?'Your story':esc(P[v].name);
+     el.innerHTML=`<div class="svtop"><div class="prog">${L.map((_,k)=>`<i class="${k<i?'done':k===i?'cur':''}"><b></b></i>`).join('')}</div><div class="svh"><span class="ring sm">${v==='me'?avMe('sm'):av(P[v].hue,P[v].name,'sm')}</span><span class="svn"><b>${who}</b><small>${dayLabel(s.t)}</small></span><button class="ib" data-x="1" aria-label="Close">${ic('x',24)}</button></div></div>${stBody(s)}
+     ${v==='me'?`<div class="svbot"><button class="svb" data-del="1" aria-label="Delete">${ic('trash',22)}<small>Delete</small></button><span class="svs">${ic('eye',18)} Seen by 0</span></div>`:`<div class="svbot"><div class="svq">${['❤️','🔥','😂','😮','😢','👏'].map(e=>`<button data-rx="${e}">${e}</button>`).join('')}</div><div class="rep"><input placeholder="Reply to ${esc(P[v].name.split(' ')[0])}…" id="sr" aria-label="Reply to status" autocomplete="off"><button class="ib" style="color:#fff" data-rp="1" aria-label="Send">${ic('send',20)}</button></div></div>`}`;
+     clearTimeout(el._t);const vv=el.querySelector('video');if(vv){vv.onended=next;const pi=el.querySelector('.prog i.cur');if(pi&&s.dur)pi.style.setProperty('--d',s.dur+'s')}else dly(4000)};
+   const close=()=>{clearTimeout(el._t);el.classList.add('out');setTimeout(()=>el.remove(),160);if(v!=='me')seenSt.add(v);render()};
    const next=()=>{if(i<L.length-1){i++;draw()}else close()};
-   el.onclick=e=>{if(e.target.closest('[data-x]')){close();return}if(e.target.closest('[data-del]')){stDelMine(i);close();return}
-     if(e.target.closest('[data-rp]')){const t=$('#sr').value.trim();if(t){toast('Reply sent');$('#sr').value=''}return}
-     if(e.target.closest('input'))return;if(e.clientX<el.getBoundingClientRect().left+el.offsetWidth*.3){i=Math.max(0,i-1);draw()}else next()};
+   const sendTo=t=>{const c=chats.find(x=>x.type==='dm'&&x.cid===v);if(c){pushMsg(c,M('me',t,0,{t:Date.now()}));toast('Sent')}else toast('Open a chat with this person first')};
+   const pause=()=>{if(held)return;held=true;clearTimeout(el._t);left=Math.max(300,left-(Date.now()-t0));el.classList.add('paused');el.querySelector('video')?.pause()};
+   const play=()=>{if(!held)return;held=false;el.classList.remove('paused');const vv=el.querySelector('video');if(vv)vv.play().catch(()=>{});else dly(left)};
+   el.addEventListener('pointerdown',e=>{if(e.target.closest('input,button'))return;y0=e.clientY;clearTimeout(hT);hT=setTimeout(pause,200)});
+   const up=e=>{clearTimeout(hT);if(held){play();el._skip=true;setTimeout(()=>el._skip=false,60)}if(y0&&e&&e.clientY-y0>110){y0=0;el._skip=true;close();return}y0=0};
+   el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up);
+   el.onclick=e=>{if(el._skip)return;if(e.target.closest('[data-x]')){close();return}if(e.target.closest('[data-del]')){stDelMine(i);close();return}
+     const rx=e.target.closest('[data-rx]');if(rx){sendTo(rx.dataset.rx);return}
+     if(e.target.closest('[data-rp]')){const t=$('#sr').value.trim();if(t){sendTo('Replied to your status: '+t);$('#sr').value=''}return}
+     if(e.target.closest('input,.svq,.svbot'))return;if(e.clientX<el.getBoundingClientRect().left+el.offsetWidth*.3){i=Math.max(0,i-1);draw()}else next()};
+   el.addEventListener('focusin',e=>{if(e.target.id==='sr')pause()});el.addEventListener('focusout',e=>{if(e.target.id==='sr')play()});
    draw()},
 
  /* sponsors */
@@ -1079,7 +1124,8 @@ function callScreen(k){
 }
 
 /* ---------- events ---------- */
-document.addEventListener('click',e=>{const el=e.target.closest('[data-a]');if(!el)return;const f=ACT[el.dataset.a];if(f)f(el.dataset.v,el,e)});
+document.addEventListener('click',e=>{const el=e.target.closest('[data-a]');if(!el)return;
+const f=ACT[el.dataset.a];if(f)f(el.dataset.v,el,e)});
 document.addEventListener('input',e=>{if(e.target.id==='q'){S.q=e.target.value;const b=$('#body');if(b){b.innerHTML=chatsHTML()}}});
 let lpT;
 document.addEventListener('pointerdown',e=>{const el=e.target.closest('[data-lp]');if(!el)return;lpT=sleep(()=>{el._lp=true;ctxMenu(el.dataset.lp)},520)});
@@ -1090,7 +1136,7 @@ const NS={running:false,scanning:false,text:'Not started',found:[],btOn:true};
 const hueOf=s=>{let h=0;for(const ch of String(s))h=(h*31+ch.charCodeAt(0))>>>0;return h%360};
 const okImg=s=>typeof s==='string'&&s.length<400000&&/^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/.test(s);
 const okAud=s=>typeof s==='string'&&s.length<700000&&/^data:audio\/mp4;base64,[A-Za-z0-9+\/=]+$/.test(s);
-const WLOGO=`<svg width="100%" height="100%" viewBox="0 0 108 108" aria-label="Whapea"><rect width="108" height="108" rx="26" fill="url(#igrad)"/><path d="M54 21C73 21 87 34 87 51C87 68 73 81 54 81C50 81 46.4 80.4 43 79.3L27 87L31.5 71.5C25.5 66.8 21 59.5 21 51C21 34 35 21 54 21Z" fill="none" stroke="#fff" stroke-width="6.5" stroke-linejoin="round"/><polyline points="37,42 45.5,61 54,47 62.5,61 71,42" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const WLOGO=`<svg width="100%" height="100%" viewBox="0 0 108 108" aria-label="Whapea"><defs><linearGradient id="wlg" gradientUnits="userSpaceOnUse" x1="28" y1="34" x2="80" y2="74"><stop offset="0" stop-color="#FFB02E"/><stop offset=".5" stop-color="#FF2E7E"/><stop offset="1" stop-color="#8A3DFF"/></linearGradient></defs><rect width="108" height="108" rx="26" fill="#0E1116"/><path d="M30.2 39.5 L42.8 68.5 L54.0 46.4 L65.2 68.5 L77.8 39.5" fill="none" stroke="url(#wlg)" stroke-width="9.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 const RXOK=['👍','❤️','😂','😮','😢','🙏'];
 const cl=(s,n)=>String(s==null?'':s).slice(0,n);
 const copyText=async t=>{if(NATIVE){Android.copy(t);return}await navigator.clipboard.writeText(t)};
@@ -1167,7 +1213,7 @@ function rtOpen(){
     clearInterval(RT.hb);RT.hb=setInterval(()=>send({topic:'phoenix',event:'heartbeat',payload:{},ref:String(++RT.n+10)}),25000)};
   ws.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch(x){return}
     if(m.event==='phx_reply'&&m.topic===topic){if(m.payload&&m.payload.status==='ok'){if(!RT.ok){RT.ok=true;RT.retry=0;netSched();netPull()}}else{try{ws.close()}catch(x){}}}
-    else if(m.event==='postgres_changes'){netPull()}
+    else if(m.event==='postgres_changes'){const rec=m.payload&&m.payload.data&&m.payload.data.record;if(rec&&rec.id&&rec.payload&&rec.sender){netFrame(rec);netPull()}else netPull()}
     else if(m.event==='phx_error'||m.event==='phx_close'){try{ws.close()}catch(x){}}};
   ws.onclose=()=>{clearInterval(RT.hb);if(RT.ws===ws){RT.ok=false;RT.ws=null;netSched();if(NET.s){clearTimeout(RT.t);RT.t=setTimeout(rtOpen,Math.min(15000,1000*Math.pow(2,RT.retry++)))}}};
   ws.onerror=()=>{try{ws.close()}catch(x){}}}
@@ -1187,13 +1233,17 @@ async function netTx(uid,s){
       if(t&&new Date(t)>new Date())toast('You are blocked until '+new Date(t).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+' for breaking the rules');else toast('Message not sent')}
     if(r.ok)return true;if(r.status>=500)NET.down=true;return false}
   catch(e){NET.down=true;if(!/^\{"t":"(typ|ack|read)"/.test(s))toast('No internet. Message will wait');return false}}
+const SEENF=new Set();
+async function netFrame(f){if(SEENF.has(f.id))return;SEENF.add(f.id);if(SEENF.size>400){const a=[...SEENF].slice(-200);SEENF.clear();a.forEach(x=>SEENF.add(x))}
+  try{const p=await netPeer(f.sender);if(p)window.nativeData('u:'+f.sender,f.payload)}catch(e){}
+  sb('/rest/v1/frames?id=eq.'+f.id,{m:'DELETE',h:{Prefer:'return=minimal'}}).catch(()=>{});persistSoon()}
 async function netPull(){
   if(NET.busy||!NET.s)return;NET.busy=true;
   try{const r=await sb('/rest/v1/frames?select=id,sender,payload&order=id.asc&limit=50');
     if(!r.ok){NET.busy=false;return}
     NET.ok=true;const rows=await r.json();if(NET.down){NET.down=false;setTimeout(netFlush,200)}
     if(rows.length){
-      for(const f of rows){const p=await netPeer(f.sender);if(!p)continue;try{window.nativeData('u:'+f.sender,f.payload)}catch(e){}}
+      for(const f of rows){if(SEENF.has(f.id))continue;SEENF.add(f.id);const p=await netPeer(f.sender);if(!p)continue;try{window.nativeData('u:'+f.sender,f.payload)}catch(e){}}
       await sb('/rest/v1/frames?id=in.('+rows.map(f=>f.id).join(',')+')',{m:'DELETE',h:{Prefer:'return=minimal'}});
       persistSoon()}
   }catch(e){}
@@ -1305,8 +1355,8 @@ function exploreHTML(){
 function profBody(q,s,items,busy,mine){
   s=s||{};
   const av=q?`<span class="pfv-av" style="--h:${hueOf(q.username||'x')}">${okImg(q.avatar)?`<img src="${q.avatar}" alt="">`:esc((q.name||q.username||'?')[0].toUpperCase())}</span>`:'<span class="pfv-av skb"></span>';
-  const btns=mine?`<button class="pbtn" data-a="editProfile">Edit profile</button><button class="pbtn" data-a="plus">${isPlus()?'Whapea Plus ✓':'Whapea Plus'}</button>`:`<button class="pbtn ${s.am_following?'':'pri'}" data-a="pfFollow">${s.am_following?'Following':'Follow'}</button><button class="pbtn" data-a="pfMsg">Message</button>`;
-  return `<div class="pfh">${av}<div class="pfs"><div><b>${s.posts||0}</b><small>posts</small></div><div><b>${s.followers||0}</b><small>followers</small></div><div><b>${s.following||0}</b><small>following</small></div></div></div>
+  const btns=mine?`<button class="pbtn" data-a="editProfile">Edit profile</button><button class="pbtn plusb${isPlus()?' act':''}" data-a="plus"><span>Whapea Plus</span>${isPlus()?bdg(ME.plan||'plus'):''}</button>`:`<button class="pbtn ${s.am_following?'':'pri'}" data-a="pfFollow">${s.am_following?'Following':'Follow'}</button><button class="pbtn" data-a="pfMsg">Message</button>`;
+  return `<div class="pfh">${av}<div class="pfs"><div><b>${s.posts||0}</b><small>posts</small></div><button data-a="flList" data-v="${(q&&q.id)||(NET.s&&NET.s.uid)||''}|followers"><b>${s.followers||0}</b><small>followers</small></button><button data-a="flList" data-v="${(q&&q.id)||(NET.s&&NET.s.uid)||''}|following"><b>${s.following||0}</b><small>following</small></button></div></div>
   ${q?`<div style="padding:2px 18px 0"><b style="font-size:15.5px">${esc(q.name||q.username)}${bdg(planOf(q))}</b>${q.pronouns?` <span class="val" style="font-size:13px">${esc(q.pronouns)}</span>`:''}${q.about?`<div style="margin-top:2px;white-space:pre-wrap;font-size:14.5px">${esc(q.about)}</div>`:''}${q.website&&/^https?:\/\//i.test(q.website)?`<button class="lklink" style="margin-top:3px;display:block;text-align:left;padding:0" data-a="openLink" data-v="${esc(q.website)}">${esc(q.website.replace(/^https?:\/\//i,''))}</button>`:''}${q.city?`<div class="val" style="margin-top:3px">${ic('pin',13)} ${esc(q.city)}</div>`:''}</div><div class="pfa">${btns}</div>`:''}
   ${mine?`<div class="ptabs"><button class="${PS.tab!=='saved'?'on':''}" data-a="psTab" data-v="grid" aria-label="Posts">${ic('grid',24)}</button><button class="${PS.tab==='saved'?'on':''}" data-a="psTab" data-v="saved" aria-label="Saved">${ic('bookmark',24)}</button></div>`:`<div class="ptabs"><span class="on">${ic('grid',24)}</span></div>`}
   <div class="grid3">${items.map(gtile).join('')}${busy&&!items.length?Array(6).fill('<i class="gt skb"></i>').join(''):''}</div>
@@ -1343,6 +1393,7 @@ function epDraw(){const v=$('#epv');if(!v)return;if(ED)epRead();else ED={name:ME
    <button class="btn" style="margin-top:10px" data-a="epSave">Submit</button></div>`;
   const b=v.querySelector('.body');if(b)b.scrollTop=sc;
   const t=$('#epb');if(t)t.oninput=()=>{const e=t.parentElement.querySelector('em');if(e)e.textContent=t.value.length+' / 150'}}
+const FL={items:[]};
 const SG={items:[],ok:false,at:0,busy:false,hid:(()=>{try{return JSON.parse(localStorage.getItem('sghid')||'[]')}catch(e){return[]}})(),fl:{}};
 async function loadSug(force){if(!NET.s||SG.busy||ME.suggest===false&&false)return;if(!force&&SG.ok&&Date.now()-SG.at<300000)return;SG.busy=true;
   try{const a=await rpc('suggest_people',{p_limit:14});SG.items=a||[];SG.ok=true;SG.at=Date.now()}catch(e){}
@@ -1464,12 +1515,12 @@ function mediaViewer(m){
     const b=e.target.closest('[data-e]');if(b){ACT.react(m.id+'|'+b.dataset.e);paint()}}}
 function obHTML(){
   if(S.ob===1)return `<div class="land"><button class="ib" data-a="obBack" style="position:absolute;left:6px;top:10px" aria-label="Back">${ic('back',24)}</button>
-   <svg width="72" height="72" viewBox="0 0 108 108" aria-label="Whapea"><rect width="108" height="108" rx="26" fill="url(#igrad)"/><path d="M54 21C73 21 87 34 87 51C87 68 73 81 54 81C50 81 46.4 80.4 43 79.3L27 87L31.5 71.5C25.5 66.8 21 59.5 21 51C21 34 35 21 54 21Z" fill="none" stroke="#fff" stroke-width="6.5" stroke-linejoin="round"/><polyline points="37,42 45.5,61 54,47 62.5,61 71,42" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+   <svg width="72" height="72" viewBox="0 0 108 108" aria-label="Whapea"><defs><linearGradient id="wlg" gradientUnits="userSpaceOnUse" x1="28" y1="34" x2="80" y2="74"><stop offset="0" stop-color="#FFB02E"/><stop offset=".5" stop-color="#FF2E7E"/><stop offset="1" stop-color="#8A3DFF"/></linearGradient></defs><rect width="108" height="108" rx="26" fill="#0E1116"/><path d="M30.2 39.5 L42.8 68.5 L54.0 46.4 L65.2 68.5 L77.8 39.5" fill="none" stroke="url(#wlg)" stroke-width="9.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
    <h2 class="lh">What should we call you?</h2><div class="val" style="font-size:15px">Your name shows on your profile and in chats.</div>
    <div class="field" style="margin:6px 0 0;width:100%"><input id="obn" placeholder="Your name" maxlength="24" autocomplete="off" aria-label="Your name"></div>
    <button class="btn land-btn" data-a="obGo">Continue</button></div>`;
   return `<div class="land"><div class="lang">English</div>
-   <div class="lw"><svg width="64" height="64" viewBox="0 0 108 108" aria-label="Whapea"><rect width="108" height="108" rx="26" fill="url(#igrad)"/><path d="M54 21C73 21 87 34 87 51C87 68 73 81 54 81C50 81 46.4 80.4 43 79.3L27 87L31.5 71.5C25.5 66.8 21 59.5 21 51C21 34 35 21 54 21Z" fill="none" stroke="#fff" stroke-width="6.5" stroke-linejoin="round"/><polyline points="37,42 45.5,61 54,47 62.5,61 71,42" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="lwm">Whapea</span></div>
+   <div class="lw"><svg width="64" height="64" viewBox="0 0 108 108" aria-label="Whapea"><defs><linearGradient id="wlg" gradientUnits="userSpaceOnUse" x1="28" y1="34" x2="80" y2="74"><stop offset="0" stop-color="#FFB02E"/><stop offset=".5" stop-color="#FF2E7E"/><stop offset="1" stop-color="#8A3DFF"/></linearGradient></defs><rect width="108" height="108" rx="26" fill="#0E1116"/><path d="M30.2 39.5 L42.8 68.5 L54.0 46.4 L65.2 68.5 L77.8 39.5" fill="none" stroke="url(#wlg)" stroke-width="9.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="lwm">Whapea</span></div>
    <h1 class="lh">Chat and share <span class="gtx2">everyday moments</span> with your people.</h1>
    <button class="btn land-btn" data-a="obStart">Get started</button>
    <div class="lalt"><button data-a="obLogin">Log in</button><span>or</span><button data-a="obStart">Sign up</button></div>
@@ -1590,9 +1641,9 @@ if(NATIVE){
   applySettings();
   const soon=()=>toast('This feature is coming in the next update');
   pushMsg=function(c,m){
-    if(c.type==='group'){m.status='sent';c.msgs.push(m);drawMsgs(true);render();sendGroup(c,m);return}
+    if(c.type==='group'){m.status='sent';c.msgs.push(m);appendMsg(c,m);sendGroup(c,m);return}
     if(c.type!=='dm'){soon();return}
-    m.status=P[c.cid]&&P[c.cid].range?'sent':'queued';c.msgs.push(m);drawMsgs(true);render();
+    m.status=P[c.cid]&&P[c.cid].range?'sent':'queued';c.msgs.push(m);appendMsg(c,m);
     if(m.status==='sent')sendMsg(c,m)};
   Object.assign(ACT,{
     attach:()=>sheet('',`<div class="grid4">${[['attPhoto','image','Photo',215],['attVideo','play','Video',330],['attPoll','poll','Poll',268],['attContact','user','Contact',150]].map(([a,i,l,h])=>`<button data-a="${a}"><span class="c" style="--h:${h}">${ic(i,24)}</span>${l}</button>`).join('')}</div><div class="note2">Videos can be up to 30 seconds. Documents, audio and location are coming soon.</div>`),
@@ -1802,7 +1853,7 @@ if(NATIVE){
     tab:v=>{S.tab=v;render();if(v==='spons')loadFeed(false);if(v==='posts'){loadFeed(false);loadSug(false);loadNotifCount();if(NET.s&&!PF.ok)loadPosts(true)}if(v==='explore'&&NET.s&&!EX.ok)loadExplore(true);if(v==='me'&&NET.s&&Date.now()-PS.at>45000)loadMyProf();tabAnim()},
     spRefresh:()=>{toast('Checking for new posts…');loadFeed(true)},
     appinfo:()=>{aboutTaps++;if(aboutTaps>=7){aboutTaps=0;ACT.ownerLogin();return}
-      sheet('About Whapea',`<div class="note2" style="font-size:14px">Version 3.5. Chat, post and call over the internet, or with people nearby over Bluetooth. Sponsored posts and updates download when your phone is online.</div><button class="btn" data-a="updCheck">Check for updates</button>`)},
+      sheet('About Whapea',`<div class="note2" style="font-size:14px">Version 3.6. Chat, post and call over the internet, or with people nearby over Bluetooth. Sponsored posts and updates download when your phone is online.</div><button class="btn" data-a="updCheck">Check for updates</button>`)},
     spNew:()=>{sheet('New sponsored post',`<div class="field"><input id="spb" placeholder="Brand name" maxlength="40" autocomplete="off"></div><div class="field"><textarea id="spcap" rows="3" maxlength="300" placeholder="What are you promoting?" class="txt"></textarea></div><div class="field"><input id="spct" placeholder="Phone or address (optional)" maxlength="60" autocomplete="off"></div><div class="field"><input id="spv" placeholder="Video file name, e.g. chai.mp4 (optional)" maxlength="80" autocomplete="off" autocapitalize="none"></div><div class="sec" style="padding-top:2px">Runs for</div><div class="chips" id="spdur">${[3,7,14,30,60].map(d=>`<button class="chip ${d===7?'on':''}" data-a="spDur" data-v="${d}">${d} days</button>`).join('')}</div><button class="act" data-a="spPick">${ic('image')}<span class="grow" id="spmi">Add a photo (optional)<small>Photos are made small so they fit in the post</small></span></button><button class="btn" data-a="spPost">Create post data</button>`);S.spm=null;S.spd=7},
     spPick:()=>pickFile('image/*',f=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,640/Math.max(im.width,im.height)),cv=document.createElement('canvas');cv.width=im.width*k;cv.height=im.height*k;cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);const src=cv.toDataURL('image/jpeg',.6);S.spm={kind:'image',src};const e=$('#spmi');if(e)e.innerHTML=`${esc(f.name)}<small>Photo · ${size(src.length*.75)}</small>`};im.src=r.result};r.readAsDataURL(f)}),
     spPost:()=>{
@@ -1913,6 +1964,11 @@ if(NATIVE){
     psTab:v=>{PS.tab=v;render();if(v==='saved')loadSaved()},
     pRm:v=>{const i=+v,L=[S.pimg].concat(S.pmore||[]);L.splice(i,1);S.pimg=L[0]||null;S.pmore=L.slice(1);pprevDraw()},
 
+    flList:async v=>{const[u,k]=v.split('|');if(!u)return;const el=sheet(k==='followers'?'Followers':'Following','<div class="note2">Loading…</div>');
+      try{const a=await rpc('follow_list',{p_user:u,p_kind:k,p_limit:80})||[];FL.items=a;
+        el.querySelector('.sheet').innerHTML=`<div class="grab"></div><h3>${k==='followers'?'Followers':'Following'}</h3><div class="fllist">${a.length?a.map(x=>`<div class="li"><button class="flp" data-a="openProf" data-v="${esc(x.id)}">${avatarOf(x)}<span class="mid"><span class="nm"><span>${esc(x.username)}</span>${bdg(planOf(x))}</span><span class="sub">${esc(x.name||'')}</span></span></button>${NET.s&&x.id!==NET.s.uid?`<button class="sgf flb${x.am_following?' on':''}" data-a="flFollow" data-v="${esc(x.id)}">${x.am_following?'Following':'Follow'}</button>`:''}</div>`).join(''):`<div class="note2">${k==='followers'?'No followers yet':'Not following anyone yet'}</div>`}</div>`}catch(e){el.querySelector('.sheet').innerHTML='<div class="grab"></div><div class="note2">Could not load</div>'}},
+    flFollow:async(v,b)=>{const x=FL.items.find(y=>y.id===v);if(!x)return;x.am_following=!x.am_following;b.textContent=x.am_following?'Following':'Follow';b.classList.toggle('on',x.am_following);PF.ok=false;PS.ok=false;try{await rpc('toggle_follow',{p_user:v})}catch(e){x.am_following=!x.am_following;b.textContent=x.am_following?'Following':'Follow';b.classList.toggle('on',x.am_following);toast('No connection')}},
+
     gtOpen:v=>pvOpen(v),
     pvClose:()=>$('#pov')?.remove(),
     exMore:()=>loadExplore(false),
@@ -1941,12 +1997,16 @@ if(NATIVE){
       el.onclick=e=>{if(e.target.closest('[data-x]'))el.remove()}},
     postLike:async v=>{const p=postFind(v);if(!p)return;p.liked=!p.liked;p.likes+=p.liked?1:-1;postRedraw(p.liked?v:null);
       try{await rpc('toggle_like',{p_post:+v})}catch(e){p.liked=!p.liked;p.likes+=p.liked?1:-1;postRedraw();toast(rpcErr(e))}},
-    postCom:async v=>{const p=postFind(v);S.pcid=v;const el=sheet('Comments','<div class="note2">Loading…</div>');
+    postCom:async v=>{const p=postFind(v);S.pcid=v;S.cmRep=null;const el=sheet('Comments','<div class="note2">Loading…</div>');
       const paint=async()=>{try{const a=await rpc('post_comments',{p_post:+v});
-        el.querySelector('.sheet').innerHTML='<div class="grab"></div><h3>Comments</h3>'+(a&&a.length?a.map(c=>`<div class="cm"><b>${esc(c.name||c.username)}${bdg(c.plan)}</b> <span class="val">${ago(c.created_at)}</span><div>${esc(c.body)}</div></div>`).join(''):'<div class="note2">No comments yet</div>')+`<div class="field" style="margin:8px 16px"><input id="pcm" maxlength="300" placeholder="Add a comment" autocomplete="off"></div><button class="btn" data-a="postComSend" data-v="${v}">Send</button>`;
+        const top=(a||[]).filter(c=>!c.parent_id),kids=id=>(a||[]).filter(c=>String(c.parent_id)===String(id));
+        const one=(c,sub)=>`<div class="cm${sub?' sub':''}"><b>${esc(c.name||c.username)}${bdg(c.plan)}</b> <span class="val">${ago(c.created_at)}</span><div>${esc(c.body)}</div><button class="cmr" data-a="cmReply" data-v="${c.id}|${esc(c.username)}">Reply</button></div>`;
+        el.querySelector('.sheet').innerHTML='<div class="grab"></div><h3>Comments</h3>'+(top.length?top.map(c=>one(c,0)+kids(c.id).map(k=>one(k,1)).join('')).join(''):'<div class="note2">No comments yet</div>')+`<div id="cmban">${S.cmRep?`<div class="cmb">Replying to @${esc(S.cmRep.user)}<button data-a="cmCancel" aria-label="Cancel">${ic('x',14)}</button></div>`:''}</div><div class="field" style="margin:8px 16px"><input id="pcm" maxlength="300" placeholder="${S.cmRep?'Write a reply':'Add a comment'}" autocomplete="off"></div><button class="btn" data-a="postComSend" data-v="${v}">Send</button>`;
         if(p){p.comments=a?a.length:p.comments;}}catch(e){el.querySelector('.sheet').innerHTML='<div class="grab"></div><div class="note2">Could not load comments</div>'}};
       S.pcpaint=paint;paint()},
-    postComSend:async v=>{const t=($('#pcm').value||'').trim();if(!t)return;try{await rpc('add_comment',{p_post:+v,p_body:t});const p=postFind(v);if(p)p.comments++;await S.pcpaint();postRedraw()}catch(e){toast(rpcErr(e))}},
+    cmReply:v=>{const[id,u]=v.split('|');S.cmRep={id:+id,user:u};S.pcpaint().then(()=>{const i=$('#pcm');if(i){i.value='@'+u+' ';i.focus()}})},
+    cmCancel:()=>{S.cmRep=null;S.pcpaint()},
+    postComSend:async v=>{const t=($('#pcm').value||'').trim();if(!t)return;try{await rpc('add_comment',{p_post:+v,p_body:t,p_parent:S.cmRep?S.cmRep.id:null});S.cmRep=null;const p=postFind(v);if(p)p.comments++;await S.pcpaint();postRedraw()}catch(e){toast(rpcErr(e))}},
     postMenu:v=>{const p=postFind(v);if(!p)return;const mine=NET.s&&p.author===NET.s.uid;
       sheet('',(mine?'':A('netOpen',p.author,'chat','Message @'+p.username))+(mine||S.owner?A('postDel',v,'x','Delete post'):'')+(mine?'':A('postRep',v,'ban','Report post','Hateful, rude or fake')))},
     postDel:async v=>{try{await rpc('delete_post',{p_post:+v});PF.items=PF.items.filter(x=>String(x.id)!==v);EX.items=EX.items.filter(x=>String(x.id)!==v);PS.items=PS.items.filter(x=>String(x.id)!==v);PS.ok=false;if(PROF)PROF.items=PROF.items.filter(x=>String(x.id)!==v);closeSheet();postRedraw();toast('Deleted')}catch(e){toast(rpcErr(e))}},
