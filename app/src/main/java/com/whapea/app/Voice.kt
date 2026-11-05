@@ -187,8 +187,21 @@ object CallAudio {
         } catch (e: Exception) { }
     }
 
-    fun speaker(on: Boolean) {
-        try { am?.isSpeakerphoneOn = on } catch (e: Exception) { }
+    /** Switches between the earpiece (default) and the loudspeaker. Works even before the call is connected. */
+    fun speaker(ctx: Context, on: Boolean) {
+        try {
+            val audio = ctx.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+            am = audio
+            if (on && audio.mode != AudioManager.MODE_IN_COMMUNICATION) audio.mode = AudioManager.MODE_IN_COMMUNICATION
+            if (android.os.Build.VERSION.SDK_INT >= 31) {
+                if (on) {
+                    val d = audio.availableCommunicationDevices.firstOrNull { it.type == android.media.AudioDeviceInfo.TYPE_BUILTIN_SPEAKER }
+                    if (d != null) audio.setCommunicationDevice(d) else audio.isSpeakerphoneOn = true
+                } else audio.clearCommunicationDevice()
+            } else {
+                audio.isSpeakerphoneOn = on
+            }
+        } catch (e: Exception) { }
     }
 
     fun stop() {

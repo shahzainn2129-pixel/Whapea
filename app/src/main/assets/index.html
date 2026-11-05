@@ -517,6 +517,26 @@ img.spm{aspect-ratio:auto;height:auto;max-height:560px;object-fit:contain}
 .cmb{display:flex;align-items:center;justify-content:space-between;margin:6px 16px 0;padding:6px 12px;border-radius:10px;background:var(--surface2);font-size:13.5px}.cmb button{color:var(--muted)}
 .pfs button{text-align:center;display:flex;flex-direction:column}.pfs button:active{opacity:.6}
 .fllist{max-height:60vh;overflow-y:auto}.fllist .li{display:flex;align-items:center;gap:8px}.flp{display:flex;align-items:center;gap:12px;flex:1;min-width:0;text-align:left}.flb{width:auto;padding:7px 16px;flex:none}
+
+/* v3.7 */
+.ptl{margin-bottom:8px;font-weight:700;font-size:17px}
+.ptt{font-weight:800;font-size:16.5px;line-height:1.3;margin-bottom:2px}
+.pcap .pcb.cl{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;white-space:pre-wrap}
+.pcap .more{display:block;color:var(--muted);font-size:14px;font-weight:600;padding:2px 0}.pcap .more[hidden]{display:none}
+.pcap.big{font-size:17px;padding:10px 14px}
+.pviews{padding:0 14px;font-size:13px;color:var(--muted)}.pviews:empty{display:none}
+.pvid{background:#000}.pvid video{display:block;width:100%;max-height:78vh;background:#000}
+.pvprev{position:relative;margin:6px 16px}.pvprev video{width:100%;max-height:220px;border-radius:12px;background:#000;display:block}
+.pvprev button{position:absolute;right:8px;top:8px;width:26px;height:26px;border-radius:50%;background:rgba(0,0,0,.65);color:#fff;display:grid;place-items:center}
+.pvprev small{display:block;color:var(--muted);margin-top:4px;font-size:12.5px}
+.gtp{position:absolute;right:6px;top:6px;color:#fff;filter:drop-shadow(0 1px 2px rgba(0,0,0,.6))}
+.cbtns.c3{gap:30px;align-items:flex-start;margin-top:6px}
+.cbtns.c3 button{width:auto;height:auto;background:none;display:flex;flex-direction:column;align-items:center;gap:7px;color:#fff;font-size:13px}
+.cbtns.c3 button.on{background:none;color:#fff}
+.cbtns.c3 .cb{width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,.16);display:grid;place-items:center;color:#fff;transition:background .15s,color .15s}
+.cbtns.c3 button.on .cb{background:#fff;color:#0a1428}
+.cbtns.c3 .end{background:none}.cbtns.c3 .end .cb{background:var(--bad);width:72px;height:72px;color:#fff}.cbtns.c3 .end svg{transform:rotate(135deg)}
+.cbtns.c2{margin-bottom:14px;gap:36px}.cbtns.c3 small{font-size:12.5px;opacity:.9}
 </style>
 </head><body>
 
@@ -531,6 +551,7 @@ const NATIVE=typeof Android!=='undefined';
 const $=s=>document.querySelector(s), phone=$('#phone');
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const I={
+  down:'<path d="M12 3v12"/><path d="M7 11l5 5 5-5"/><path d="M5 20h14"/>',
 chat:'<path d="M21 12a8 8 0 0 1-11.7 7L4 20l1.1-4.6A8 8 0 1 1 21 12z"/>',
 status:'<circle cx="12" cy="12" r="8.5" stroke-dasharray="3.2 3"/><circle cx="12" cy="12" r="3"/>',
 radar:'<circle cx="12" cy="12" r="1.8"/><path d="M8 8a5.7 5.7 0 0 0 0 8M16 8a5.7 5.7 0 0 1 0 8M5 5a10 10 0 0 0 0 14M19 5a10 10 0 0 1 0 14"/>',
@@ -660,7 +681,7 @@ const A=(a,v,icon,label,sub='',cls='')=>`<button class="act ${cls}" data-a="${a}
 const tg=on=>`<span class="tg ${on?'on':''}"></span>`;
 
 /* ---------- main render ---------- */
-function render(){try{return __render0.apply(this,arguments)}finally{try{fixCar()}catch(e){}}}
+function render(){try{return __render0.apply(this,arguments)}finally{try{fixCar();fixClamp();observeViews()}catch(e){}}}
 function __render0(){persistSoon();if(NATIVE&&!ME.name){$('#main').innerHTML=obHTML();return}
   const unread=chats.filter(c=>!c.archived&&(c.unread||c.mk)).length;
   const tabs=NATIVE?[['posts','home','Home'],['explore','search','Explore'],['chats','plane','Chats'],['spons','mega','Sponsors'],['me','avatar','Profile']]:[['chats','chat','Chats'],['status','status','Status'],['spons','mega','Sponsors'],['near','radar','Nearby'],['calls','phone','Calls'],['set','gear','Settings']];
@@ -796,7 +817,7 @@ function setNative(row,sw){
   ${o?`<div class="sec">Owner</div>${row('ownerOff','verified','Owner mode is on','','Tap to sign out')}
   ${NET.s?row('netOwner','verified','Internet users','','See accounts and block for 3 hours')+row('ownerPay','db','Plus payments','','Approve or reject payment requests')+row('ownerRep','ban','Reported posts','','Delete or clear reports')+row('ownerUsr','ban','Reported users','','Block people who are reported'):''}`:''}
   <div class="sec">More info and support</div>
-  ${row('appinfo','info','About Whapea','','Version 3.6')}
+  ${row('appinfo','info','About Whapea','','Version 3.7')}
   ${NET.s?`<button class="act bad" data-a="netOut" data-v=""><span class="grow">Log out</span></button>`:''}
   <div style="height:40px"></div>`}
 function setHTML(){
@@ -1330,7 +1351,7 @@ const EX={items:[],busy:false,more:false,q:'',users:[],ok:false,ut:0};
 const PS={stats:null,items:[],saved:[],tab:'grid',busy:false,ok:false,at:0},XP=[],NT={items:[],n:0,busy:false};
 const agoS=t=>{const x=(Date.now()-t)/1000;return x<60?'now':x<3600?Math.floor(x/60)+'m':x<86400?Math.floor(x/3600)+'h':x<604800?Math.floor(x/86400)+'d':Math.floor(x/604800)+'w'};
 const liveSp=()=>SPONS.filter(p=>p.until>Date.now()&&!p.hidden&&(!p.city||p.city===ME.city)).sort((a,b)=>(b.pinned?1:0)-(a.pinned?1:0)||b.t-a.t);
-const gtile=p=>`<button class="gt" data-a="gtOpen" data-v="${p.id}" aria-label="Open post">${p.image&&okImg(p.image)?`<img src="${p.image}" loading="lazy" alt="">`:`<span class="gtx" style="--h:${hueOf(p.username)}">${esc(p.body)}</span>`}</button>`;
+const gtile=p=>`<button class="gt" data-a="gtOpen" data-v="${p.id}" aria-label="Open post">${p.video?`<span class="gtx" style="--h:${hueOf(p.username)}">${esc(p.title||p.body||'')}</span><span class="gtp">${ic('play',22)}</span>`:p.image&&okImg(p.image)?`<img src="${p.image}" loading="lazy" alt="">`:`<span class="gtx" style="--h:${hueOf(p.username)}">${esc(p.body)}</span>`}</button>`;
 async function loadExplore(reset){if(!NET.s||EX.busy)return;EX.busy=true;if(reset){EX.items=[];EX.more=false}if(S.tab==='explore'&&!EX.q)render();
   try{const a=await rpc('feed',{p_city:null,p_before:reset||!EX.items.length?null:EX.items[EX.items.length-1].id,p_limit:18});EX.items=EX.items.concat(a||[]);EX.more=(a||[]).length>=18;EX.ok=true}catch(e){}
   EX.busy=false;if(S.tab==='explore'&&!EX.q)render()}
@@ -1368,7 +1389,7 @@ function meHTML(){
   const q={username:NET.s.user,name:ME.name,about:ME.about,avatar:ME.dp,city:ME.city,plan:ME.plan,plan_until:ME.plan_until,website:ME.website,pronouns:ME.pronouns};
   return profBody(q,PS.stats,PS.tab==='saved'?PS.saved:PS.items,PS.busy&&!PS.ok,true)}
 function pvOpen(id){$('#pov')?.remove();const v=document.createElement('div');v.className='screen';v.id='pov';v.dataset.pid=id;phone.append(v);pvDraw()}
-function pvDraw(){const v=$('#pov');if(!v)return;const p=postFind(v.dataset.pid);if(!p){v.remove();return}
+function pvDraw(){setTimeout(fixClamp,0);const v=$('#pov');if(!v)return;const p=postFind(v.dataset.pid);if(!p){v.remove();return}
   v.innerHTML=`<div class="ch"><button class="ib" data-a="pvClose" aria-label="Back">${ic('back')}</button><b style="flex:1;font-size:16px">Post</b></div><div class="body" style="overflow-y:auto;flex:1">${postCard(p)}</div>`}
 document.addEventListener('input',e=>{const t=e.target;if(t.id==='xq'){clearTimeout(EX.dt);EX.dt=setTimeout(()=>exSearch(t.value.trim()),320)}
   if(t.id==='sq'){const q=t.value.trim().toLowerCase();document.querySelectorAll('#body .act').forEach(b=>{b.style.display=!q||b.textContent.toLowerCase().includes(q)?'':'none'})}});
@@ -1410,8 +1431,29 @@ function nvDraw(){const v=$('#nov');if(!v)return;const T={like:'liked your post'
 async function openShared(id){try{const a=await rpc('get_post',{p_id:+id});const p=a&&a[0];if(!p){toast('This post is no longer available');return}XP.unshift(p);XP.length=Math.min(XP.length,30);pvOpen(String(p.id))}catch(e){toast('No connection')}}
 document.addEventListener('scroll',e=>{const t=e.target;if(!t||!t.classList||!t.classList.contains('pcs'))return;const i=Math.round(t.scrollLeft/Math.max(1,t.clientWidth)),p=postFind(t.dataset.pid);if(p)p._ci=i;t.dataset.ci=i;const w=t.parentElement,n=w.querySelector('.pcn');if(n)n.textContent=(i+1)+'/'+t.children.length;w.querySelectorAll('.pcd i').forEach((d,k)=>d.classList.toggle('on',k===i))},true);
 function fixCar(){document.querySelectorAll('.pcs[data-ci]').forEach(e=>{const i=+e.dataset.ci;if(i)e.scrollLeft=i*e.clientWidth})}
-function pprevDraw(){const e=$('#pprev');if(!e)return;const L=S.pimg?[S.pimg].concat(S.pmore||[]):[];e.innerHTML=L.length?`<div class="pthumbs">${L.map((u,i)=>`<span><img src="${u}" alt=""><button data-a="pRm" data-v="${i}" aria-label="Remove">${ic('x',13)}</button></span>`).join('')}</div>`:''}
+function pprevDraw(){const e=$('#pprev');if(!e)return;if(S.pvid){if(S.pvu)URL.revokeObjectURL(S.pvu);S.pvu=URL.createObjectURL(S.pvid);e.innerHTML=`<div class="pvprev"><video src="${S.pvu}#t=0.1" controls playsinline preload="metadata"></video><button data-a="pRmV" aria-label="Remove">${ic('x',14)}</button><small>${(S.pvid.size/1048576).toFixed(1)} MB · original quality</small></div>`;return}const L=S.pimg?[S.pimg].concat(S.pmore||[]):[];e.innerHTML=L.length?`<div class="pthumbs">${L.map((u,i)=>`<span><img src="${u}" alt=""><button data-a="pRm" data-v="${i}" aria-label="Remove">${ic('x',13)}</button></span>`).join('')}</div>`:''}
 setInterval(()=>{if(NET.s)loadNotifCount()},60000);
+
+/* ---------- v3.7 titles, videos, views, see more ---------- */
+const fmtN=n=>n>=1e6?(n/1e6).toFixed(1).replace('.0','')+'M':n>=1e3?(n/1e3).toFixed(1).replace('.0','')+'K':String(n);
+const vidUrl=p=>p&&p.video?SB+'/storage/v1/object/public/post-media/'+p.video:'';
+const VW={seen:new Set(),q:[],t:0,io:null,tm:new Map()};
+function flushViews(){const ids=[...new Set(VW.q)];VW.q=[];if(ids.length&&NET.s)rpc('view_posts',{p_ids:ids}).catch(()=>{})}
+function observeViews(){if(!NET.s||typeof IntersectionObserver==='undefined')return;
+  if(!VW.io)VW.io=new IntersectionObserver(es=>{for(const e of es){const id=e.target.dataset.pid;
+    if(e.isIntersecting){if(VW.seen.has(id)||VW.tm.has(id))continue;VW.tm.set(id,setTimeout(()=>{VW.tm.delete(id);VW.seen.add(id);const p=postFind(id);
+      if(p&&NET.s&&p.author!==NET.s.uid){VW.q.push(+id);p.views=(+p.views||0)+1;const el=document.querySelector('.pc[data-pid="'+id+'"] .pviews');if(el)el.textContent=fmtN(p.views)+(p.views===1?' view':' views')}
+      clearTimeout(VW.t);VW.t=setTimeout(flushViews,2500)},1000))}
+    else{const t=VW.tm.get(id);if(t){clearTimeout(t);VW.tm.delete(id)}}}},{threshold:.6});
+  VW.io.disconnect();document.querySelectorAll('.pc[data-pid]').forEach(a=>VW.io.observe(a))}
+function fixClamp(){document.querySelectorAll('.pcb.cl').forEach(e=>{const b=e.parentElement.querySelector('.more');if(b)b.hidden=!(e.scrollHeight>e.clientHeight+1)})}
+function uploadVideo(f,cb,retry){return new Promise((res,rej)=>{const ext=((/\.(mp4|webm|3gp|mov)$/i.exec(f.name)||[])[1]||'mp4').toLowerCase();
+  const name=NET.s.uid+'/'+Date.now()+'-'+Math.random().toString(36).slice(2,8)+'.'+ext,x=new XMLHttpRequest();
+  x.open('POST',SB+'/storage/v1/object/post-media/'+name);x.setRequestHeader('Authorization','Bearer '+NET.s.at);x.setRequestHeader('apikey',SBK);x.setRequestHeader('Content-Type',f.type||'video/mp4');x.setRequestHeader('x-upsert','false');
+  x.upload.onprogress=e=>{if(e.lengthComputable)cb(Math.round(e.loaded/e.total*100))};
+  x.onload=async()=>{if(x.status<300)res(name);else if(x.status===401&&!retry&&await netRefresh())uploadVideo(f,cb,true).then(res,rej);else rej(new Error('upload '+x.status))};
+  x.onerror=()=>rej(new Error('net'));x.send(f)})}
+const rmVideo=name=>{try{if(name&&NET.s)fetch(SB+'/storage/v1/object/post-media/'+name,{method:'DELETE',headers:{apikey:SBK,Authorization:'Bearer '+NET.s.at}}).catch(()=>{})}catch(e){}};
 
 /* ---------- city, posts, Plus ---------- */
 const CITIES=['Karachi','Lahore','Islamabad','Rawalpindi','Faisalabad','Multan','Peshawar','Quetta','Hyderabad','Sialkot','Gujranwala','Bahawalpur','Sargodha','Sukkur','Larkana','Abbottabad','Mardan','Mingora','Other'];
@@ -1438,12 +1480,14 @@ async function loadPosts(reset){
 function postCard(p){
   const nm=esc(p.name||p.username),imgOk=p.image&&okImg(p.image),n=+p.likes||0;
   const imgs=imgOk?[p.image].concat((p.more||[]).filter(okImg)):[];
-  const media=imgs.length>1?`<div class="pcar"><div class="pcs" data-pid="${p.id}" data-ci="${p._ci||0}">${imgs.map(u=>`<img class="pim" src="${u}" data-a="postImg" data-v="${p.id}" alt="Post photo">`).join('')}</div><span class="pcn">${(p._ci||0)+1}/${imgs.length}</span><div class="pcd">${imgs.map((_,i)=>`<i class="${i===(p._ci||0)?'on':''}"></i>`).join('')}</div></div>`:imgOk?`<img class="pim" src="${p.image}" data-a="postImg" data-v="${p.id}" alt="Post photo">`:(p.body?`<div class="ptile" style="--h:${hueOf(p.username)}" data-a="postImg" data-v="${p.id}"><span>${esc(p.body)}</span></div>`:'');
-  const cap=imgOk&&p.body?`<div class="pcap"><b>${esc(p.username)}</b> ${esc(p.body)}</div>`:'';
-  return `<article class="pc"><header><button class="pfl" data-a="openProf" data-v="${p.author}"><span class="ring sm">${av0(hueOf(p.username),p.name||p.username,'sm')}</span><span style="flex:1;min-width:0"><b>${nm}${bdg(p.plan)}</b><div class="val">${p.city?esc(p.city)+' · ':''}${ago(p.created_at)}</div></span></button><button class="ib" data-a="postMenu" data-v="${p.id}" aria-label="More">${ic('more')}</button></header>
+  const hasM=imgOk||p.video,tl=p.title?`<div class="ptt">${esc(p.title)}</div>`:'';
+  const long=!hasM&&!(p.body&&!p.title&&p.body.length<=90);
+  const media=p.video?`<div class="pvid"><video src="${vidUrl(p)}#t=0.1" controls playsinline preload="metadata" controlslist="nodownload"></video></div>`:imgs.length>1?`<div class="pcar"><div class="pcs" data-pid="${p.id}" data-ci="${p._ci||0}">${imgs.map(u=>`<img class="pim" src="${u}" data-a="postImg" data-v="${p.id}" alt="Post photo">`).join('')}</div><span class="pcn">${(p._ci||0)+1}/${imgs.length}</span><div class="pcd">${imgs.map((_,i)=>`<i class="${i===(p._ci||0)?'on':''}"></i>`).join('')}</div></div>`:imgOk?`<img class="pim" src="${p.image}" data-a="postImg" data-v="${p.id}" alt="Post photo">`:(p.body&&!long?`<div class="ptile" style="--h:${hueOf(p.username)}" data-a="postImg" data-v="${p.id}"><span>${esc(p.body)}</span></div>`:'');
+  const cap=hasM?(p.body||p.title?`<div class="pcap">${tl}${p.body?`<span class="pcb${p._x?'':' cl'}"><b>${esc(p.username)}</b> ${esc(p.body)}</span><button class="more" hidden data-a="postMore" data-v="${p.id}">See more</button>`:''}</div>`:''):(long?`<div class="pcap big">${tl}<span class="pcb${p._x?'':' cl'}">${esc(p.body)}</span><button class="more" hidden data-a="postMore" data-v="${p.id}">See more</button></div>`:'');
+  return `<article class="pc" data-pid="${p.id}"><header><button class="pfl" data-a="openProf" data-v="${p.author}"><span class="ring sm">${av0(hueOf(p.username),p.name||p.username,'sm')}</span><span style="flex:1;min-width:0"><b>${nm}${bdg(p.plan)}</b><div class="val">${p.city?esc(p.city)+' · ':''}${ago(p.created_at)}</div></span></button><button class="ib" data-a="postMenu" data-v="${p.id}" aria-label="More">${ic('more')}</button></header>
   ${media}
   <div class="pact"><button data-a="postLike" data-v="${p.id}" class="${p.liked?'on':''}" aria-label="Like">${ic('heart',27)}</button><button data-a="postCom" data-v="${p.id}" aria-label="Comments">${ic('chat',26)}</button><button data-a="postShare" data-v="${p.id}" aria-label="Send">${ic('fwd',25)}</button><button class="psv${p.saved?' on':''}" data-a="postSave" data-v="${p.id}" aria-label="Save">${ic('bookmark',25)}</button></div>
-  <div class="pl">${n?n+(n===1?' like':' likes'):'Be the first to like this'}</div>${cap}
+  <div class="pl">${n?n+(n===1?' like':' likes'):'Be the first to like this'}</div><div class="pviews">${+p.views?fmtN(+p.views)+(+p.views===1?' view':' views'):''}</div>${cap}
   ${p.comments?`<button class="pvc" data-a="postCom" data-v="${p.id}">View all ${p.comments} comment${p.comments>1?'s':''}</button>`:''}</article>`}
 function postsHTML(){
   if(!NET.s)return `<div class="empty"><b>Posts need an internet account</b>Create a free account to see what people share and to post yourself.<br><button class="btn" style="margin-top:14px" data-a="netAcct">Create internet account</button></div>`;
@@ -1725,7 +1769,7 @@ if(NATIVE){
     const vid=!!S.cvideo,c={audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}};
     if(vid)c.video={facingMode:'user',width:{ideal:640},height:{ideal:480},frameRate:{ideal:24,max:30}};
     RTC.stream=await navigator.mediaDevices.getUserMedia(c);
-    if(vid)Android.callSpeaker(true);
+    Android.callSpeaker(!!S.spk);if(S.mute)RTC.stream.getAudioTracks().forEach(t=>t.enabled=false);
     const pc=RTC.pc=new RTCPeerConnection(ICE);
     RTC.stream.getTracks().forEach(t=>pc.addTrack(t,RTC.stream));
     pc.ontrack=e=>{RTC.rs=e.streams[0];
@@ -1770,8 +1814,9 @@ if(NATIVE){
     const title=st==='out'?(isNet(k)?(vid?'Video calling…':'Calling…'):'Calling over Bluetooth…'):st==='in'?(vid?'Incoming Whapea video call':'Incoming Whapea call'):dur(S.cs);
     v.innerHTML=(vc?'<video id="rv" class="rv" autoplay playsinline></video><video id="lv" class="lv" autoplay muted playsinline></video>':'')+
      `<div class="ci"><span class="av" style="--h:${p.hue}">${esc((p.name||'?')[0])}</span><h2>${esc(p.name)}</h2><p id="cst">${title}</p><p id="cdiag" class="cd"></p></div>`+
-     (st==='live'?`<div class="cbtns"><button data-a="cmute" aria-label="Mute">${ic('mic',26)}</button>${vid?`<button data-a="ccam" aria-label="Camera">${ic('video',26)}</button><button data-a="cflip" aria-label="Switch camera">${ic('camera',26)}</button>`:''}<button data-a="cspk" class="${vid?'on':''}" aria-label="Speaker">${ic('vol',26)}</button></div>`:'<div></div>')+
-     (st==='in'?`<div class="cbtns"><button class="end" data-a="callRej" aria-label="Decline">${ic('phone',28)}</button><button class="acc" data-a="callAcc" aria-label="Answer">${ic(vid?'video':'phone',28)}</button></div>`:`<div class="cbtns"><button class="end" data-a="endCall" aria-label="End call">${ic('phone',28)}</button></div>`);
+     (st==='in'?`<div class="cbtns"><button class="end" data-a="callRej" aria-label="Decline">${ic('phone',28)}</button><button class="acc" data-a="callAcc" aria-label="Answer">${ic(vid?'video':'phone',28)}</button></div>`:
+      (vid&&st==='live'?`<div class="cbtns c3 c2"><button data-a="ccam" aria-label="Camera"><span class="cb">${ic('video',24)}</span><small>Camera</small></button><button data-a="cflip" aria-label="Switch camera"><span class="cb">${ic('camera',24)}</span><small>Flip</small></button></div>`:'')+
+      `<div class="cbtns c3"><button data-a="cspk" class="${S.spk?'on':''}" aria-label="Speaker"><span class="cb">${ic('vol',26)}</span><small>Speaker</small></button><button class="end" data-a="endCall" aria-label="End call"><span class="cb">${ic('phone',28)}</span><small>End</small></button><button data-a="cmute" class="${S.mute?'on':''}" aria-label="Mute"><span class="cb">${ic('mic',26)}</span><small>${S.mute?'Unmute':'Mute'}</small></button></div>`);
     phone.append(v);rtcAttach()};
   window.finishCall=function(missed){
     const k=S.call;if(!k)return;
@@ -1787,13 +1832,13 @@ if(NATIVE){
       clearInterval(RTC.diag);RTC.diag=setInterval(rtcDiag,2000);
       S.ci=setInterval(()=>{S.cs++;const e=$('#cst');if(e)e.textContent=dur(S.cs)},1000);return}
     if(!Android.callStart(k)){toast('Could not start the microphone');csend(k,'end');finishCall(false);return}
-    S.cst='live';S.cs=0;callUI(k,'live');
+    S.cst='live';S.cs=0;callUI(k,'live');try{Android.callSpeaker(!!S.spk);Android.callMute(!!S.mute)}catch(e){}
     S.ci=setInterval(()=>{S.cs++;const e=$('#cst');if(e)e.textContent=dur(S.cs)},1000)}
   window.callRx=function(a,o){
     const op=o.op;
     if(op==='ring'){
       if(S.call){csend(a,'busy');return}
-      S.cvideo=!!o.video&&isNet(a);
+      S.cvideo=!!o.video&&isNet(a);S.spk=!!S.cvideo;S.mute=false;
       S.call=a;S.cdir='in';S.cst='in';S.cs=0;callUI(a,'in');Android.ringStart();netSched();
       S.cto=setTimeout(()=>{if(S.call===a&&S.cst==='in')finishCall(true)},CALLTO);return}
     if(S.call!==a)return;
@@ -1807,7 +1852,7 @@ if(NATIVE){
     if(video&&!isNet(v)){toast('Video calls work over the internet');return}
     if(!Android.micOk())return;
     if(video&&!Android.camOk())return;
-    S.cvideo=!!video;S.call=v;S.cdir='out';S.cst='out';S.cs=0;closeSheet();csend(v,'ring',{video:!!video});callUI(v,'out');netSched();
+    S.cvideo=!!video;S.spk=!!video;S.mute=false;S.call=v;S.cdir='out';S.cst='out';S.cs=0;closeSheet();csend(v,'ring',{video:!!video});callUI(v,'out');netSched();
     S.cto=setTimeout(()=>{if(S.call===v&&S.cst==='out'){csend(v,'end');toast('No answer');finishCall(false)}},CALLTO)}
   Object.assign(ACT,{
     startCall:v=>startCallX(v,false),
@@ -1821,12 +1866,12 @@ if(NATIVE){
     callAcc:()=>{const k=S.call;if(!k||S.cst!=='in')return;if(!Android.micOk())return;if(S.cvideo&&!Android.camOk())return;csend(k,'acc');goLive(k)},
     callRej:()=>{const k=S.call;if(!k)return;csend(k,'rej');finishCall(true)},
     endCall:()=>{const k=S.call;if(!k)return;csend(k,'end');finishCall(false)},
-    cmute:(v,el)=>{el.classList.toggle('on');const on=el.classList.contains('on');if(RTC.stream)RTC.stream.getAudioTracks().forEach(t=>t.enabled=!on);else Android.callMute(on)},
+    cmute:(v,el)=>{S.mute=!S.mute;el.classList.toggle('on',S.mute);const sm=el.querySelector('small');if(sm)sm.textContent=S.mute?'Unmute':'Mute';try{if(RTC.stream)RTC.stream.getAudioTracks().forEach(t=>t.enabled=!S.mute);Android.callMute(S.mute)}catch(e){}},
     ccam:(v,el)=>{el.classList.toggle('on');const off=el.classList.contains('on');if(RTC.stream)RTC.stream.getVideoTracks().forEach(t=>t.enabled=!off)},
     cflip:async()=>{if(!RTC.stream||!RTC.pc)return;const old=RTC.stream.getVideoTracks()[0];if(!old)return;const want=RTC.cam==='user'?'environment':'user';
       try{old.stop();const ns=await navigator.mediaDevices.getUserMedia({video:{facingMode:want,width:{ideal:640},height:{ideal:480}}});const nt=ns.getVideoTracks()[0],sd=RTC.pc.getSenders().find(x=>x.track&&x.track.kind==='video'||x.track===old);
         if(sd)await sd.replaceTrack(nt);RTC.stream.removeTrack(old);RTC.stream.addTrack(nt);RTC.cam=want;const lv=$('#lv');if(lv)lv.style.transform=want==='user'?'scaleX(-1)':'none'}catch(e){toast('Could not switch the camera')}},
-    cspk:(v,el)=>{el.classList.toggle('on');Android.callSpeaker(el.classList.contains('on'))},
+    cspk:(v,el)=>{S.spk=!S.spk;el.classList.toggle('on',S.spk);try{Android.callSpeaker(S.spk)}catch(e){}},
   });
 
   /* ---- app updates ---- */
@@ -1853,7 +1898,7 @@ if(NATIVE){
     tab:v=>{S.tab=v;render();if(v==='spons')loadFeed(false);if(v==='posts'){loadFeed(false);loadSug(false);loadNotifCount();if(NET.s&&!PF.ok)loadPosts(true)}if(v==='explore'&&NET.s&&!EX.ok)loadExplore(true);if(v==='me'&&NET.s&&Date.now()-PS.at>45000)loadMyProf();tabAnim()},
     spRefresh:()=>{toast('Checking for new posts…');loadFeed(true)},
     appinfo:()=>{aboutTaps++;if(aboutTaps>=7){aboutTaps=0;ACT.ownerLogin();return}
-      sheet('About Whapea',`<div class="note2" style="font-size:14px">Version 3.6. Chat, post and call over the internet, or with people nearby over Bluetooth. Sponsored posts and updates download when your phone is online.</div><button class="btn" data-a="updCheck">Check for updates</button>`)},
+      sheet('About Whapea',`<div class="note2" style="font-size:14px">Version 3.7. Chat, post and call over the internet, or with people nearby over Bluetooth. Sponsored posts and updates download when your phone is online.</div><button class="btn" data-a="updCheck">Check for updates</button>`)},
     spNew:()=>{sheet('New sponsored post',`<div class="field"><input id="spb" placeholder="Brand name" maxlength="40" autocomplete="off"></div><div class="field"><textarea id="spcap" rows="3" maxlength="300" placeholder="What are you promoting?" class="txt"></textarea></div><div class="field"><input id="spct" placeholder="Phone or address (optional)" maxlength="60" autocomplete="off"></div><div class="field"><input id="spv" placeholder="Video file name, e.g. chai.mp4 (optional)" maxlength="80" autocomplete="off" autocapitalize="none"></div><div class="sec" style="padding-top:2px">Runs for</div><div class="chips" id="spdur">${[3,7,14,30,60].map(d=>`<button class="chip ${d===7?'on':''}" data-a="spDur" data-v="${d}">${d} days</button>`).join('')}</div><button class="act" data-a="spPick">${ic('image')}<span class="grow" id="spmi">Add a photo (optional)<small>Photos are made small so they fit in the post</small></span></button><button class="btn" data-a="spPost">Create post data</button>`);S.spm=null;S.spd=7},
     spPick:()=>pickFile('image/*',f=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,640/Math.max(im.width,im.height)),cv=document.createElement('canvas');cv.width=im.width*k;cv.height=im.height*k;cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);const src=cv.toDataURL('image/jpeg',.6);S.spm={kind:'image',src};const e=$('#spmi');if(e)e.innerHTML=`${esc(f.name)}<small>Photo · ${size(src.length*.75)}</small>`};im.src=r.result};r.readAsDataURL(f)}),
     spPost:()=>{
@@ -1983,13 +2028,17 @@ if(NATIVE){
     postScope:v=>{PF.scope=v;PF.items=[];PF.ok=false;render();loadPosts(true)},
     postRefresh:()=>loadPosts(true),
     postMore:()=>loadPosts(false),
-    newPost:()=>{if(!NET.s){ACT.netAcct();return}S.pimg=null;S.pmore=[];sheet('New post',`<textarea id="ptx" class="pfield" rows="4" maxlength="500" placeholder="What do you want to share?"></textarea><div id="pprev"></div>
+    newPost:()=>{if(!NET.s){ACT.netAcct();return}S.pimg=null;S.pmore=[];S.pvid=null;sheet('New post',`<input id="ptl" class="pfield ptl" maxlength="80" placeholder="Title (optional)" autocomplete="off"><textarea id="ptx" class="pfield" rows="4" maxlength="500" placeholder="What do you want to share?"></textarea><div id="pprev"></div>
       <div class="note2">${ME.city?'Shown in '+esc(ME.city)+' and Everyone.':'Shown in Everyone. Set your city in Settings to reach people near you.'} Posts disappear after 7 days.</div>
-      ${A('postPhoto','','image','Add photos (up to 4)')}<button class="btn" id="pgo" data-a="postSend">Post</button>`)},
-    postPhoto:()=>{const extra=!!S.pimg;if(extra&&(S.pmore||[]).length>=3){toast('Up to 4 photos');return}const lim=extra?115000:195000;pickFile('image/*',f=>{const go=(px,q)=>readImg(f,px,q,src=>{if(src.length>lim&&px>480){go(Math.round(px*.82),Math.max(.45,q-.06));return}if(src.length>lim){toast('That photo is too large');return}if(extra){(S.pmore=S.pmore||[]).push(src)}else S.pimg=src;pprevDraw()});go(extra?1080:1280,.78)})},
-    postSend:async()=>{const t=($('#ptx').value||'').trim();if(!t&&!S.pimg){toast('Write something or add a photo');return}const b=$('#pgo');b.disabled=true;b.textContent='Posting…';
-      try{await rpc('create_post',{p_body:t,p_image:S.pimg||null,p_city:ME.city||null,p_more:S.pmore&&S.pmore.length?S.pmore:null});S.pimg=null;S.pmore=[];closeSheet();toast('Posted');PS.ok=false;EX.ok=false;loadPosts(true)}
-      catch(e){b.disabled=false;b.textContent='Post';toast(rpcErr(e))}},
+      ${A('postPhoto','','image','Add photos (up to 4)')}${A('postVideo','','video','Add a video','Uploaded in its original quality, up to 50 MB')}<button class="btn" id="pgo" data-a="postSend">Post</button>`)},
+    postVideo:()=>pickFile('video/*',f=>{if(f.size>50*1024*1024){toast('This video is over 50 MB. Please pick a shorter one');return}if(f.type&&!/^video\//.test(f.type)){toast('Please pick a video');return}S.pvid=f;S.pimg=null;S.pmore=[];pprevDraw()}),
+    pRmV:()=>{S.pvid=null;pprevDraw()},
+    postMore:v=>{const p=postFind(v);if(p){p._x=true;postRedraw()}},
+    postPhoto:()=>{if(S.pvid){S.pvid=null}const extra=!!S.pimg;if(extra&&(S.pmore||[]).length>=3){toast('Up to 4 photos');return}const lim=extra?115000:195000;pickFile('image/*',f=>{const go=(px,q)=>readImg(f,px,q,src=>{if(src.length>lim&&px>480){go(Math.round(px*.82),Math.max(.45,q-.06));return}if(src.length>lim){toast('That photo is too large');return}if(extra){(S.pmore=S.pmore||[]).push(src)}else S.pimg=src;pprevDraw()});go(extra?1080:1280,.78)})},
+    postSend:async()=>{const t=($('#ptx').value||'').trim(),ti=($('#ptl').value||'').trim();if(!t&&!ti&&!S.pimg&&!S.pvid){toast('Write something or add a photo or video');return}const b=$('#pgo');b.disabled=true;b.textContent='Posting…';let vp=null;
+      try{if(S.pvid){b.textContent='Uploading 0%';vp=await uploadVideo(S.pvid,p=>{b.textContent='Uploading '+p+'%'});b.textContent='Posting…'}
+        await rpc('create_post',{p_body:t,p_image:vp?null:(S.pimg||null),p_city:ME.city||null,p_more:!vp&&S.pmore&&S.pmore.length?S.pmore:null,p_title:ti||null,p_video:vp});S.pimg=null;S.pmore=[];S.pvid=null;closeSheet();toast('Posted');PS.ok=false;EX.ok=false;loadPosts(true)}
+      catch(e){if(vp)rmVideo(vp);b.disabled=false;b.textContent='Post';toast(/upload|net/.test(String(e&&e.message))?'Video upload failed. Check your connection and try again':rpcErr(e))}},
     postImg:v=>{const now=Date.now();if(S.tapV===v&&now-S.tapT<320){clearTimeout(S.tapO);S.tapT=0;const p=postFind(v);if(p&&!p.liked){p.liked=true;p.likes++;postRedraw(v);rpc('toggle_like',{p_post:+v}).catch(()=>{p.liked=false;p.likes--;postRedraw()})}heartOn(v);return}
       S.tapV=v;S.tapT=now;S.tapO=setTimeout(()=>ACT.postView(v),320)},
     postView:v=>{const p=postFind(v);if(!p||!p.image)return;const el=document.createElement('div');el.className='mv';phone.append(el);
@@ -2008,8 +2057,10 @@ if(NATIVE){
     cmCancel:()=>{S.cmRep=null;S.pcpaint()},
     postComSend:async v=>{const t=($('#pcm').value||'').trim();if(!t)return;try{await rpc('add_comment',{p_post:+v,p_body:t,p_parent:S.cmRep?S.cmRep.id:null});S.cmRep=null;const p=postFind(v);if(p)p.comments++;await S.pcpaint();postRedraw()}catch(e){toast(rpcErr(e))}},
     postMenu:v=>{const p=postFind(v);if(!p)return;const mine=NET.s&&p.author===NET.s.uid;
-      sheet('',(mine?'':A('netOpen',p.author,'chat','Message @'+p.username))+(mine||S.owner?A('postDel',v,'x','Delete post'):'')+(mine?'':A('postRep',v,'ban','Report post','Hateful, rude or fake')))},
-    postDel:async v=>{try{await rpc('delete_post',{p_post:+v});PF.items=PF.items.filter(x=>String(x.id)!==v);EX.items=EX.items.filter(x=>String(x.id)!==v);PS.items=PS.items.filter(x=>String(x.id)!==v);PS.ok=false;if(PROF)PROF.items=PROF.items.filter(x=>String(x.id)!==v);closeSheet();postRedraw();toast('Deleted')}catch(e){toast(rpcErr(e))}},
+      sheet('',((p.image||p.video)?A('postDl',v,'down','Save to phone',p.video?'Original video':'Same quality as in the app'):'')+(mine?'':A('netOpen',p.author,'chat','Message @'+p.username))+(mine||S.owner?A('postDel',v,'x','Delete post'):'')+(mine?'':A('postRep',v,'ban','Report post','Hateful, rude or fake')))},
+    postDl:v=>{const p=postFind(v);if(!p)return;closeSheet();try{if(p.video){toast(Android.downloadVideo(vidUrl(p),'whapea-'+p.id)?'Downloading… check your notifications':'Could not download')}
+      else{const L=[p.image].concat(p.more||[]).filter(okImg);let ok=0;L.forEach((u,i)=>{if(Android.saveImage('whapea-'+p.id+'-'+(i+1),u))ok++});toast(ok?(ok>1?ok+' photos saved to Pictures/Whapea':'Saved to Pictures/Whapea'):'Could not save')}}catch(e){toast('Saving works in the Whapea app')}},
+    postDel:async v=>{try{const pp=postFind(v);if(pp&&pp.video&&NET.s&&pp.author===NET.s.uid)rmVideo(pp.video);await rpc('delete_post',{p_post:+v});PF.items=PF.items.filter(x=>String(x.id)!==v);EX.items=EX.items.filter(x=>String(x.id)!==v);PS.items=PS.items.filter(x=>String(x.id)!==v);PS.ok=false;if(PROF)PROF.items=PROF.items.filter(x=>String(x.id)!==v);closeSheet();postRedraw();toast('Deleted')}catch(e){toast(rpcErr(e))}},
     postRep:async v=>{try{await rpc('report_post',{p_post:+v,p_reason:''});closeSheet();toast('Reported. Thank you')}catch(e){toast(rpcErr(e))}},
     plus:async()=>{if(!NET.s){ACT.netAcct();return}closeSheet();const el=sheet('Whapea Plus','<div class="note2">Loading…</div>');
       let cfg={},pay=[];try{const r=await sb('/rest/v1/app_config?select=key,value');(await r.json()).forEach(x=>cfg[x.key]=x.value)}catch(e){}

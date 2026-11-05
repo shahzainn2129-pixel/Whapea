@@ -300,7 +300,49 @@ class MainActivity : ComponentActivity() {
         fun callMute(on: Boolean) { CallAudio.muted = on }
 
         @JavascriptInterface
-        fun callSpeaker(on: Boolean) { CallAudio.speaker(on) }
+        fun callSpeaker(on: Boolean) { CallAudio.speaker(this@MainActivity, on) }
+
+        @JavascriptInterface
+        fun saveImage(name: String, dataUrl: String): Boolean {
+            return try {
+                val m = Regex("^data:(image/[a-z+]+);base64,").find(dataUrl) ?: return false
+                val mime = m.groupValues[1]
+                val bytes = android.util.Base64.decode(dataUrl.substring(m.value.length), android.util.Base64.DEFAULT)
+                val ext = if (mime.contains("png")) "png" else if (mime.contains("webp")) "webp" else "jpg"
+                val fn = name.replace(Regex("[^A-Za-z0-9_-]"), "") + "." + ext
+                if (android.os.Build.VERSION.SDK_INT >= 29) {
+                    val cv = android.content.ContentValues()
+                    cv.put(android.provider.MediaStore.Images.Media.DISPLAY_NAME, fn)
+                    cv.put(android.provider.MediaStore.Images.Media.MIME_TYPE, mime)
+                    cv.put(android.provider.MediaStore.Images.Media.RELATIVE_PATH, "Pictures/Whapea")
+                    val uri = this@MainActivity.contentResolver.insert(android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI, cv) ?: return false
+                    val os = this@MainActivity.contentResolver.openOutputStream(uri) ?: return false
+                    os.use { it.write(bytes) }
+                    true
+                } else {
+                    val dir = java.io.File(android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_PICTURES), "Whapea")
+                    dir.mkdirs()
+                    java.io.File(dir, fn).writeBytes(bytes)
+                    true
+                }
+            } catch (e: Exception) { false }
+        }
+
+        @JavascriptInterface
+        fun downloadVideo(url: String, name: String): Boolean {
+            return try {
+                if (!url.startsWith("https://bmcsvldqgvuahztwkune.supabase.co/storage/")) return false
+                val ext = Regex("\\.(mp4|webm|3gp|mov)").find(url.substringBefore("#"))?.groupValues?.get(1) ?: "mp4"
+                val fn = name.replace(Regex("[^A-Za-z0-9_-]"), "") + "." + ext
+                val dm = this@MainActivity.getSystemService(android.content.Context.DOWNLOAD_SERVICE) as android.app.DownloadManager
+                val rq = android.app.DownloadManager.Request(android.net.Uri.parse(url.substringBefore("#")))
+                    .setTitle(fn)
+                    .setNotificationVisibility(android.app.DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+                    .setDestinationInExternalPublicDir(android.os.Environment.DIRECTORY_MOVIES, "Whapea/" + fn)
+                dm.enqueue(rq)
+                true
+            } catch (e: Exception) { false }
+        }
 
         @JavascriptInterface
         fun ringStart() { Core.ringStart() }
