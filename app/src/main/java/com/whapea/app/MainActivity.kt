@@ -360,7 +360,6 @@ class MainActivity : ComponentActivity() {
         fun netGet(): String = NetWatch.session()?.toString() ?: ""
 
         @JavascriptInterface
-        @JavascriptInterface
         fun openUrl(u: String) {
             try {
                 val x = Uri.parse(u)
@@ -368,6 +367,7 @@ class MainActivity : ComponentActivity() {
             } catch (e: Exception) {}
         }
 
+        @JavascriptInterface
         fun bioOk(): Boolean {
             if (Build.VERSION.SDK_INT < 29) return false
             return try {
