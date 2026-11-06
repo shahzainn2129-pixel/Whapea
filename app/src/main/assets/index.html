@@ -537,6 +537,17 @@ img.spm{aspect-ratio:auto;height:auto;max-height:560px;object-fit:contain}
 .cbtns.c3 button.on .cb{background:#fff;color:#0a1428}
 .cbtns.c3 .end{background:none}.cbtns.c3 .end .cb{background:var(--bad);width:72px;height:72px;color:#fff}.cbtns.c3 .end svg{transform:rotate(135deg)}
 .cbtns.c2{margin-bottom:14px;gap:36px}.cbtns.c3 small{font-size:12.5px;opacity:.9}
+
+.plhero{margin:6px 16px 4px;border-radius:20px;padding:22px 18px;color:#fff;background:linear-gradient(135deg,#f58529,#dd2a7b 55%,#8134af);text-align:center;position:relative;overflow:hidden}
+.plhero b{display:block;font-size:34px;font-family:var(--font-display);letter-spacing:-.5px}.plhero small{display:block;opacity:.9;margin-top:2px;font-size:13px}
+.plhero .pb{display:inline-flex;width:54px;height:54px;border-radius:50%;background:rgba(255,255,255,.2);align-items:center;justify-content:center;margin-bottom:8px;color:#fff}
+.plk{margin:10px 16px;display:grid;grid-template-columns:1fr 1fr;gap:10px}.plk>div{border:1px solid var(--line);border-radius:14px;padding:12px;background:var(--surface2);font-size:13px}
+.plk .vb{margin:0 0 4px;display:flex}.plk .vb svg{width:26px;height:26px}.plk b{display:block;font-size:14px}.plk span.d{color:var(--muted);line-height:1.4;display:block;margin-top:2px}
+.plp{margin:6px 16px;border:1px solid var(--line);border-radius:14px;overflow:hidden}.plp div{display:flex;gap:10px;align-items:center;padding:11px 12px;font-size:14px;border-top:1px solid var(--line)}.plp div:first-child{border-top:0}.plp i{font-style:normal;color:#1d8cf8;font-weight:800}
+.plst{margin:6px 16px;display:flex;gap:10px}.plst>div{flex:1;border:1px solid var(--line);border-radius:12px;padding:10px;text-align:center;font-size:12.5px;color:var(--muted)}.plst b{display:block;color:var(--ink);font-size:14px;margin-bottom:2px}
+.hl{color:#1d8cf8;font-weight:600;cursor:pointer}.cm .cml{float:right;display:flex;align-items:center;gap:4px;font-size:12px;color:var(--muted);padding:2px 4px}.cm .cml.on{color:#e0245e}.cm .cml svg{width:16px;height:16px}.cm .cml.on svg{fill:currentColor}
+.prv{text-align:center;padding:36px 24px}.prv b{display:block;font-size:16px;margin:10px 0 4px}
+.reqb{display:flex;gap:6px}.reqb .tag{cursor:pointer}
 </style>
 </head><body>
 
@@ -794,6 +805,8 @@ function setNative(row,sw){
   ${row('plus','verified','Whapea Plus',isPlus()?(ME.plan==='gold'?'Verified':'Active'):'',isPlus()?'Until '+new Date(ME.plan_until).toLocaleDateString():'Badge, longer videos and more')}
   ${NET.s?row('pickCity','pin','My city',ME.city||'Not set','Used for city posts'):''}
   ${NET.s&&ME.city?row('cityPeople','users','People in my city'):''}
+  ${sw('dsave','down','Data saver','Videos load only when you tap play')}
+  ${NET.s&&ME.priv?row('reqList','users','Follow requests','','Approve who can follow you'):''}
   ${row('netAcct','users','Internet account',NET.s?'@'+esc(NET.s.user):'','Chat and post with anyone online')}
   <div class="sec">Who can see your content</div>
   ${row('lockMenu','lock','App lock',SET.lockOn?'On':'Off','Code or fingerprint to open Whapea')}
@@ -815,9 +828,9 @@ function setNative(row,sw){
   <div class="sec">Nearby (Bluetooth)</div>${btRows()}
   ${A('tab','near','radar','Nearby phones','Find people close to you')}
   ${o?`<div class="sec">Owner</div>${row('ownerOff','verified','Owner mode is on','','Tap to sign out')}
-  ${NET.s?row('netOwner','verified','Internet users','','See accounts and block for 3 hours')+row('ownerPay','db','Plus payments','','Approve or reject payment requests')+row('ownerRep','ban','Reported posts','','Delete or clear reports')+row('ownerUsr','ban','Reported users','','Block people who are reported'):''}`:''}
+  ${NET.s?row('netOwner','verified','Internet users','','See accounts and block for 3 hours')+row('ownerPay','db','Plus payments','','Approve or reject payment requests')+row('ownerVer','verified','Verification requests','','Give the golden badge')+row('ownerRep','ban','Reported posts','','Delete or clear reports')+row('ownerUsr','ban','Reported users','','Block people who are reported'):''}`:''}
   <div class="sec">More info and support</div>
-  ${row('appinfo','info','About Whapea','','Version 3.7.1')}
+  ${row('appinfo','info','About Whapea','','Version 3.8')}
   ${NET.s?`<button class="act bad" data-a="netOut" data-v=""><span class="grow">Log out</span></button>`:''}
   <div style="height:40px"></div>`}
 function setHTML(){
@@ -866,7 +879,7 @@ function setHTML(){
   ${NATIVE&&NET.s&&ME.city?row('cityPeople','users','People in my city'):''}
   ${NATIVE?A('tab','near','radar','Nearby phones','Find people over Bluetooth'):''}
   ${NATIVE&&S.owner&&NET.s?row('netOwner','verified','Internet users','','See accounts and block for 3 hours'):''}
-  ${NATIVE&&S.owner&&NET.s?row('ownerPay','db','Plus payments','','Approve or reject payment requests'):''}
+  ${NATIVE&&S.owner&&NET.s?row('ownerPay','db','Plus payments','','Approve or reject payment requests')+row('ownerVer','verified','Verification requests','','Give the golden badge'):''}
   ${NATIVE&&S.owner&&NET.s?row('ownerRep','ban','Reported posts','','Delete or clear reports'):''}
   ${NATIVE&&S.owner&&NET.s?row('ownerUsr','ban','Reported users','','Block people who are reported'):''}
   ${row('appinfo','info','About Whapea','','Version 2.9')}
@@ -1115,7 +1128,7 @@ const ACT={
  epCity:()=>{epRead();ACT.pickCity()},
  openLink:v=>{try{Android.openUrl(v)}catch(e){}},
  epSave:()=>{epRead();const d=ED;let w=(d.website||'').trim();if(w&&!/^https?:\/\//i.test(w))w='https://'+w;if(w&&!/^https?:\/\/[^\s.]+\.[^\s]+$/i.test(w)){toast('That website link does not look right');return}
-  ME.name=d.name.trim()||ME.name;ME.about=d.about.trim().slice(0,150);ME.website=w.slice(0,100);ME.pronouns=d.pronouns.trim().slice(0,20);ME.gender=d.gender;ME.suggest=d.suggest;persistSoon();announce();netPushProfile();$('#epv')?.remove();ED=null;PS.ok=false;render();if(S.tab==='me')loadMyProf();toast('Profile saved')},
+  ME.name=d.name.trim()||ME.name;ME.about=d.about.trim().slice(0,150);ME.website=w.slice(0,100);ME.pronouns=d.pronouns.trim().slice(0,20);ME.gender=d.gender;ME.suggest=d.suggest;if(NET.s){ME.priv=!!d.priv;sb('/rest/v1/profiles?id=eq.'+NET.s.uid,{m:'PATCH',h:{Prefer:'return=minimal'},b:{is_private:ME.priv}}).catch(()=>{})}persistSoon();announce();netPushProfile();$('#epv')?.remove();ED=null;PS.ok=false;render();if(S.tab==='me')loadMyProf();toast('Profile saved')},
  saveProfile:()=>ACT.epSave(),
  qr:(v,el,e)=>{e?.stopPropagation();let g='';const n=25,sd=KEY.split('').reduce((a,c)=>a*31+c.charCodeAt(0)>>>0,7);let r=sd;const rnd=()=>(r=(r*1664525+1013904223)>>>0)/4294967296;
    const fnd=(x,y)=>(x<8&&y<8)||(x>n-9&&y<8)||(x<8&&y>n-9);
@@ -1376,12 +1389,13 @@ function exploreHTML(){
 function profBody(q,s,items,busy,mine){
   s=s||{};
   const av=q?`<span class="pfv-av" style="--h:${hueOf(q.username||'x')}">${okImg(q.avatar)?`<img src="${q.avatar}" alt="">`:esc((q.name||q.username||'?')[0].toUpperCase())}</span>`:'<span class="pfv-av skb"></span>';
-  const btns=mine?`<button class="pbtn" data-a="editProfile">Edit profile</button><button class="pbtn plusb${isPlus()?' act':''}" data-a="plus"><span>Whapea Plus</span>${isPlus()?bdg(ME.plan||'plus'):''}</button>`:`<button class="pbtn ${s.am_following?'':'pri'}" data-a="pfFollow">${s.am_following?'Following':'Follow'}</button><button class="pbtn" data-a="pfMsg">Message</button>`;
+  const btns=mine?`<button class="pbtn" data-a="editProfile">Edit profile</button><button class="pbtn plusb${isPlus()?' act':''}" data-a="plus"><span>Whapea Plus</span>${isPlus()?bdg(ME.plan||'plus'):''}</button>`:`<button class="pbtn ${s.am_following||s.requested?'':'pri'}" data-a="pfFollow">${s.am_following?'Following':s.requested?'Requested':'Follow'}</button><button class="pbtn" data-a="pfMsg">Message</button>`;
   return `<div class="pfh">${av}<div class="pfs"><div><b>${s.posts||0}</b><small>posts</small></div><button data-a="flList" data-v="${(q&&q.id)||(NET.s&&NET.s.uid)||''}|followers"><b>${s.followers||0}</b><small>followers</small></button><button data-a="flList" data-v="${(q&&q.id)||(NET.s&&NET.s.uid)||''}|following"><b>${s.following||0}</b><small>following</small></button></div></div>
   ${q?`<div style="padding:2px 18px 0"><b style="font-size:15.5px">${esc(q.name||q.username)}${bdg(planOf(q))}</b>${q.pronouns?` <span class="val" style="font-size:13px">${esc(q.pronouns)}</span>`:''}${q.about?`<div style="margin-top:2px;white-space:pre-wrap;font-size:14.5px">${esc(q.about)}</div>`:''}${q.website&&/^https?:\/\//i.test(q.website)?`<button class="lklink" style="margin-top:3px;display:block;text-align:left;padding:0" data-a="openLink" data-v="${esc(q.website)}">${esc(q.website.replace(/^https?:\/\//i,''))}</button>`:''}${q.city?`<div class="val" style="margin-top:3px">${ic('pin',13)} ${esc(q.city)}</div>`:''}</div><div class="pfa">${btns}</div>`:''}
   ${mine?`<div class="ptabs"><button class="${PS.tab!=='saved'?'on':''}" data-a="psTab" data-v="grid" aria-label="Posts">${ic('grid',24)}</button><button class="${PS.tab==='saved'?'on':''}" data-a="psTab" data-v="saved" aria-label="Saved">${ic('bookmark',24)}</button></div>`:`<div class="ptabs"><span class="on">${ic('grid',24)}</span></div>`}
+  ${!mine&&s.is_private&&!s.am_following?`<div class="prv"><span style="color:var(--muted)">${ic('lock',34)}</span><b>This account is private</b><span class="val">Follow this account to see their posts.</span></div>`:''}
   <div class="grid3">${items.map(gtile).join('')}${busy&&!items.length?Array(6).fill('<i class="gt skb"></i>').join(''):''}</div>
-  ${!busy&&!items.length&&mine&&PS.tab==='saved'?`<div class="empty"><b>Nothing saved yet</b>Tap the bookmark under a post to keep it here.</div>`:''}${!busy&&!items.length&&!(mine&&PS.tab==='saved')?`<div class="empty"><b>${mine?'Share your first post':'No posts yet'}</b>${mine?'Tap + to post a photo or a thought.<br><button class="btn" style="margin-top:12px" data-a="newPost">New post</button>':'Posts will show here.'}</div>`:''}`}
+  ${!busy&&!items.length&&mine&&PS.tab==='saved'?`<div class="empty"><b>Nothing saved yet</b>Tap the bookmark under a post to keep it here.</div>`:''}${!busy&&!items.length&&!(mine&&PS.tab==='saved')&&!(!mine&&s.is_private&&!s.am_following)?`<div class="empty"><b>${mine?'Share your first post':'No posts yet'}</b>${mine?'Tap + to post a photo or a thought.<br><button class="btn" style="margin-top:12px" data-a="newPost">New post</button>':'Posts will show here.'}</div>`:''}`}
 function meHTML(){
   if(!NET.s){return `<div class="pfh"><span class="pfv-av" style="--h:${hueOf(ME.name||'x')}">${okImg(ME.dp)?`<img src="${ME.dp}" alt="">`:esc((ME.name||'?')[0].toUpperCase())}</span><div style="flex:1"><b style="font-size:18px">${esc(ME.name)}</b><div class="val">${esc(ME.about||'')}</div></div></div>
    <div class="pfa"><button class="pbtn" data-a="editProfile">Edit profile</button></div>
@@ -1398,7 +1412,7 @@ function navTab(k){return ({calls:'chats',near:'chats',set:'me'})[k]||k}
 /* ---------- v3.4 edit profile + suggestions ---------- */
 let ED=null;
 function epRead(){if(!ED)return;const g=i=>document.getElementById(i);if(g('epn'))ED.name=g('epn').value;if(g('epp'))ED.pronouns=g('epp').value;if(g('epw'))ED.website=g('epw').value;if(g('epb'))ED.about=g('epb').value}
-function epDraw(){const v=$('#epv');if(!v)return;if(ED)epRead();else ED={name:ME.name||'',pronouns:ME.pronouns||'',website:ME.website||'',about:ME.about||'',gender:ME.gender||'none',suggest:ME.suggest!==false};
+function epDraw(){const v=$('#epv');if(!v)return;if(ED)epRead();else ED={name:ME.name||'',pronouns:ME.pronouns||'',website:ME.website||'',about:ME.about||'',gender:ME.gender||'none',suggest:ME.suggest!==false,priv:!!ME.priv};
   const sc=v.querySelector('.body')?.scrollTop||0,d=ED,gs=[['none','Prefer not to say'],['male','Male'],['female','Female'],['custom','Custom']];
   v.innerHTML=`<div class="ch"><button class="ib" data-a="epBack" aria-label="Back">${ic('back')}</button><b style="flex:1;font-size:16px;text-align:center;margin-right:44px">Edit profile</b></div>
   <div class="body" style="overflow-y:auto;flex:1;padding:6px 16px 40px">
@@ -1410,6 +1424,7 @@ function epDraw(){const v=$('#epv');if(!v)return;if(ED)epRead();else ED={name:ME
    ${NET.s?`<button class="eprow" data-a="epCity"><span>City</span><em>${esc(ME.city||'Choose')}</em>${ic('chev',16)}</button>`:''}
    <div class="ephd">Gender</div><div class="epg">${gs.map(([k,l])=>`<button class="${d.gender===k?'on':''}" data-a="epGender" data-v="${k}">${l}</button>`).join('')}</div><div class="eph">This won't be part of your public profile.</div>
    <button class="eprow tgr" data-a="epSug"><span>Show account suggestions<small>Let Whapea suggest your account to other people.</small></span>${tg(d.suggest)}</button>
+   ${NET.s?`<button class="eprow tgr" data-a="epPriv"><span>Private account<small>Only people you approve can see your posts and follow you.</small></span>${tg(d.priv)}</button>`:''}
    <div class="eph" style="margin-top:14px">Your name, bio, website and pronouns are visible to everyone.</div>
    <button class="btn" style="margin-top:10px" data-a="epSave">Submit</button></div>`;
   const b=v.querySelector('.body');if(b)b.scrollTop=sc;
@@ -1426,7 +1441,7 @@ function sugRow(){const L=SG.items.filter(x=>!SG.hid.includes(x.id));if(!NET.s||
 function setSaved(id,v){for(const L of [PF.items,EX.items,PS.items,PS.saved,XP,(PROF&&PROF.items)||[]])for(const x of L)if(String(x.id)===String(id))x.saved=v}
 async function loadSaved(){if(!NET.s)return;try{PS.saved=await rpc('saved_posts',{p_limit:24})||[]}catch(e){}if(S.tab==='me')render()}
 async function loadNotifCount(){if(!NET.s||document.hidden)return;try{const n=+(await rpc('notif_unread',{}))||0;if(n!==NT.n){NT.n=n;if(S.tab==='posts'&&!document.querySelector('.scrim,#pfv,#pov,#epv,#nov'))render()}}catch(e){}}
-function nvDraw(){const v=$('#nov');if(!v)return;const T={like:'liked your post',comment:'commented on your post',follow:'started following you'};
+function nvDraw(){const v=$('#nov');if(!v)return;const T={like:'liked your post',comment:'commented on your post',follow:'started following you',mention:'mentioned you',request:'wants to follow you'};
   v.innerHTML=`<div class="ch"><button class="ib" data-a="nvClose" aria-label="Back">${ic('back')}</button><b style="flex:1;font-size:16px;text-align:center;margin-right:44px">Notifications</b></div><div class="body" style="overflow-y:auto;flex:1">${NT.items.length?NT.items.map(n=>`<button class="li${n.read?'':' unr'}" data-a="ntGo" data-v="${n.kind}|${n.actor}|${n.post_id||''}">${avatarOf({username:n.username,name:n.name,avatar:n.avatar})}<span class="mid"><span class="nm"><span style="font-weight:${n.read?400:700}"><b>${esc(n.username)}</b>${bdg(planOf(n))} ${T[n.kind]}</span></span><span class="sub">${n.post_body?esc(n.post_body)+' · ':''}${agoS(new Date(n.created_at).getTime())}</span></span>${n.read?'':'<i class="udot"></i>'}</button>`).join(''):(NT.busy?'<div class="note2">Loading…</div>':'<div class="empty"><b>No notifications yet</b>When someone likes or comments on your posts, or follows you, it shows here.</div>')}</div>`}
 async function openShared(id){try{const a=await rpc('get_post',{p_id:+id});const p=a&&a[0];if(!p){toast('This post is no longer available');return}XP.unshift(p);XP.length=Math.min(XP.length,30);pvOpen(String(p.id))}catch(e){toast('No connection')}}
 document.addEventListener('scroll',e=>{const t=e.target;if(!t||!t.classList||!t.classList.contains('pcs'))return;const i=Math.round(t.scrollLeft/Math.max(1,t.clientWidth)),p=postFind(t.dataset.pid);if(p)p._ci=i;t.dataset.ci=i;const w=t.parentElement,n=w.querySelector('.pcn');if(n)n.textContent=(i+1)+'/'+t.children.length;w.querySelectorAll('.pcd i').forEach((d,k)=>d.classList.toggle('on',k===i))},true);
@@ -1464,8 +1479,8 @@ const ago=t=>{const x=(Date.now()-new Date(t))/1000;return x<60?'now':x<3600?Mat
 const PF={scope:'all',items:[],more:false,busy:false,err:'',ok:false};
 async function rpc(n,b){const r=await sb('/rest/v1/rpc/'+n,{m:'POST',b:b||{}});if(!r.ok){let t='';try{t=(await r.json()).message||''}catch(e){}throw new Error(t||('E'+r.status))}try{return await r.json()}catch(e){return null}}
 function rpcErr(e){const m=String(e&&e.message||'');return /banned/.test(m)?'You are blocked for a while for breaking the rules':/limit/.test(m)?'Daily limit reached. Plus gives you more posts':/empty/.test(m)?'Write something or add a photo':/login/.test(m)?'Log in first':'Could not do that. Check internet'}
-async function loadMe(){if(!NET.s)return;try{const r=await sb('/rest/v1/profiles?select=city,plan,plan_until&id=eq.'+NET.s.uid);const a=await r.json();const q=a&&a[0];
-  if(q){ME.city=q.city||'';ME.plan=planOf(q);ME.plan_until=q.plan_until||null;try{const e=await rpc('my_extra',{});const x=e&&e[0];if(x){ME.gender=x.gender||'none';ME.suggest=x.show_suggest!==false;ME.website=x.website||ME.website||'';ME.pronouns=x.pronouns||ME.pronouns||''}}catch(e){}persistSoon();if(!S.chat&&!document.querySelector('.scrim'))render()}}catch(e){}}
+async function loadMe(){if(!NET.s)return;try{const r=await sb('/rest/v1/profiles?select=city,plan,plan_until,is_private&id=eq.'+NET.s.uid);const a=await r.json();const q=a&&a[0];
+  if(q){ME.city=q.city||'';ME.priv=!!q.is_private;ME.plan=planOf(q);ME.plan_until=q.plan_until||null;try{const e=await rpc('my_extra',{});const x=e&&e[0];if(x){ME.gender=x.gender||'none';ME.suggest=x.show_suggest!==false;ME.website=x.website||ME.website||'';ME.pronouns=x.pronouns||ME.pronouns||''}}catch(e){}persistSoon();if(!S.chat&&!document.querySelector('.scrim'))render()}}catch(e){}}
 async function loadPosts(reset){
   if(!NET.s||PF.busy)return;PF.busy=true;PF.err='';
   if(reset){PF.items=[];PF.more=false}
@@ -1477,13 +1492,17 @@ async function loadPosts(reset){
     PF.items=PF.items.concat(a||[]);PF.more=(a||[]).length>=10;PF.ok=true}
   catch(e){PF.err='Could not load posts. Check internet'}
   PF.busy=false;if(S.tab==='posts'&&!S.chat)render()}
+
+/* ---------- v3.8 rich text, private, verify ---------- */
+const rich=t=>esc(t||'').replace(/(^|[\s(])#([A-Za-z0-9_؀-ۿ]{1,40})/g,(m,a,b)=>a+'<button class="hl lklink" style="padding:0;display:inline" data-a="tagOpen" data-v="'+b+'">#'+b+'</button>').replace(/(^|[\s(])@([A-Za-z0-9_.]{2,30})/g,(m,a,b)=>a+'<button class="hl lklink" style="padding:0;display:inline" data-a="mentionOpen" data-v="'+b+'">@'+b+'</button>');
+const DS=()=>!!SET.dsave;
 function postCard(p){
   const nm=esc(p.name||p.username),imgOk=p.image&&okImg(p.image),n=+p.likes||0;
   const imgs=imgOk?[p.image].concat((p.more||[]).filter(okImg)):[];
-  const hasM=imgOk||p.video,tl=p.title?`<div class="ptt">${esc(p.title)}</div>`:'';
+  const hasM=imgOk||p.video,tl=p.title?`<div class="ptt">${rich(p.title)}</div>`:'';
   const long=!hasM&&!(p.body&&!p.title&&p.body.length<=90);
-  const media=p.video?`<div class="pvid"><video src="${vidUrl(p)}#t=0.1" controls playsinline preload="metadata" controlslist="nodownload"></video></div>`:imgs.length>1?`<div class="pcar"><div class="pcs" data-pid="${p.id}" data-ci="${p._ci||0}">${imgs.map(u=>`<img class="pim" src="${u}" data-a="postImg" data-v="${p.id}" alt="Post photo">`).join('')}</div><span class="pcn">${(p._ci||0)+1}/${imgs.length}</span><div class="pcd">${imgs.map((_,i)=>`<i class="${i===(p._ci||0)?'on':''}"></i>`).join('')}</div></div>`:imgOk?`<img class="pim" src="${p.image}" data-a="postImg" data-v="${p.id}" alt="Post photo">`:(p.body&&!long?`<div class="ptile" style="--h:${hueOf(p.username)}" data-a="postImg" data-v="${p.id}"><span>${esc(p.body)}</span></div>`:'');
-  const cap=hasM?(p.body||p.title?`<div class="pcap">${tl}${p.body?`<span class="pcb${p._x?'':' cl'}"><b>${esc(p.username)}</b> ${esc(p.body)}</span><button class="more"${p._x?'':' hidden'} data-a="postMore" data-v="${p.id}">${p._x?'See less':'See more'}</button>`:''}</div>`:''):(long?`<div class="pcap big">${tl}<span class="pcb${p._x?'':' cl'}">${esc(p.body)}</span><button class="more"${p._x?'':' hidden'} data-a="postMore" data-v="${p.id}">${p._x?'See less':'See more'}</button></div>`:'');
+  const media=p.video?`<div class="pvid"><video src="${vidUrl(p)}#t=0.1" controls playsinline preload="${DS()?'none':'metadata'}" controlslist="nodownload"></video></div>`:imgs.length>1?`<div class="pcar"><div class="pcs" data-pid="${p.id}" data-ci="${p._ci||0}">${imgs.map(u=>`<img class="pim" src="${u}" data-a="postImg" data-v="${p.id}" alt="Post photo">`).join('')}</div><span class="pcn">${(p._ci||0)+1}/${imgs.length}</span><div class="pcd">${imgs.map((_,i)=>`<i class="${i===(p._ci||0)?'on':''}"></i>`).join('')}</div></div>`:imgOk?`<img class="pim" src="${p.image}" data-a="postImg" data-v="${p.id}" alt="Post photo">`:(p.body&&!long?`<div class="ptile" style="--h:${hueOf(p.username)}" data-a="postImg" data-v="${p.id}"><span>${esc(p.body)}</span></div>`:'');
+  const cap=hasM?(p.body||p.title?`<div class="pcap">${tl}${p.body?`<span class="pcb${p._x?'':' cl'}"><b>${esc(p.username)}</b> ${rich(p.body)}</span><button class="more"${p._x?'':' hidden'} data-a="postMore" data-v="${p.id}">${p._x?'See less':'See more'}</button>`:''}</div>`:''):(long?`<div class="pcap big">${tl}<span class="pcb${p._x?'':' cl'}">${rich(p.body)}</span><button class="more"${p._x?'':' hidden'} data-a="postMore" data-v="${p.id}">${p._x?'See less':'See more'}</button></div>`:'');
   return `<article class="pc" data-pid="${p.id}"><header><button class="pfl" data-a="openProf" data-v="${p.author}"><span class="ring sm">${av0(hueOf(p.username),p.name||p.username,'sm')}</span><span style="flex:1;min-width:0"><b>${nm}${bdg(p.plan)}</b><div class="val">${p.city?esc(p.city)+' · ':''}${ago(p.created_at)}</div></span></button><button class="ib" data-a="postMenu" data-v="${p.id}" aria-label="More">${ic('more')}</button></header>
   ${media}
   <div class="pact"><button data-a="postLike" data-v="${p.id}" class="${p.liked?'on':''}" aria-label="Like">${ic('heart',27)}</button><button data-a="postCom" data-v="${p.id}" aria-label="Comments">${ic('chat',26)}</button><button data-a="postShare" data-v="${p.id}" aria-label="Send">${ic('fwd',25)}</button><button class="psv${p.saved?' on':''}" data-a="postSave" data-v="${p.id}" aria-label="Save">${ic('bookmark',25)}</button></div>
@@ -1898,7 +1917,7 @@ if(NATIVE){
     tab:v=>{S.tab=v;render();if(v==='spons')loadFeed(false);if(v==='posts'){loadFeed(false);loadSug(false);loadNotifCount();if(NET.s&&!PF.ok)loadPosts(true)}if(v==='explore'&&NET.s&&!EX.ok)loadExplore(true);if(v==='me'&&NET.s&&Date.now()-PS.at>45000)loadMyProf();tabAnim()},
     spRefresh:()=>{toast('Checking for new posts…');loadFeed(true)},
     appinfo:()=>{aboutTaps++;if(aboutTaps>=7){aboutTaps=0;ACT.ownerLogin();return}
-      sheet('About Whapea',`<div class="note2" style="font-size:14px">Version 3.7.1. Chat, post and call over the internet, or with people nearby over Bluetooth. Sponsored posts and updates download when your phone is online.</div><button class="btn" data-a="updCheck">Check for updates</button>`)},
+      sheet('About Whapea',`<div class="note2" style="font-size:14px">Version 3.8. Chat, post and call over the internet, or with people nearby over Bluetooth. Sponsored posts and updates download when your phone is online.</div><button class="btn" data-a="updCheck">Check for updates</button>`)},
     spNew:()=>{sheet('New sponsored post',`<div class="field"><input id="spb" placeholder="Brand name" maxlength="40" autocomplete="off"></div><div class="field"><textarea id="spcap" rows="3" maxlength="300" placeholder="What are you promoting?" class="txt"></textarea></div><div class="field"><input id="spct" placeholder="Phone or address (optional)" maxlength="60" autocomplete="off"></div><div class="field"><input id="spv" placeholder="Video file name, e.g. chai.mp4 (optional)" maxlength="80" autocomplete="off" autocapitalize="none"></div><div class="sec" style="padding-top:2px">Runs for</div><div class="chips" id="spdur">${[3,7,14,30,60].map(d=>`<button class="chip ${d===7?'on':''}" data-a="spDur" data-v="${d}">${d} days</button>`).join('')}</div><button class="act" data-a="spPick">${ic('image')}<span class="grow" id="spmi">Add a photo (optional)<small>Photos are made small so they fit in the post</small></span></button><button class="btn" data-a="spPost">Create post data</button>`);S.spm=null;S.spd=7},
     spPick:()=>pickFile('image/*',f=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,640/Math.max(im.width,im.height)),cv=document.createElement('canvas');cv.width=im.width*k;cv.height=im.height*k;cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);const src=cv.toDataURL('image/jpeg',.6);S.spm={kind:'image',src};const e=$('#spmi');if(e)e.innerHTML=`${esc(f.name)}<small>Photo · ${size(src.length*.75)}</small>`};im.src=r.result};r.readAsDataURL(f)}),
     spPost:()=>{
@@ -1989,8 +2008,8 @@ if(NATIVE){
     pfMore:()=>pfPosts(false),
     pfEdit:()=>{$('#pfv')?.remove();PROF=null;ACT.editProfile()},
     pfMsg:()=>{if(PROF)ACT.netOpen(PROF.uid)},
-    pfFollow:async()=>{if(!PROF||!PROF.stats)return;const st=PROF.stats,was=st.am_following;st.am_following=!was;st.followers+=was?-1:1;pfDraw();if(PF.scope==='follow')PF.ok=false;
-      try{await rpc('toggle_follow',{p_user:PROF.uid})}catch(e){st.am_following=was;st.followers+=was?1:-1;pfDraw();toast(rpcErr(e))}},
+    pfFollow:async()=>{if(!PROF||!PROF.stats)return;const st=PROF.stats;if(st.is_private&&!st.am_following){const rq=!st.requested;st.requested=rq;pfDraw();try{await rpc('toggle_follow',{p_user:PROF.uid});toast(rq?'Request sent':'Request cancelled')}catch(e){st.requested=!rq;pfDraw();toast(rpcErr(e))}return}const was=st.am_following;st.am_following=!was;st.followers+=was?-1:1;pfDraw();if(PF.scope==='follow')PF.ok=false;
+      try{const r=await rpc('toggle_follow',{p_user:PROF.uid});if(r===false&&!was){st.am_following=false;st.followers-=1;st.requested=true;pfDraw()}}catch(e){st.am_following=was;st.followers+=was?1:-1;pfDraw();toast(rpcErr(e))}},
 
     postShare:v=>{const p=postFind(v);if(!p)return;sheet('Send to',chats.filter(c=>!c.blocked).map(c=>A('postShareTo',v+'|'+c.id,null,cName(c))).join('')||'<div class="note2">No chats yet</div>')},
     postShareTo:v=>{const[id,cid]=v.split('|'),p=postFind(id),c=chatOf(cid);if(!p||!c)return;closeSheet();pushMsg(c,M('me','\u27e6post:'+p.id+'\u27e7Post by @'+p.username+': '+(p.body||'(photo)'),0,{t:Date.now(),fwd:true}));toast('Sent to '+cName(c))},
@@ -2002,7 +2021,7 @@ if(NATIVE){
       try{NT.items=await rpc('my_notifs',{p_limit:50})||[]}catch(e){NT.items=[]}NT.busy=false;nvDraw();
       if(NT.n){rpc('notifs_read',{}).catch(()=>{});NT.n=0;render()}},
     nvClose:()=>{$('#nov')?.remove()},
-    ntGo:async v=>{const[k,a,pid]=v.split('|');if(k==='follow'||!pid){$('#nov')?.remove();openProf(a);return}await openShared(pid)},
+    ntGo:async v=>{const[k,a,pid]=v.split('|');if(k==='request'){$('#nov')?.remove();ACT.reqList();return}if(k==='follow'||!pid){$('#nov')?.remove();openProf(a);return}await openShared(pid)},
     openShared:v=>openShared(v),
     postSave:async v=>{const p=postFind(v);if(!p)return;const on=!p.saved;setSaved(v,on);if(!on)PS.saved=PS.saved.filter(x=>String(x.id)!==v);postRedraw();toast(on?'Saved':'Removed from saved');
       try{await rpc('toggle_save',{p_post:+v})}catch(e){setSaved(v,!on);postRedraw();toast(rpcErr(e))}},
@@ -2049,10 +2068,11 @@ if(NATIVE){
     postCom:async v=>{const p=postFind(v);S.pcid=v;S.cmRep=null;const el=sheet('Comments','<div class="note2">Loading…</div>');
       const paint=async()=>{try{const a=await rpc('post_comments',{p_post:+v});
         const top=(a||[]).filter(c=>!c.parent_id),kids=id=>(a||[]).filter(c=>String(c.parent_id)===String(id));
-        const one=(c,sub)=>`<div class="cm${sub?' sub':''}"><b>${esc(c.name||c.username)}${bdg(c.plan)}</b> <span class="val">${ago(c.created_at)}</span><div>${esc(c.body)}</div><button class="cmr" data-a="cmReply" data-v="${c.id}|${esc(c.username)}">Reply</button></div>`;
+        const one=(c,sub)=>`<div class="cm${sub?' sub':''}"><b>${esc(c.name||c.username)}${bdg(c.plan)}</b> <span class="val">${ago(c.created_at)}</span><button class="cml${c.liked?' on':''}" data-a="cmLike" data-v="${c.id}" aria-label="Like">${ic('heart',16)}${+c.likes?c.likes:''}</button><div>${rich(c.body)}</div><button class="cmr" data-a="cmReply" data-v="${c.id}|${esc(c.username)}">Reply</button></div>`;
         el.querySelector('.sheet').innerHTML='<div class="grab"></div><h3>Comments</h3>'+(top.length?top.map(c=>one(c,0)+kids(c.id).map(k=>one(k,1)).join('')).join(''):'<div class="note2">No comments yet</div>')+`<div id="cmban">${S.cmRep?`<div class="cmb">Replying to @${esc(S.cmRep.user)}<button data-a="cmCancel" aria-label="Cancel">${ic('x',14)}</button></div>`:''}</div><div class="field" style="margin:8px 16px"><input id="pcm" maxlength="300" placeholder="${S.cmRep?'Write a reply':'Add a comment'}" autocomplete="off"></div><button class="btn" data-a="postComSend" data-v="${v}">Send</button>`;
         if(p){p.comments=a?a.length:p.comments;}}catch(e){el.querySelector('.sheet').innerHTML='<div class="grab"></div><div class="note2">Could not load comments</div>'}};
       S.pcpaint=paint;paint()},
+    cmLike:async v=>{try{await rpc('toggle_comment_like',{p_comment:+v});S.pcpaint()}catch(e){toast(rpcErr(e))}},
     cmReply:v=>{const[id,u]=v.split('|');S.cmRep={id:+id,user:u};S.pcpaint().then(()=>{const i=$('#pcm');if(i){i.value='@'+u+' ';i.focus()}})},
     cmCancel:()=>{S.cmRep=null;S.pcpaint()},
     postComSend:async v=>{const t=($('#pcm').value||'').trim();if(!t)return;try{await rpc('add_comment',{p_post:+v,p_body:t,p_parent:S.cmRep?S.cmRep.id:null});S.cmRep=null;const p=postFind(v);if(p)p.comments++;await S.pcpaint();postRedraw()}catch(e){toast(rpcErr(e))}},
@@ -2063,33 +2083,60 @@ if(NATIVE){
     postDel:async v=>{try{const pp=postFind(v);if(pp&&pp.video&&NET.s&&pp.author===NET.s.uid)rmVideo(pp.video);await rpc('delete_post',{p_post:+v});PF.items=PF.items.filter(x=>String(x.id)!==v);EX.items=EX.items.filter(x=>String(x.id)!==v);PS.items=PS.items.filter(x=>String(x.id)!==v);PS.ok=false;if(PROF)PROF.items=PROF.items.filter(x=>String(x.id)!==v);closeSheet();postRedraw();toast('Deleted')}catch(e){toast(rpcErr(e))}},
     postRep:async v=>{try{await rpc('report_post',{p_post:+v,p_reason:''});closeSheet();toast('Reported. Thank you')}catch(e){toast(rpcErr(e))}},
     plus:async()=>{if(!NET.s){ACT.netAcct();return}closeSheet();const el=sheet('Whapea Plus','<div class="note2">Loading…</div>');
-      let cfg={},pay=[];try{const r=await sb('/rest/v1/app_config?select=key,value');(await r.json()).forEach(x=>cfg[x.key]=x.value)}catch(e){}
-      try{pay=await rpc('my_payments')||[]}catch(e){}loadMe();
-      const act=isPlus()?`<div class="card"><span style="color:#1d8cf8">${ic('verified',28)}</span><span style="flex:1"><b>${ME.plan==='gold'?'Verified':'Plus is active'}</b><div class="val">Until ${new Date(ME.plan_until).toLocaleDateString()}</div></span></div>`:'';
+      let cfg={},pay=[],vr=[];try{const r=await sb('/rest/v1/app_config?select=key,value');(await r.json()).forEach(x=>cfg[x.key]=x.value)}catch(e){}
+      try{pay=await rpc('my_payments')||[]}catch(e){}try{vr=await rpc('my_verify')||[]}catch(e){}loadMe();
+      const price=esc(cfg.plus_price||'$6 per year'),m=price.match(/^(\S+)\s*(.*)$/)||[0,price,''];
+      const act=isPlus()?`<div class="card"><span class="vb ${ME.plan==='gold'?'gold':'plus'}" style="margin:0">${ic('verified',30)}</span><span style="flex:1"><b>${ME.plan==='gold'?'Verified account':'Plus is active'}</b><div class="val">Valid until ${new Date(ME.plan_until).toLocaleDateString(undefined,{day:'numeric',month:'long',year:'numeric'})}</div></span></div>`:'';
+      const vs=vr[0];
       el.querySelector('.sheet').innerHTML=`<div class="grab"></div><h3>Whapea Plus</h3>${act}
-      <div class="card" style="display:block"><b style="font-size:20px">${esc(cfg.plus_price||'$15 per month')}</b>
-      <div class="val" style="margin-top:6px;line-height:1.6">✓ Blue Plus badge next to your name<br>✓ Videos up to 60 seconds (free: 30)<br>✓ Status stays 48 hours (free: 24)<br>✓ Exclusive wallpapers<br>✓ 30 posts per day (free: 10)</div></div>
-      <div class="sec">How to pay</div><div class="plist">${esc(cfg.pay_info||'Payment details coming soon.')}</div>
+      <div class="plhero"><span class="pb">${ic('verified',30)}</span><b>${m[1]}</b><small>${esc(m[2]||'per year')} · one payment, 365 days</small></div>
+      <div class="plk"><div><span class="vb plus">${ic('verified',26)}</span><b>Plus badge</b><span class="d">Blue badge next to your name. Included with Plus.</span></div><div><span class="vb gold">${ic('verified',26)}</span><b>Verified badge</b><span class="d">Golden badge for real people and brands. Granted after review.</span></div></div>
+      <div class="sec">What you get</div>
+      <div class="plp"><div><i>✓</i>Blue Plus badge on your profile, posts and chats</div><div><i>✓</i>Videos up to 60 seconds (free: 30)</div><div><i>✓</i>Status stays 48 hours (free: 24)</div><div><i>✓</i>30 posts per day (free: 10)</div><div><i>✓</i>Exclusive wallpapers</div></div>
+      ${isPlus()&&new Date(ME.plan_until)-Date.now()>30*864e5?'':`<div class="sec">${isPlus()?'Renew Plus':'How to get Plus'}</div>
+      <div class="plst"><div><b>1. Pay</b>Send ${price}</div><div><b>2. Submit</b>Enter the ID</div><div><b>3. Done</b>Plus turns on</div></div>
+      <div class="plist">${esc(cfg.pay_info||'Payment details will be added here soon.')}</div>
       <div class="field" style="margin:8px 16px"><select id="pmm" style="width:100%;padding:12px;border-radius:12px;background:var(--surface2);color:var(--text);border:1px solid var(--line)"><option>Easypaisa</option><option>JazzCash</option><option>Bank transfer</option></select></div>
       <div class="field" style="margin:8px 16px"><input id="pmt" maxlength="60" placeholder="Transaction ID" autocomplete="off"></div>
       <div class="field" style="margin:8px 16px"><input id="pmn" maxlength="200" placeholder="Note (optional)" autocomplete="off"></div>
-      <button class="btn" data-a="plusSend">I have paid. Send request</button>
-      ${pay.length?'<div class="sec">Your requests</div>'+pay.map(x=>`<div class="li"><span class="mid"><span class="nm"><span>${esc(x.method)} · ${esc(x.txn)}</span></span><span class="sub">${new Date(x.created_at).toLocaleDateString()}</span></span><span class="tag ${x.status==='approved'?'g':''}">${esc(x.status)}</span></div>`).join(''):''}
-      <div class="note2">The owner checks your payment and turns Plus on, usually within a day. Plus is a supporter badge, not identity verification.</div>`},
+      <button class="btn" data-a="plusSend">I have paid. Send request</button>`}
+      ${pay.length?'<div class="sec">Your payments</div>'+pay.map(x=>`<div class="li"><span class="mid"><span class="nm"><span>${esc(x.method)} · ${esc(x.txn)}</span></span><span class="sub">${new Date(x.created_at).toLocaleDateString()}</span></span><span class="tag ${x.status==='approved'?'g':''}">${esc(x.status)}</span></div>`).join(''):''}
+      <div class="sec">Golden Verified badge</div>
+      <div class="note2" style="text-align:left">${ME.plan==='gold'?'Your account is verified.':vs&&vs.status==='pending'?'Your verification request is being reviewed.':vs&&vs.status==='rejected'?'Your last request was not approved. You can apply again.':'Are you a creator, business or public figure? Apply and the owner will review your account.'}</div>
+      ${ME.plan==='gold'||(vs&&vs.status==='pending')?'':'<button class="btn" style="background:#e0a800;color:#201600" data-a="verifyReq">Apply for Verified badge</button>'}
+      <div class="note2">The owner checks payments by hand, usually within a day. Plus is a supporter badge. Verified is given only after review.</div>`},
+    verifyReq:()=>{closeSheet();sheet('Request Verified badge',`<div class="field" style="margin:8px 16px"><input id="vfn" maxlength="60" placeholder="Full name" autocomplete="off"></div><div class="field" style="margin:8px 16px"><input id="vfr" maxlength="300" placeholder="Why should you be verified?" autocomplete="off"></div><div class="field" style="margin:8px 16px"><input id="vfl" maxlength="150" placeholder="Link (website or social page, optional)" autocomplete="off" autocapitalize="none"></div><button class="btn" data-a="verifySend">Send request</button><div class="note2">Fake or copied accounts are rejected.</div>`)},
+    verifySend:async()=>{const n=($('#vfn').value||'').trim(),r=($('#vfr').value||'').trim();if(n.length<2||r.length<5){toast('Fill your name and reason');return}
+      try{await rpc('verify_apply',{p_name:n,p_reason:r,p_link:($('#vfl').value||'').trim()});toast('Request sent');ACT.plus()}catch(e){toast(rpcErr(e))}},
+    ownerVer:async()=>{closeSheet();const el=sheet('Verification requests','<div class="note2">Loading…</div>');
+      try{if(S.okey){const c=await sb('/rest/v1/rpc/owner_claim',{m:'POST',b:{k:S.okey}});await c.text()}const a=await rpc('owner_verify_list');
+        el.querySelector('.sheet').innerHTML='<div class="grab"></div><h3>Verification requests</h3>'+(a&&a.length?a.map(x=>`<div class="li" style="align-items:flex-start"><span class="mid"><span class="nm"><span>@${esc(x.username)} · ${esc(x.full_name)}</span></span><span class="sub">${esc(x.reason)}${x.link?' · '+esc(x.link):''}</span></span>${x.status==='pending'?`<span class="reqb"><button class="tag g" data-a="verOk" data-v="${x.id}|1">Approve</button><button class="tag" data-a="verOk" data-v="${x.id}|0">Reject</button></span>`:`<span class="tag">${esc(x.status)}</span>`}</div>`).join(''):'<div class="note2">No requests</div>')}
+      catch(e){el.querySelector('.sheet').innerHTML='<div class="grab"></div><div class="note2">Could not load. Unlock owner mode again, then retry.</div>'}},
+    verOk:async v=>{const[id,ok]=v.split('|');try{await rpc('owner_verify_decide',{p_id:+id,p_approve:ok==='1'});toast(ok==='1'?'Verified badge given':'Rejected');ACT.ownerVer()}catch(e){toast('Failed')}},
+    tagOpen:async v=>{$('#tgv')?.remove();const el=document.createElement('div');el.className='screen';el.id='tgv';phone.append(el);
+      el.innerHTML=`<div class="ch"><button class="ib" data-a="tgClose" aria-label="Back">${ic('back')}</button><b style="flex:1;font-size:16px;text-align:center;margin-right:44px">#${esc(v)}</b></div><div class="body" style="overflow-y:auto;flex:1"><div class="note2">Loading…</div></div>`;
+      try{const a=await rpc('tag_posts',{p_tag:v,p_before:null,p_limit:30})||[];a.forEach(p=>{XP.unshift(p)});XP.length=Math.min(XP.length,60);el.querySelector('.body').innerHTML=a.length?`<div class="grid3">${a.map(gtile).join('')}</div>`:'<div class="empty"><b>No posts yet</b>Nobody has used #'+esc(v)+' yet.</div>'}catch(e){el.querySelector('.body').innerHTML='<div class="note2">Could not load</div>'}},
+    tgClose:()=>{$('#tgv')?.remove()},
+    mentionOpen:async v=>{try{const a=await(await sb('/rest/v1/profiles?select=id&username=eq.'+encodeURIComponent(v.toLowerCase()))).json();if(a&&a[0])openProf(a[0].id);else toast('User not found')}catch(e){toast('No connection')}},
+    reqList:async()=>{closeSheet();const el=sheet('Follow requests','<div class="note2">Loading…</div>');
+      try{const a=await rpc('follow_requests_list')||[];el.querySelector('.sheet').innerHTML='<div class="grab"></div><h3>Follow requests</h3>'+(a.length?a.map(x=>`<div class="li">${avatarOf({username:x.username,name:x.name,avatar:x.avatar})}<span class="mid"><span class="nm"><span>${esc(x.username)}${bdg(x.plan)}</span></span><span class="sub">${esc(x.name||'')}</span></span><span class="reqb"><button class="tag g" data-a="reqAns" data-v="${x.id}|1">Accept</button><button class="tag" data-a="reqAns" data-v="${x.id}|0">Decline</button></span></div>`).join(''):'<div class="note2">No requests</div>')}
+      catch(e){el.querySelector('.sheet').innerHTML='<div class="grab"></div><div class="note2">Could not load</div>'}},
+    reqAns:async v=>{const[id,ok]=v.split('|');try{await rpc('follow_respond',{p_user:id,p_accept:ok==='1'});toast(ok==='1'?'Accepted':'Declined');ACT.reqList()}catch(e){toast(rpcErr(e))}},
+    epPriv:()=>{epRead();ED.priv=!ED.priv;epDraw()},
     plusSend:async()=>{const t=($('#pmt').value||'').trim();if(!t){toast('Enter the transaction ID');return}
       try{await rpc('request_plus',{p_method:$('#pmm').value,p_txn:t,p_note:($('#pmn').value||'').trim()});toast('Request sent. We will confirm soon');ACT.plus()}catch(e){toast(/limit/.test(e.message)?'You already have pending requests':rpcErr(e))}},
     ownerPay:async()=>{closeSheet();const el=sheet('Plus payments','<div class="note2">Loading…</div>');
       try{if(S.okey){const c=await sb('/rest/v1/rpc/owner_claim',{m:'POST',b:{k:S.okey}});await c.text()}const a=await rpc('owner_payments');
         el.querySelector('.sheet').innerHTML='<div class="grab"></div><h3>Plus payments</h3>'+(a&&a.length?a.map(x=>`<div class="li" style="align-items:flex-start"><span class="mid"><span class="nm"><span>@${esc(x.username)} · ${esc(x.method)}</span></span><span class="sub">TXN ${esc(x.txn)}${x.note?' · '+esc(x.note):''} · ${new Date(x.created_at).toLocaleDateString()}</span></span>${x.status==='pending'?`<button class="tag g" data-a="payOk" data-v="${x.id}|1">Approve</button><button class="tag" data-a="payOk" data-v="${x.id}|0">Reject</button>`:`<span class="tag">${esc(x.status)}</span>`}</div>`).join(''):'<div class="note2">No requests</div>')}
       catch(e){el.querySelector('.sheet').innerHTML='<div class="grab"></div><div class="note2">Could not load. Unlock owner mode again, then retry.</div>'}},
-    payOk:async v=>{const[id,ok]=v.split('|');try{await rpc('owner_payment_decide',{p_id:+id,p_approve:ok==='1',p_days:30});toast(ok==='1'?'Plus turned on for 30 days':'Rejected');ACT.ownerPay()}catch(e){toast('Failed')}},
+    payOk:async v=>{const[id,ok]=v.split('|');try{await rpc('owner_payment_decide',{p_id:+id,p_approve:ok==='1',p_days:365});toast(ok==='1'?'Plus turned on for 1 year':'Rejected');ACT.ownerPay()}catch(e){toast('Failed')}},
     ownerRep:async()=>{closeSheet();const el=sheet('Reported posts','<div class="note2">Loading…</div>');
       try{if(S.okey){const c=await sb('/rest/v1/rpc/owner_claim',{m:'POST',b:{k:S.okey}});await c.text()}const a=await rpc('owner_reports');
         el.querySelector('.sheet').innerHTML='<div class="grab"></div><h3>Reported posts</h3>'+(a&&a.length?a.map(x=>`<div class="li" style="align-items:flex-start"><span class="mid"><span class="nm"><span>@${esc(x.username)} · ${x.reports} report${x.reports>1?'s':''}</span></span><span class="sub">${esc(x.body||'(photo)')}</span></span><button class="tag" data-a="repDel" data-v="${x.post_id}">Delete</button><button class="tag g" data-a="repClear" data-v="${x.post_id}">Keep</button></div>`).join(''):'<div class="note2">No reports</div>')}
       catch(e){el.querySelector('.sheet').innerHTML='<div class="grab"></div><div class="note2">Could not load. Unlock owner mode again, then retry.</div>'}},
     repDel:async v=>{try{await rpc('delete_post',{p_post:+v});toast('Deleted');ACT.ownerRep()}catch(e){toast('Failed')}},
     repClear:async v=>{try{await rpc('owner_clear_reports',{p_post:+v});ACT.ownerRep()}catch(e){toast('Failed')}},
-    netPlan:v=>{closeSheet();sheet('Badge',A('setPlan',v+'|plus|30','verified','Plus for 30 days')+A('setPlan',v+'|gold|365','verified','Verified (gold) for 1 year')+A('setPlan',v+'|x|0','x','Remove badge'))},
+    netPlan:v=>{closeSheet();sheet('Badge',A('setPlan',v+'|plus|365','verified','Plus for 1 year')+A('setPlan',v+'|gold|365','verified','Verified (gold) for 1 year')+A('setPlan',v+'|x|0','x','Remove badge'))},
     setPlan:async v=>{const[id,pl,d]=v.split('|');try{await rpc('owner_set_plan',{p_uid:id,p_plan:pl==='x'?null:pl,p_days:+d});toast('Done');closeSheet()}catch(e){toast('Failed')}},
   });
   if(NET.s)setTimeout(netStart,400);
