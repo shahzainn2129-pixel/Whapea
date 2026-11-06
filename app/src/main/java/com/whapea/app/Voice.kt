@@ -122,6 +122,8 @@ object CallAudio {
                 .setTransferMode(AudioTrack.MODE_STREAM).build()
             rec = r; track = t; peer = addr
             queue.clear(); muted = false; active = true
+            try { if (android.media.audiofx.NoiseSuppressor.isAvailable()) android.media.audiofx.NoiseSuppressor.create(r.audioSessionId)?.enabled = true } catch (e: Exception) { }
+            try { if (android.media.audiofx.AcousticEchoCanceler.isAvailable()) android.media.audiofx.AcousticEchoCanceler.create(r.audioSessionId)?.enabled = true } catch (e: Exception) { }
             r.startRecording(); t.play()
             Thread { capture(r, addr) }.start()
             Thread { playback(t) }.start()
@@ -134,6 +136,7 @@ object CallAudio {
 
     private fun capture(r: AudioRecord, addr: String) {
         val pcm = ShortArray(FRAME)
+        var floor = 400.0; var hang = 0
         while (active) {
             var got = 0
             while (got < FRAME && active) {
@@ -143,6 +146,15 @@ object CallAudio {
             }
             if (got < FRAME || !active) continue
             if (muted) continue
+            // noise gate: only send when someone is really talking (stops the constant hiss)
+            var sum = 0.0; var dc = 0L
+            for (i in 0 until FRAME) dc += pcm[i]
+            val mean = (dc / FRAME).toInt()
+            for (i in 0 until FRAME) { val d = pcm[i] - mean; sum += d.toDouble() * d }
+            val rms = Math.sqrt(sum / FRAME)
+            floor = if (rms < floor) rms else floor * 0.995 + rms * 0.005
+            if (rms > maxOf(220.0, floor * 2.6)) hang = 8 else if (hang > 0) hang--
+            if (hang == 0) continue
             val out = ByteArray(FRAME + 1)
             out[0] = 1
             for (i in 0 until FRAME) out[i + 1] = enc(pcm[i].toInt())
