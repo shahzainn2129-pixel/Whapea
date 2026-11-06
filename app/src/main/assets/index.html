@@ -548,6 +548,10 @@ img.spm{aspect-ratio:auto;height:auto;max-height:560px;object-fit:contain}
 .hl{color:#1d8cf8;font-weight:600;cursor:pointer}.cm .cml{float:right;display:flex;align-items:center;gap:4px;font-size:12px;color:var(--muted);padding:2px 4px}.cm .cml.on{color:#e0245e}.cm .cml svg{width:16px;height:16px}.cm .cml.on svg{fill:currentColor}
 .prv{text-align:center;padding:36px 24px}.prv b{display:block;font-size:16px;margin:10px 0 4px}
 .reqb{display:flex;gap:6px}.reqb .tag{cursor:pointer}
+.pinb{position:sticky;top:0;z-index:3;display:flex;align-items:center;gap:8px;margin:0 -2px 6px;padding:8px 12px;border-radius:12px;background:var(--surface2);border:1px solid var(--line);font-size:13px;cursor:pointer}.pinb span{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.pinb svg{width:15px;height:15px;color:var(--muted)}
+.voice .spd{border:1px solid var(--line);border-radius:10px;padding:2px 7px;font-size:11.5px;font-weight:700;color:inherit;background:none;margin-left:4px}
+.seg2.tabs6{display:flex;overflow-x:auto;gap:6px;scrollbar-width:none}.seg2.tabs6 button{flex:0 0 auto;padding:7px 14px}
+.mrow.hlp .b{animation:hlp 1.2s ease}@keyframes hlp{0%,60%{box-shadow:0 0 0 3px #1d8cf8}100%{box-shadow:none}}
 </style>
 </head><body>
 
@@ -730,12 +734,12 @@ function storiesHTML(){
   return `<div class="stories">${me}${ids.map(k=>`<button class="st1" data-a="viewSt" data-v="${esc(k)}"><span class="ring ${seenSt.has(k)?'seen':''}">${av(P[k].hue,P[k].name)}</span><small>${esc(P[k].name.split(' ')[0])}</small></button>`).join('')}</div>`}
 function chatsHTML(){
   let L=chats.filter(c=>!c.archived);
-  if(S.filter==='unread')L=L.filter(c=>c.unread||c.mk);if(S.filter==='fav')L=L.filter(c=>c.fav);if(S.filter==='groups')L=L.filter(c=>c.type==='group');
+  if(S.filter==='unread')L=L.filter(c=>c.unread||c.mk);if(S.filter==='fav')L=L.filter(c=>c.fav);if(S.filter==='groups')L=L.filter(c=>c.type==='group');if(S.filter==='family'||S.filter==='work')L=L.filter(c=>c.folder===S.filter);
   if(S.q){const q=S.q.toLowerCase();L=L.filter(c=>cName(c).toLowerCase().includes(q)||c.msgs.some(m=>(m.text||'').toLowerCase().includes(q)))}
   L.sort((a,b)=>(b.pinned?1:0)-(a.pinned?1:0)||last(b)?.t-last(a)?.t);
   const arch=chats.filter(c=>c.archived).length;
-  const f=[['all','Primary'],['unread','Unread'],['fav','Favourites'],['groups','Groups']];
-  return `<div class="seg2 tabs4">${f.map(([k,l])=>`<button class="${S.filter===k?'on':''}" data-a="filter" data-v="${k}">${l}</button>`).join('')}</div>
+  const f=[['all','Primary'],['unread','Unread'],['fav','Favourites'],['groups','Groups'],['family','Family'],['work','Work']];
+  return `<div class="seg2 tabs6">${f.map(([k,l])=>`<button class="${S.filter===k?'on':''}" data-a="filter" data-v="${k}">${l}</button>`).join('')}</div>
   <div class="searchbar" style="margin:12px 16px 6px">${ic('search',18)}<input id="q" placeholder="Search" value="${esc(S.q)}" autocomplete="off"></div>
   ${arch&&!S.q?`<button class="li" data-a="archived"><span class="av sm" style="--h:210;background:var(--surface2);color:var(--muted)">${ic('archive',18)}</span><span class="mid"><span class="nm">Archived</span></span><span class="val">${arch}</span></button>`:''}
   ${L.length?L.map(rowHTML).join(''):`<div class="empty"><b>No chats here</b>Tap the pencil icon to find someone by username and start chatting.</div>`}
@@ -830,7 +834,8 @@ function setNative(row,sw){
   ${o?`<div class="sec">Owner</div>${row('ownerOff','verified','Owner mode is on','','Tap to sign out')}
   ${NET.s?row('netOwner','verified','Internet users','','See accounts and block for 3 hours')+row('ownerPay','db','Plus payments','','Approve or reject payment requests')+row('ownerVer','verified','Verification requests','','Give the golden badge')+row('ownerRep','ban','Reported posts','','Delete or clear reports')+row('ownerUsr','ban','Reported users','','Block people who are reported'):''}`:''}
   <div class="sec">More info and support</div>
-  ${row('appinfo','info','About Whapea','','Version 3.8.1')}
+  ${row('privPol','shield','Privacy policy','','How Whapea treats your data')}
+  ${row('appinfo','info','About Whapea','','Version 3.9')}
   ${NET.s?`<button class="act bad" data-a="netOut" data-v=""><span class="grow">Log out</span></button>`:''}
   <div style="height:40px"></div>`}
 function setHTML(){
@@ -911,7 +916,7 @@ function msgHTML(c,m,i){
   if(m.deleted)body=`<div class="gone">${ic('ban',15)} ${own?'You deleted this message':'This message was deleted'}</div>`;
   else{
     if(m.type==='text'){const sp=/^\u27e6post:(\d+)\u27e7([\s\S]*)$/.exec(m.text||'');body=sp?`<button class="pshare" data-a="openShared" data-v="${sp[1]}"><span class="fi">${ic('image',20)}</span><span style="min-width:0"><b>View post</b><small>${esc(sp[2].slice(0,80))}</small></span></button>`:hl(m.text)}
-    if(m.type==='voice'){const on=S.playing===m.id;body=`<div class="voice"><button class="pp" data-a="play" data-v="${m.id}" aria-label="Play">${ic(on?'pause':'play',18)}</button><div class="wave">${[...Array(26)].map((_,k)=>`<i class="${on&&k<S.pp?'on':''}" style="height:${6+((k*7+m.dur*3)%19)}px"></i>`).join('')}</div><small>${dur(on?Math.round(m.dur*S.pp/26):m.dur)}</small></div>`}
+    if(m.type==='voice'){const on=S.playing===m.id;body=`<div class="voice"><button class="pp" data-a="play" data-v="${m.id}" aria-label="Play">${ic(on?'pause':'play',18)}</button><div class="wave">${[...Array(26)].map((_,k)=>`<i class="${on&&k<S.pp?'on':''}" style="height:${6+((k*7+m.dur*3)%19)}px"></i>`).join('')}</div><small>${dur(on?Math.round(m.dur*S.pp/26):m.dur)}</small>${on?`<button class="spd" data-a="rate" data-v="">${S.rate||1}x</button>`:''}</div>`}
     if(m.type==='img')body=`<img class="img" data-a="openMedia" data-v="${m.id}" src="${m.src}" alt="Photo">${m.text?hl(m.text):''}`;
     if(m.type==='video')body=`<div class="vid" data-a="openMedia" data-v="${m.id}"><video src="${m.src}#t=0.2" preload="metadata" muted playsinline></video><span class="vp">${ic('play',30)}</span>${m.dur?`<small>${dur(m.dur)}</small>`:''}</div>${m.text?hl(m.text):''}`;
     if(m.type==='file'||m.type==='audio')body=`<div class="filec"><span class="fi">${ic(m.type==='audio'?'music':'file',20)}</span><span style="min-width:0"><b style="font-weight:600">${esc(m.name)}</b><small>${esc(m.size)}</small></span></div>`;
@@ -922,13 +927,14 @@ function msgHTML(c,m,i){
   const q=m.reply?`<div class="quote"><b>${esc(m.reply.who)}</b>${esc(m.reply.text)}</div>`:'';
   const rx=Object.entries(m.rx||{}).map(([e,n])=>`<span>${e}${n>1?' '+n:''}</span>`).join('');
   return `<div class="mrow ${own?'out':'in'}${Date.now()-m.t<800?' pop':''}" style="--h:${own?0:P[m.from].hue}"><div class="b" role="button" tabindex="0" data-a="msg" data-v="${m.id}">${g&&!own?`<div class="who">${esc(P[m.from].name)}</div>`:''}${m.fwd?`<div class="fwd">${ic('fwd',13)} Forwarded</div>`:''}${q}${body}<span class="meta">${m.star?ic('star',12):''}${m.edited&&!m.deleted?'edited':''}${c.disap?ic('timer',12):''}${fmt(m.t)}${own?tick(m):''}</span></div>${rx?`<div class="rx">${rx}</div>`:''}</div>`}
+const pinTxt=m=>m.type==='text'?m.text:({voice:'Voice message',img:'Photo',video:'Video',file:'File',loc:'Location',poll:'Poll'})[m.type]||'Message';
 function drawMsgs(scroll){
   const c=chatOf(S.chat);if(!c)return;const el=$('#msgs');if(!el)return;
   const q=c.find?c.find.toLowerCase():'';
   let list=c.msgs.filter(m=>!q||(m.text||'').toLowerCase().includes(q));const lim=c._lim||120,more=list.length>lim;if(more)list=list.slice(-lim);
   const nearBottom=el.scrollHeight-el.scrollTop-el.clientHeight<120;
   el.innerHTML=`<div class="note">${ic('lock',14)}<span>${NATIVE&&c.type==='dm'&&isNet(c.cid)?'Say hello 👋':'Messages travel straight from phone to phone over Bluetooth.'}${c.disap?` Disappearing messages: ${({24:'24 hours',168:'7 days',2160:'90 days'})[c.disap]}.`:''}</span></div>`+
-   (more?`<button class="earlier" data-a="earlier">Load earlier messages</button>`:'')+list.map((m,i)=>msgHTML(c,m,i)).join('')+(c.typing?`<div class="typing"><i></i><i></i><i></i></div>`:'');
+   (c.pin&&c.msgs.find(x=>x.id===c.pin&&!x.deleted)?`<div class="pinb" data-a="goPin">${ic('star',15)}<span>${esc(pinTxt(c.msgs.find(x=>x.id===c.pin)))}</span></div>`:'')+(more?`<button class="earlier" data-a="earlier">Load earlier messages</button>`:'')+list.map((m,i)=>msgHTML(c,m,i)).join('')+(c.typing?`<div class="typing"><i></i><i></i><i></i></div>`:'');
   if(scroll||nearBottom)el.scrollTop=el.scrollHeight;
 }
 function drawComp(){
@@ -1007,7 +1013,7 @@ const ACT={
  unblock:()=>{chatOf(S.chat).blocked=false;drawComp();render()},
  cm_del:v=>{const i=chats.findIndex(c=>c.id===v);chats.splice(i,1);closeSheet();if(S.chat)closeChat();render();toast('Chat deleted')},
  /* chat screen */
- chatMenu:()=>{const c=chatOf(S.chat);sheet('',A('findIn','', 'search','Search in chat')+A('disapPickChat','', 'timer','Disappearing messages',({0:'Off',24:'24 hours',168:'7 days',2160:'90 days'})[c.disap||0])+A('cm_mute',c.id,'mute',c.muted?'Unmute':'Mute notifications')+A('cm_wp',c.id,'image','Chat wallpaper')+A('media','', 'image','Media, links and documents')+A('lockChat','', 'lock','Lock this chat')+A('cm_clear',c.id,'x','Clear chat')+(c.type==='dm'?A('cm_block',c.id,'ban','Block','','bad'):A('exit','', 'back','Exit group','','bad')))},
+ chatMenu:()=>{const c=chatOf(S.chat);sheet('',A('findIn','', 'search','Search in chat')+A('disapPickChat','', 'timer','Disappearing messages',({0:'Off',24:'24 hours',168:'7 days',2160:'90 days'})[c.disap||0])+A('cmFolder',c.id,'users','Folder',({family:'Family',work:'Work'})[c.folder]||'None')+A('cm_mute',c.id,'mute',c.muted?'Unmute':'Mute notifications')+A('cm_wp',c.id,'image','Chat wallpaper')+A('media','', 'image','Media, links and documents')+A('lockChat','', 'lock','Lock this chat')+A('cm_clear',c.id,'x','Clear chat')+(c.type==='dm'?A('cm_block',c.id,'ban','Block','','bad'):A('exit','', 'back','Exit group','','bad')))},
  exit:()=>{const c=chatOf(S.chat);closeSheet();c.archived=true;closeChat();toast('You left the group')},
  lockChat:()=>{closeSheet();toast('This chat is now locked with your app lock')},
  findIn:()=>{closeSheet();const c=chatOf(S.chat);$('#aux').innerHTML=`<div class="banner">${ic('search',18)}<input class="txt" id="fin" placeholder="Search in this chat" style="padding:7px 10px" autocomplete="off"><button class="ib" data-a="cancelFind" aria-label="Close">${ic('x',18)}</button></div>`;
@@ -1023,8 +1029,13 @@ const ACT={
  msg:v=>{const [c,m]=msgById(v);if(!m)return;const own=m.from==='me',editable=own&&m.type==='text'&&!m.deleted&&Date.now()-m.t<15*MIN;
    if(m.deleted){sheet('',A('delMe',v,'trash','Delete for me','','bad'));return}
    sheet('',`<div class="rxrow">${['👍','❤️','😂','😮','😢','🙏'].map(e=>`<button data-a="react" data-v="${v}|${e}">${e}</button>`).join('')}</div>`+
-   A('replyTo',v,'reply','Reply')+(m.type==='text'?A('copy',v,'copy','Copy'):'')+A('fwdPick',v,'fwd','Forward')+A('star',v,'star',m.star?'Unstar':'Star')+
+   A('replyTo',v,'reply','Reply')+(m.type==='text'?A('copy',v,'copy','Copy'):'')+A('fwdPick',v,'fwd','Forward')+A('star',v,'star',m.star?'Unstar':'Star')+A('pinMsg',v,'star',c.pin===m.id?'Unpin':'Pin to top')+
    (editable?A('editMsg',v,'edit','Edit','Available for 15 minutes'):'')+(own?A('info',v,'info','Message info'):'')+A('delMe',v,'trash','Delete for me')+(own?A('delAll',v,'trash','Delete for everyone','','bad'):''))},
+ cmFolder:v=>{closeSheet();sheet('Folder',A('setFolder',v+'|','x','None')+A('setFolder',v+'|family','users','Family')+A('setFolder',v+'|work','users','Work'))},
+ setFolder:v=>{const[id,f]=v.split('|'),c=chatOf(id);if(!c)return;c.folder=f||null;closeSheet();render();persistSoon();toast(f?'Moved to '+f:'Removed from folder')},
+ pinMsg:v=>{const[c,m]=msgById(v);if(!m)return;c.pin=c.pin===m.id?null:m.id;closeSheet();drawMsgs(false);persistSoon();toast(c.pin?'Pinned':'Unpinned')},
+ goPin:()=>{const c=chatOf(S.chat);if(!c||!c.pin)return;let e=document.querySelector('[data-a="msg"][data-v="'+c.pin+'"]');if(!e){c._lim=9999;drawMsgs(false);e=document.querySelector('[data-a="msg"][data-v="'+c.pin+'"]')}if(e){e.scrollIntoView({block:'center'});const r=e.closest('.mrow');r.classList.add('hlp');setTimeout(()=>r.classList.remove('hlp'),1300)}},
+ rate:()=>{S.rate=S.rate===1.5?2:S.rate===2?1:1.5;if(AUD)AUD.playbackRate=S.rate;drawMsgs(false)},
  earlier:()=>{const c=chatOf(S.chat);if(!c)return;const el=$('#msgs'),h=el.scrollHeight;c._lim=(c._lim||120)+150;drawMsgs(false);el.scrollTop=el.scrollHeight-h},
  react:v=>{const [id,e]=v.split('|'),[c,m]=msgById(id);m.rx=m.rx||{};m.rx[e]=(m.rx[e]||0)+1;netSend(c,{t:'rx',id,e});closeSheet();drawMsgs(false)},
  replyTo:v=>{const [c,m]=msgById(v);S.reply={who:who(c,m),text:prev(m)};S.edit=null;closeSheet();drawComp();$('#msgIn')?.focus()},
@@ -1737,7 +1748,7 @@ if(NATIVE){
       if(m){if(m.kind==='img')it.src=m.src;else{const p=Android.mediaSave(id,m.src);if(!p){toast('Could not save the video');return}it.src=p;it.dur=m.dur;Object.defineProperty(it,'_d',{value:m.src})}}
       myStatus.push(it);S.stm=null;closeSheet();render();toast('Status posted');stSyncAll()},
 
-    chatMenu:()=>{const c=chatOf(S.chat);sheet('',A('findIn','', 'search','Search in chat')+A('cm_mute',c.id,'mute',c.muted?'Unmute':'Mute notifications')+A('media','', 'image','Media, links and documents')+A('cm_clear',c.id,'x','Clear chat')+A('cm_block',c.id,'ban','Block','','bad'))},
+    chatMenu:()=>{const c=chatOf(S.chat);sheet('',A('findIn','', 'search','Search in chat')+A('cmFolder',c.id,'users','Folder',({family:'Family',work:'Work'})[c.folder]||'None')+A('cm_mute',c.id,'mute',c.muted?'Unmute':'Mute notifications')+A('media','', 'image','Media, links and documents')+A('cm_clear',c.id,'x','Clear chat')+A('cm_block',c.id,'ban','Block','','bad'))},
     nStart:()=>{SET.bt=true;persistSoon();Android.start()},nScan:()=>Android.scan(),nVisible:()=>Android.visible(),nStop:()=>{SET.bt=false;persistSoon();Android.stopBt()},
     nConnect:v=>{toast('Connecting…');Android.connect(v)},
     obStart:()=>{S.ob=1;render();setTimeout(()=>$('#obn')?.focus(),80)},
@@ -1766,7 +1777,7 @@ if(NATIVE){
       const [c,m]=msgById(v);if(!m||!m.src)return;
       if(S.playing===v){if(AUD)AUD.pause();S.playing=null;drawMsgs(false);return}
       if(AUD)AUD.pause();
-      const a=AUD=new Audio(m.src);S.playing=v;S.pp=0;
+      const a=AUD=new Audio(m.src);a.playbackRate=S.rate||1;S.playing=v;S.pp=0;
       const fail=()=>{if(AUD===a){S.playing=null;toast('Could not play this voice message');drawMsgs(false)}};
       a.ontimeupdate=()=>{if(AUD!==a)return;S.pp=Math.min(26,Math.round(26*a.currentTime/Math.max(1,m.dur)));drawMsgs(false)};
       a.onended=()=>{if(AUD===a){S.playing=null;drawMsgs(false)}};
@@ -1916,8 +1927,18 @@ if(NATIVE){
   Object.assign(ACT,{
     tab:v=>{S.tab=v;render();if(v==='spons')loadFeed(false);if(v==='posts'){loadFeed(false);loadSug(false);loadNotifCount();if(NET.s&&!PF.ok)loadPosts(true)}if(v==='explore'&&NET.s&&!EX.ok)loadExplore(true);if(v==='me'&&NET.s&&Date.now()-PS.at>45000)loadMyProf();tabAnim()},
     spRefresh:()=>{toast('Checking for new posts…');loadFeed(true)},
+    privPol:()=>sheet('Privacy policy',`<div class="note2" style="font-size:13.5px;line-height:1.6;text-align:left"><b>Whapea respects your privacy.</b><br><br>
+<b>What we collect.</b> Username, name, email, profile photo and bio. Your posts, comments, likes and follows. Your online status and last seen, only if you keep them on.<br><br>
+<b>Chats.</b> Nearby chats over Bluetooth stay between the two phones. Internet chats are delivered through our service and are removed from it once delivered. Your chats are kept on your own phone.<br><br>
+<b>Posts and stories.</b> Posts are removed after 7 days. Stories end after 24 hours (48 with Plus).<br><br>
+<b>What we never do.</b> We do not sell your data, show ads based on it, or read your contacts or location without your permission.<br><br>
+<b>Permissions.</b> Microphone for calls and voice notes. Camera for photos and video calls. Bluetooth and nearby devices for nearby chat. Notifications for alerts. Each is used only for that purpose.<br><br>
+<b>Your control.</b> Private account, block, report, hide last seen and online status, and delete your account (your profile and posts are removed).<br><br>
+<b>Children.</b> Whapea is not for children under 13.<br><br>
+<b>Changes.</b> If this policy changes, the app will tell you.<br><br>
+<b>Contact.</b> Shah Zain, founder of Whapea.</div>`),
     appinfo:()=>{aboutTaps++;if(aboutTaps>=7){aboutTaps=0;ACT.ownerLogin();return}
-      sheet('About Whapea',`<div class="note2" style="font-size:14px">Version 3.8.1. Chat, post and call over the internet, or with people nearby over Bluetooth. Sponsored posts and updates download when your phone is online.</div><button class="btn" data-a="updCheck">Check for updates</button>`)},
+      sheet('About Whapea',`<div class="note2" style="font-size:14px">Version 3.9. Chat, post and call over the internet, or with people nearby over Bluetooth. Sponsored posts and updates download when your phone is online.</div><button class="btn" data-a="updCheck">Check for updates</button>`)},
     spNew:()=>{sheet('New sponsored post',`<div class="field"><input id="spb" placeholder="Brand name" maxlength="40" autocomplete="off"></div><div class="field"><textarea id="spcap" rows="3" maxlength="300" placeholder="What are you promoting?" class="txt"></textarea></div><div class="field"><input id="spct" placeholder="Phone or address (optional)" maxlength="60" autocomplete="off"></div><div class="field"><input id="spv" placeholder="Video file name, e.g. chai.mp4 (optional)" maxlength="80" autocomplete="off" autocapitalize="none"></div><div class="sec" style="padding-top:2px">Runs for</div><div class="chips" id="spdur">${[3,7,14,30,60].map(d=>`<button class="chip ${d===7?'on':''}" data-a="spDur" data-v="${d}">${d} days</button>`).join('')}</div><button class="act" data-a="spPick">${ic('image')}<span class="grow" id="spmi">Add a photo (optional)<small>Photos are made small so they fit in the post</small></span></button><button class="btn" data-a="spPost">Create post data</button>`);S.spm=null;S.spd=7},
     spPick:()=>pickFile('image/*',f=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,640/Math.max(im.width,im.height)),cv=document.createElement('canvas');cv.width=im.width*k;cv.height=im.height*k;cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);const src=cv.toDataURL('image/jpeg',.6);S.spm={kind:'image',src};const e=$('#spmi');if(e)e.innerHTML=`${esc(f.name)}<small>Photo · ${size(src.length*.75)}</small>`};im.src=r.result};r.readAsDataURL(f)}),
     spPost:()=>{
