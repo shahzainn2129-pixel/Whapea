@@ -577,6 +577,26 @@ img.spm{aspect-ratio:auto;height:auto;max-height:560px;object-fit:contain}
 .tkn{position:absolute;top:70px;right:12px;background:rgba(0,0,0,.5);padding:3px 9px;border-radius:12px;font-size:12px;z-index:2}
 .tkempty{height:var(--tkh,600px);display:grid;place-content:center;text-align:center;color:#fff;padding:30px;gap:10px}.tkempty b{font-size:19px}.tkempty .btn{margin-top:10px}
 .tkspin{width:34px;height:34px;border:3px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:tksp .8s linear infinite;margin:auto}@keyframes tksp{to{transform:rotate(360deg)}}
+
+/* ---- Vynk black & white (no gradients) ---- */
+:root{--accent:#111;--accent-ink:#fff;--accent-soft:#efefef;--out:#111;--bw:#111;--bwi:#fff}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--accent:#f2f2f2;--accent-ink:#111;--accent-soft:#262626;--out:#f2f2f2;--bw:#f2f2f2;--bwi:#111}}
+:root[data-theme="dark"]{--accent:#f2f2f2;--accent-ink:#111;--accent-soft:#262626;--out:#f2f2f2;--bw:#f2f2f2;--bwi:#111}
+.fab,.btn,.pbtn.pri,.sgf,.cta,#sendBtn,#micBtn,.plhero{background:var(--bw)!important;color:var(--bwi)!important;box-shadow:none!important;border:0}
+.btn svg,.fab svg,.cta svg,#sendBtn svg,#micBtn svg,.plhero svg,.plhero .pb{color:var(--bwi)!important}.plhero .pb{background:rgba(128,128,128,.25)}
+.out .b{background:var(--bw)!important;color:var(--bwi)!important;--ink:var(--bwi);--muted:color-mix(in srgb,var(--bwi) 70%,transparent);--accent:var(--bwi);--accent-ink:var(--bw)}
+.badge{background:#fe2c55!important;color:#fff!important;box-shadow:none!important}
+.ring{background:var(--bw)!important}
+.brand.wm,.lwm,.gtx2,.lfrom b{background:none!important;-webkit-background-clip:initial!important;background-clip:initial!important;color:var(--ink)!important;-webkit-text-fill-color:var(--ink)!important}
+.nav button.on::after,.seg2 button.on::after{background:var(--ink)!important}
+.av,.pfv-av{background:#3a3a3c!important;color:#fff!important}
+.ptile,.gtx,.tkt2,.poster{background:#1c1c1e!important;color:#fff!important}
+.call{background:#000!important}
+.hl{color:var(--ink)!important;font-weight:700}
+.pbtn.plusb.act{background:var(--surface2)!important;border:1.5px solid var(--ink)!important}
+.nav .tkplus .pill{background:#fff!important;color:#000!important}
+.chip.sel{background:var(--bw)!important;color:var(--bwi)!important;border-color:var(--bw)!important}
+.svpoll button.me{background:#fff!important;color:#000!important;border-color:#fff!important}
 </style>
 </head><body>
 
@@ -866,7 +886,7 @@ function setNative(row,sw){
   ${NATIVE?row('goSpons','mega','Sponsors','','Offers from our partners'):''}
   ${NATIVE?row('cfOpen','users','Close friends','',Object.keys(SET.cf||{}).length+' people'):''}
   ${row('privPol','shield','Privacy policy','','How Vynk treats your data')}
-  ${row('appinfo','info','About Vynk','','Version 4.1')}
+  ${row('appinfo','info','About Vynk','','Version 4.2')}
   ${NET.s?`<button class="act bad" data-a="netOut" data-v=""><span class="grow">Log out</span></button>`:''}
   <div style="height:40px"></div>`}
 function setHTML(){
@@ -2008,7 +2028,7 @@ if(NATIVE){
 <b>Changes.</b> If this policy changes, the app will tell you.<br><br>
 <b>Contact.</b> Shah Zain, founder of Vynk.</div>`),
     appinfo:()=>{aboutTaps++;if(aboutTaps>=7){aboutTaps=0;ACT.ownerLogin();return}
-      sheet('About Vynk',`<div class="note2" style="font-size:14px">Version 4.1. Chat, post and call over the internet, or with people nearby over Bluetooth. Sponsored posts and updates download when your phone is online.</div><button class="btn" data-a="updCheck">Check for updates</button>`)},
+      sheet('About Vynk',`<div class="note2" style="font-size:14px">Version 4.2. Chat, post and call over the internet, or with people nearby over Bluetooth. Sponsored posts and updates download when your phone is online.</div><button class="btn" data-a="updCheck">Check for updates</button>`)},
     spNew:()=>{sheet('New sponsored post',`<div class="field"><input id="spb" placeholder="Brand name" maxlength="40" autocomplete="off"></div><div class="field"><textarea id="spcap" rows="3" maxlength="300" placeholder="What are you promoting?" class="txt"></textarea></div><div class="field"><input id="spct" placeholder="Phone or address (optional)" maxlength="60" autocomplete="off"></div><div class="field"><input id="spv" placeholder="Video file name, e.g. chai.mp4 (optional)" maxlength="80" autocomplete="off" autocapitalize="none"></div><div class="sec" style="padding-top:2px">Runs for</div><div class="chips" id="spdur">${[3,7,14,30,60].map(d=>`<button class="chip ${d===7?'on':''}" data-a="spDur" data-v="${d}">${d} days</button>`).join('')}</div><button class="act" data-a="spPick">${ic('image')}<span class="grow" id="spmi">Add a photo (optional)<small>Photos are made small so they fit in the post</small></span></button><button class="btn" data-a="spPost">Create post data</button>`);S.spm=null;S.spd=7},
     spPick:()=>pickFile('image/*',f=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,640/Math.max(im.width,im.height)),cv=document.createElement('canvas');cv.width=im.width*k;cv.height=im.height*k;cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);const src=cv.toDataURL('image/jpeg',.6);S.spm={kind:'image',src};const e=$('#spmi');if(e)e.innerHTML=`${esc(f.name)}<small>Photo · ${size(src.length*.75)}</small>`};im.src=r.result};r.readAsDataURL(f)}),
     spPost:()=>{
