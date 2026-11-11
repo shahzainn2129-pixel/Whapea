@@ -918,7 +918,7 @@ function setNative(row,sw){
   ${NATIVE?row('goSpons','mega','Sponsors','','Offers from our partners'):''}
   ${NATIVE?row('cfOpen','users','Close friends','',Object.keys(SET.cf||{}).length+' people'):''}
   ${row('privPol','shield','Privacy policy','','How Vynk treats your data')}
-  ${row('appinfo','info','About Vynk','','Version 4.5')}
+  ${row('appinfo','info','About Vynk','','Version 4.6')}
   ${NET.s?`<button class="act bad" data-a="netOut" data-v=""><span class="grow">Log out</span></button>`:''}
   <div style="height:40px"></div>`}
 function setHTML(){
@@ -1269,7 +1269,7 @@ const NS={running:false,scanning:false,text:'Not started',found:[],btOn:true};
 const hueOf=s=>{let h=0;for(const ch of String(s))h=(h*31+ch.charCodeAt(0))>>>0;return h%360};
 const okImg=s=>typeof s==='string'&&s.length<400000&&/^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/.test(s);
 const okAud=s=>typeof s==='string'&&s.length<700000&&/^data:audio\/mp4;base64,[A-Za-z0-9+\/=]+$/.test(s);
-const WLOGO=`<svg width="100%" height="100%" viewBox="0 0 108 108" aria-label="Vynk"><defs><linearGradient id="wlg" gradientUnits="userSpaceOnUse" x1="28" y1="34" x2="80" y2="74"><stop offset="0" stop-color="#FFB02E"/><stop offset=".5" stop-color="#FF2E7E"/><stop offset="1" stop-color="#8A3DFF"/></linearGradient></defs><rect width="108" height="108" rx="26" fill="#0E1116"/><path d="M30.2 39.5 L42.8 68.5 L54.0 46.4 L65.2 68.5 L77.8 39.5" fill="none" stroke="url(#wlg)" stroke-width="9.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const WLOGO=`<svg width="100%" height="100%" viewBox="0 0 108 108" aria-label="Vynk" style="color:var(--ink)"><path d="M32 35.4L54 72.6L76 35.4" fill="none" stroke="currentColor" stroke-width="5.3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="32" cy="35.4" r="6.8" fill="currentColor"/><circle cx="76" cy="35.4" r="6.8" fill="currentColor"/><circle cx="54" cy="72.6" r="6.8" fill="currentColor"/></svg>`;
 const RXOK=['👍','❤️','😂','😮','😢','🙏'];
 const cl=(s,n)=>String(s==null?'':s).slice(0,n);
 const copyText=async t=>{if(NATIVE){Android.copy(t);return}await navigator.clipboard.writeText(t)};
@@ -2129,7 +2129,7 @@ if(NATIVE){
 <b>Changes.</b> If this policy changes, the app will tell you.<br><br>
 <b>Contact.</b> Shah Zain, founder of Vynk.</div>`),
     appinfo:()=>{aboutTaps++;if(aboutTaps>=7){aboutTaps=0;ACT.ownerLogin();return}
-      sheet('About Vynk',`<div class="note2" style="font-size:14px">Version 4.5. Chat, post and call over the internet, or with people nearby over Bluetooth. Sponsored posts and updates download when your phone is online.</div><button class="btn" data-a="updCheck">Check for updates</button>`)},
+      sheet('About Vynk',`<div class="note2" style="font-size:14px">Version 4.6. Chat, post and call over the internet, or with people nearby over Bluetooth. Sponsored posts and updates download when your phone is online.</div><button class="btn" data-a="updCheck">Check for updates</button>`)},
     spNew:()=>{sheet('New sponsored post',`<div class="field"><input id="spb" placeholder="Brand name" maxlength="40" autocomplete="off"></div><div class="field"><textarea id="spcap" rows="3" maxlength="300" placeholder="What are you promoting?" class="txt"></textarea></div><div class="field"><input id="spct" placeholder="Phone or address (optional)" maxlength="60" autocomplete="off"></div><div class="field"><input id="spv" placeholder="Video file name, e.g. chai.mp4 (optional)" maxlength="80" autocomplete="off" autocapitalize="none"></div><div class="sec" style="padding-top:2px">Runs for</div><div class="chips" id="spdur">${[3,7,14,30,60].map(d=>`<button class="chip ${d===7?'on':''}" data-a="spDur" data-v="${d}">${d} days</button>`).join('')}</div><button class="act" data-a="spPick">${ic('image')}<span class="grow" id="spmi">Add a photo (optional)<small>Photos are made small so they fit in the post</small></span></button><button class="btn" data-a="spPost">Create post data</button>`);S.spm=null;S.spd=7},
     spPick:()=>pickFile('image/*',f=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,640/Math.max(im.width,im.height)),cv=document.createElement('canvas');cv.width=im.width*k;cv.height=im.height*k;cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);const src=cv.toDataURL('image/jpeg',.6);S.spm={kind:'image',src};const e=$('#spmi');if(e)e.innerHTML=`${esc(f.name)}<small>Photo · ${size(src.length*.75)}</small>`};im.src=r.result};r.readAsDataURL(f)}),
     spPost:()=>{
