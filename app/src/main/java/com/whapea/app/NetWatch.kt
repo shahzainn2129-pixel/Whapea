@@ -65,11 +65,39 @@ object NetWatch {
         } catch (e: Exception) { "New message" }
     }
 
+    private var socTick = 0
+
+    /** Likes, comments, follows and mentions while the screen is closed. */
+    private fun social(s: JSONObject) {
+        try {
+            val (code, txt) = call("/rest/v1/rpc/my_notifs", "POST", "{\"p_limit\":10}", s.optString("at"))
+            if (code != 200) return
+            val arr = JSONArray(txt)
+            var max = 0L
+            for (i in 0 until arr.length()) max = maxOf(max, arr.getJSONObject(i).getLong("id"))
+            val last = Core.prefs.getLong("soclast", -1L)
+            if (last < 0) { Core.prefs.edit().putLong("soclast", max).apply(); return }
+            for (i in arr.length() - 1 downTo 0) {
+                val o = arr.getJSONObject(i)
+                val id = o.getLong("id")
+                if (id <= last || o.optBoolean("read")) continue
+                val who = o.optString("name").ifBlank { o.optString("username") }.ifBlank { "Someone" }
+                val what = when (o.optString("kind")) {
+                    "like" -> "liked your post"; "comment" -> "commented on your post"
+                    "follow" -> "started following you"; "mention" -> "mentioned you"
+                    "request" -> "wants to follow you"; else -> continue
+                }
+                Core.notifySocial(id, who, what)
+            }
+            if (max > last) Core.prefs.edit().putLong("soclast", max).apply()
+        } catch (e: Exception) { }
+    }
+
     private fun loop() {
         while (true) {
             try {
                 val s = session() ?: break
-                if (Core.uiAttached) { Thread.sleep(4000); continue }
+                if (Core.uiAttached) { if (Core.prefs.getLong("soclast", -1L) != -1L) Core.prefs.edit().putLong("soclast", -1L).apply(); socTick = 0; Thread.sleep(4000); continue }
                 val last = Core.prefs.getLong("netlast", 0L)
                 var (code, txt) = call("/rest/v1/frames?select=id,sender,payload&id=gt.$last&order=id.asc&limit=20", token = s.optString("at"))
                 if (code == 401 && refresh(s)) {
@@ -104,6 +132,7 @@ object NetWatch {
                     }
                     if (max > last) Core.prefs.edit().putLong("netlast", max).apply()
                 }
+                if (++socTick % 12 == 1) social(s)
                 if (ringUntil in 1..System.currentTimeMillis()) { Core.ringStop(); ringUntil = 0 }
                 Thread.sleep(2500)
             } catch (e: InterruptedException) { break } catch (e: Exception) {

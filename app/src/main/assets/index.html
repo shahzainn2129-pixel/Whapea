@@ -610,6 +610,14 @@ img.spm{aspect-ratio:auto;height:auto;max-height:560px;object-fit:contain}
 .npr{display:flex;align-items:center;gap:10px;padding:13px 2px;border-top:1px solid var(--line);font-size:14.5px}.npr span.v{margin-left:auto;color:var(--muted);font-size:13px}.npr svg{width:22px;height:22px}
 .npf{padding:10px 16px 16px;border-top:1px solid var(--line)}.npf .btn{width:100%;padding:14px;font-size:16px;border-radius:14px}
 .npf .btn{margin:0!important;width:100%!important;box-sizing:border-box}
+
+.tkvol{position:absolute;top:64px;right:12px;z-index:4;width:38px;height:38px;border-radius:50%;background:rgba(0,0,0,.45);color:#fff;display:grid;place-items:center}.tkvol svg{width:20px;height:20px}
+.tutv{align-items:center;justify-content:space-between;text-align:center;padding:26px 28px 30px;z-index:60}
+.tutv .skip{align-self:flex-end;color:var(--muted);font-weight:700;padding:8px}
+.tutv .tart{width:170px;height:170px;border-radius:50%;background:var(--surface2);display:grid;place-items:center;margin:0 auto 26px;color:var(--ink)}.tutv .tart svg{width:78px;height:78px}
+.tutv h2{font:800 26px/1.2 var(--font-display);margin:0 0 10px}.tutv p{color:var(--muted);font-size:15.5px;line-height:1.5;margin:0 auto;max-width:300px}
+.tutv .tdots{display:flex;gap:7px;justify-content:center;margin:0 0 18px}.tutv .tdots i{width:7px;height:7px;border-radius:50%;background:var(--line)}.tutv .tdots i.on{background:var(--ink);width:20px;border-radius:4px}
+.tutv .btn{width:100%;padding:14px;font-size:16px;margin:0!important;box-sizing:border-box}
 </style>
 </head><body>
 
@@ -755,7 +763,7 @@ const A=(a,v,icon,label,sub='',cls='')=>`<button class="act ${cls}" data-a="${a}
 const tg=on=>`<span class="tg ${on?'on':''}"></span>`;
 
 /* ---------- main render ---------- */
-function render(){try{return __render0.apply(this,arguments)}finally{try{fixCar();fixClamp();observeViews();tkInit()}catch(e){}}}
+function render(){try{return __render0.apply(this,arguments)}finally{try{fixCar();fixClamp();observeViews();tkInit();if(SET.tutPending&&ME.name&&NATIVE&&!document.getElementById('tut'))ACT.tutOpen()}catch(e){}}}
 function __render0(){persistSoon();if(NATIVE&&!ME.name){$('#main').innerHTML=obHTML();return}
   const unread=chats.filter(c=>!c.archived&&(c.unread||c.mk)).length;
   const tabs=NATIVE?[['posts','home','Home'],['explore','search','Explore'],['__new','plus','New'],['chats','plane','Chats'],['me','avatar','Profile']]:[['chats','chat','Chats'],['status','status','Status'],['spons','mega','Sponsors'],['near','radar','Nearby'],['calls','phone','Calls'],['set','gear','Settings']];
@@ -900,7 +908,7 @@ function setNative(row,sw){
   ${NATIVE?row('goSpons','mega','Sponsors','','Offers from our partners'):''}
   ${NATIVE?row('cfOpen','users','Close friends','',Object.keys(SET.cf||{}).length+' people'):''}
   ${row('privPol','shield','Privacy policy','','How Vynk treats your data')}
-  ${row('appinfo','info','About Vynk','','Version 4.3')}
+  ${row('appinfo','info','About Vynk','','Version 4.4')}
   ${NET.s?`<button class="act bad" data-a="netOut" data-v=""><span class="grow">Log out</span></button>`:''}
   <div style="height:40px"></div>`}
 function setHTML(){
@@ -1594,7 +1602,7 @@ function postCard(p){
 const TK={sig:'',io:null};
 function tkCard(p){
   const imgOk=p.image&&okImg(p.image),imgs=imgOk?[p.image].concat((p.more||[]).filter(okImg)):[],n=+p.likes||0,c=+p.comments||0,uh=hueOf(p.username),hasM=p.video||imgOk;
-  const media=p.video?`<video class="tkm" src="${vidUrl(p)}" loop playsinline preload="${DS()?'none':'auto'}" data-a="tkTap"></video>`:imgOk?`<img class="tkm" src="${imgs[0]}" data-a="postImg" data-v="${p.id}" alt="Post photo">${imgs.length>1?`<span class="tkn">1/${imgs.length}</span>`:''}`:`<div class="tkt2" style="--h:${uh}" data-a="postImg" data-v="${p.id}"><span>${rich(p.body||p.title||'')}</span></div>`;
+  const media=p.video?`<video class="tkm" src="${vidUrl(p)}" loop playsinline preload="${DS()?'none':'auto'}" data-a="tkTap"></video><button class="tkvol" data-a="tkMute" aria-label="Sound">${ic(S.vm?'mute':'vol',20)}</button>`:imgOk?`<img class="tkm" src="${imgs[0]}" data-a="postImg" data-v="${p.id}" alt="Post photo">${imgs.length>1?`<span class="tkn">1/${imgs.length}</span>`:''}`:`<div class="tkt2" style="--h:${uh}" data-a="postImg" data-v="${p.id}"><span>${rich(p.body||p.title||'')}</span></div>`;
   return `<article class="tkp" data-pid="${p.id}">${media}<div class="tkshade"></div>
   <div class="tkrail"><button class="tkav" data-a="openProf" data-v="${p.author}" aria-label="Profile"><span class="ring sm">${av0(uh,p.name||p.username,'sm')}</span></button>
   <button data-a="postLike" data-v="${p.id}" class="${p.liked?'on':''}" aria-label="Like">${ic('heart',32)}<i>${fmtN(n)}</i></button>
@@ -1613,10 +1621,11 @@ function tkSync(){document.querySelectorAll('.tkp[data-pid]').forEach(a=>{const 
   const cm=a.querySelector('[data-a=postCom] i');if(cm)cm.textContent=(+p.comments)?fmtN(+p.comments):'';
   const sv=a.querySelector('[data-a=postSave]');if(sv)sv.classList.toggle('on',!!p.saved);
   const cp=a.querySelector('.tkc');if(cp)cp.classList.toggle('cl',!p._x)})}
+function tkVol(){document.querySelectorAll('.tkvol').forEach(b=>b.innerHTML=ic(S.vm?'mute':'vol',20))}
 function tkInit(){const b=document.querySelector('.body.tkb');if(TK.io){TK.io.disconnect();TK.io=null}if(!b)return;
   b.style.setProperty('--tkh',b.clientHeight+'px');
   if(typeof IntersectionObserver!=='undefined'){TK.io=new IntersectionObserver(es=>{es.forEach(e=>{const v=e.target.querySelector('video');if(!v)return;
-    if(e.isIntersecting&&e.intersectionRatio>=.7){const pr=v.play();if(pr&&pr.catch)pr.catch(()=>{v.muted=true;v.play().catch(()=>{})})}else v.pause()})},{root:b,threshold:[0,.7]});b.querySelectorAll('.tkp').forEach(a=>TK.io.observe(a))}
+    if(e.isIntersecting&&e.intersectionRatio>=.7){v.muted=!!S.vm;const pr=v.play();if(pr&&pr.catch)pr.catch(()=>{v.muted=true;S.vm=true;tkVol();v.play().catch(()=>{})})}else v.pause()})},{root:b,threshold:[0,.7]});b.querySelectorAll('.tkp').forEach(a=>TK.io.observe(a))}
   b.onscroll=()=>{if(PF.more&&!PF.busy&&b.scrollTop+b.clientHeight*2>b.scrollHeight)loadPosts(false)}}
 const tkTop=()=>`<div class="top tkt"><button class="ib" data-a="tab" data-v="explore" aria-label="Search">${ic('search',24)}</button><div class="tktabs">${[['follow','Following'],['all','For you'],['city',ME.city?esc(ME.city):'City']].map(([k,l])=>`<button class="${PF.scope===k?'on':''}" data-a="postScope" data-v="${k}">${l}</button>`).join('')}</div>${NET.s?`<button class="ib nb" data-a="notifOpen" aria-label="Notifications">${ic('heart',24)}${NT.n?`<span class="nbd">${NT.n>9?'9+':NT.n}</span>`:''}</button>`:`<button class="ib" data-a="netAcct" aria-label="Log in">${ic('user',24)}</button>`}</div>`;
 
@@ -1858,7 +1867,12 @@ if(NATIVE){
     obStart:()=>{S.ob=1;render();setTimeout(()=>$('#obn')?.focus(),80)},
     obBack:()=>{S.ob=0;render()},
     obLogin:()=>ACT.netAcct(),
-    obGo:()=>{const n=($('#obn').value||'').trim();if(!n)return;ME.name=n;persistSoon();render();if(!NET.s)setTimeout(()=>ACT.netAcct(),500)},
+    obGo:()=>{const n=($('#obn').value||'').trim();if(!n)return;ME.name=n;SET.tutPending=true;persistSoon();render();ACT.tutOpen()},
+    tutOpen:()=>{$('#tut')?.remove();S.tutI=S.tutI||0;const sl=[['chat','Chat with anyone','Message people nearby over Bluetooth, or chat online with your internet account.'],['video','Share your moments','Post photos and videos, add stories, and show them only to your close friends.'],['lock','You stay in control','Make your account private, hide your last seen, and let messages disappear.'],['phone','Call and connect','Voice and video calls, and group chats, all in one app.']],i=S.tutI,d=sl[i],last=i===sl.length-1;
+      const v=document.createElement('div');v.className='screen tutv';v.id='tut';phone.append(v);
+      v.innerHTML=`<button class="skip" data-a="tutDone">${last?'':'Skip'}</button><div><div class="tart">${ic(d[0],78)}</div><h2>${d[1]}</h2><p>${d[2]}</p></div><div style="width:100%"><div class="tdots">${sl.map((_,j)=>`<i class="${j===i?'on':''}"></i>`).join('')}</div><button class="btn" data-a="${last?'tutDone':'tutNext'}">${last?'Get started':'Next'}</button></div>`},
+    tutNext:()=>{S.tutI=(S.tutI||0)+1;ACT.tutOpen()},
+    tutDone:()=>{$('#tut')?.remove();S.tutI=0;SET.tutPending=false;persistSoon();if(!NET.s)setTimeout(()=>ACT.netAcct(),300)},
   });
 
   /* ---- voice messages ---- */
@@ -2042,7 +2056,7 @@ if(NATIVE){
 <b>Changes.</b> If this policy changes, the app will tell you.<br><br>
 <b>Contact.</b> Shah Zain, founder of Vynk.</div>`),
     appinfo:()=>{aboutTaps++;if(aboutTaps>=7){aboutTaps=0;ACT.ownerLogin();return}
-      sheet('About Vynk',`<div class="note2" style="font-size:14px">Version 4.3. Chat, post and call over the internet, or with people nearby over Bluetooth. Sponsored posts and updates download when your phone is online.</div><button class="btn" data-a="updCheck">Check for updates</button>`)},
+      sheet('About Vynk',`<div class="note2" style="font-size:14px">Version 4.4. Chat, post and call over the internet, or with people nearby over Bluetooth. Sponsored posts and updates download when your phone is online.</div><button class="btn" data-a="updCheck">Check for updates</button>`)},
     spNew:()=>{sheet('New sponsored post',`<div class="field"><input id="spb" placeholder="Brand name" maxlength="40" autocomplete="off"></div><div class="field"><textarea id="spcap" rows="3" maxlength="300" placeholder="What are you promoting?" class="txt"></textarea></div><div class="field"><input id="spct" placeholder="Phone or address (optional)" maxlength="60" autocomplete="off"></div><div class="field"><input id="spv" placeholder="Video file name, e.g. chai.mp4 (optional)" maxlength="80" autocomplete="off" autocapitalize="none"></div><div class="sec" style="padding-top:2px">Runs for</div><div class="chips" id="spdur">${[3,7,14,30,60].map(d=>`<button class="chip ${d===7?'on':''}" data-a="spDur" data-v="${d}">${d} days</button>`).join('')}</div><button class="act" data-a="spPick">${ic('image')}<span class="grow" id="spmi">Add a photo (optional)<small>Photos are made small so they fit in the post</small></span></button><button class="btn" data-a="spPost">Create post data</button>`);S.spm=null;S.spd=7},
     spPick:()=>pickFile('image/*',f=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,640/Math.max(im.width,im.height)),cv=document.createElement('canvas');cv.width=im.width*k;cv.height=im.height*k;cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);const src=cv.toDataURL('image/jpeg',.6);S.spm={kind:'image',src};const e=$('#spmi');if(e)e.innerHTML=`${esc(f.name)}<small>Photo · ${size(src.length*.75)}</small>`};im.src=r.result};r.readAsDataURL(f)}),
     spPost:()=>{
@@ -2186,6 +2200,7 @@ if(NATIVE){
     npIns:t=>{const e=$('#ptx');if(!e)return;const i=e.selectionStart||e.value.length;e.value=e.value.slice(0,i)+(i&&!/\s$/.test(e.value.slice(0,i))?' ':'')+t+e.value.slice(i);e.focus()},
     postVideo:()=>pickFile('video/*',f=>{if(f.size>50*1024*1024){toast('This video is over 50 MB. Please pick a shorter one');return}if(f.type&&!/^video\//.test(f.type)){toast('Please pick a video');return}S.pvid=f;S.pimg=null;S.pmore=[];pprevDraw()}),
     pRmV:()=>{S.pvid=null;pprevDraw()},
+    tkMute:()=>{S.vm=!S.vm;document.querySelectorAll('.tkp video').forEach(v=>v.muted=!!S.vm);tkVol();toast(S.vm?'Sound off':'Sound on')},
     tkTap:(v,el)=>{if(el&&el.tagName==='VIDEO'){if(el.paused)el.play().catch(()=>{});else el.pause()}},
     goSpons:()=>ACT.tab('spons'),
     postMore:v=>{const p=postFind(v);if(p){p._x=!p._x;postRedraw();if(!p._x){const el=document.querySelector('.pc[data-pid="'+v+'"]');if(el&&el.getBoundingClientRect().top<0)el.scrollIntoView({block:'start'})}}},

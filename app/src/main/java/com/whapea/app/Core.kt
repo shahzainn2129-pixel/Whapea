@@ -190,6 +190,20 @@ object Core {
         } catch (e: SecurityException) { }
     }
 
+    fun notifySocial(id: Long, who: String, body: String) {
+        try {
+            val pi = android.app.PendingIntent.getActivity(app, 0,
+                Intent(app, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP),
+                android.app.PendingIntent.FLAG_IMMUTABLE or android.app.PendingIntent.FLAG_UPDATE_CURRENT)
+            val n = NotificationCompat.Builder(app, CH)
+                .setSmallIcon(android.R.drawable.stat_notify_chat)
+                .setContentTitle(who).setContentText(body)
+                .setAutoCancel(true).setContentIntent(pi)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT).build()
+            NotificationManagerCompat.from(app).notify(("soc$id").hashCode(), n)
+        } catch (e: SecurityException) { }
+    }
+
     /** Hands everything that arrived in the background to the screen. */
     fun drainInbox() {
         val pr = pendingRing
