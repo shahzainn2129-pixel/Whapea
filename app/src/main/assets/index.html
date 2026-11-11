@@ -618,6 +618,16 @@ img.spm{aspect-ratio:auto;height:auto;max-height:560px;object-fit:contain}
 .tutv h2{font:800 26px/1.2 var(--font-display);margin:0 0 10px}.tutv p{color:var(--muted);font-size:15.5px;line-height:1.5;margin:0 auto;max-width:300px}
 .tutv .tdots{display:flex;gap:7px;justify-content:center;margin:0 0 18px}.tutv .tdots i{width:7px;height:7px;border-radius:50%;background:var(--line)}.tutv .tdots i.on{background:var(--ink);width:20px;border-radius:4px}
 .tutv .btn{width:100%;padding:14px;font-size:16px;margin:0!important;box-sizing:border-box}
+
+.gcv,.gring{z-index:70;background:#0b0b0d;color:#fff;display:flex;flex-direction:column}
+.gcv .gtop{text-align:center;padding:16px 12px 6px;font-weight:700}.gcv .gtop small{display:block;opacity:.7;font-weight:500;margin-top:2px}
+.gcg{flex:1;display:grid;gap:6px;padding:6px;grid-template-columns:1fr;grid-auto-rows:1fr;min-height:0}.gcg.n2,.gcg.n3,.gcg.n4{grid-template-columns:1fr 1fr}.gcg.n2{grid-template-columns:1fr;}
+.gt{position:relative;border-radius:16px;overflow:hidden;background:#1c1c1e;display:grid;place-items:center;min-height:0}.gt video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.gt video.hid{width:1px;height:1px;opacity:0}
+.gt .gav{width:64px;height:64px;border-radius:50%;background:#9aa0a6;display:grid;place-items:center}.gt .gav svg{width:44px;height:44px;margin-top:8px;color:#fff}
+.gt .gn{position:absolute;left:8px;bottom:8px;background:rgba(0,0,0,.55);padding:3px 9px;border-radius:10px;font-size:12px}
+.gcv .cbtns{position:static;padding:10px 0 22px}
+.gring{align-items:center;justify-content:center;text-align:center;gap:10px}.gring h2{margin:0}.gring .cbtns{position:static;margin-top:26px}
+.gcv .cbtns{display:flex!important;justify-content:space-evenly;gap:0;padding:10px 4px 22px;width:100%;box-sizing:border-box}.gcv .cbtns button{flex:0 0 auto;min-width:64px}
 </style>
 </head><body>
 
@@ -908,7 +918,7 @@ function setNative(row,sw){
   ${NATIVE?row('goSpons','mega','Sponsors','','Offers from our partners'):''}
   ${NATIVE?row('cfOpen','users','Close friends','',Object.keys(SET.cf||{}).length+' people'):''}
   ${row('privPol','shield','Privacy policy','','How Vynk treats your data')}
-  ${row('appinfo','info','About Vynk','','Version 4.4')}
+  ${row('appinfo','info','About Vynk','','Version 4.5')}
   ${NET.s?`<button class="act bad" data-a="netOut" data-v=""><span class="grow">Log out</span></button>`:''}
   <div style="height:40px"></div>`}
 function setHTML(){
@@ -980,7 +990,7 @@ function drawHead(){
   else if(NATIVE&&c.type==='dm'&&isNet(c.cid)){const q=P[c.cid],sc=q.ls==null||!SET.online?null:q.ls+(Date.now()-(q.lsAt||Date.now()))/1000;sub=sc==null?'<small></small>':sc<100?'<small class="live">online</small>':`<small>last seen ${seenTxt(sc)}</small>`}
   else if(c.type==='group')sub=`<small>${c.members.map(m=>P[m].name.split(' ')[0]).join(', ')}, You</small>`;
   else sub=`<small class="${r==='direct'?'live':''}">${r==='direct'?`In range${P[c.cid].dist!=null?' · '+P[c.cid].dist+' m':''}`:r==='relay'?`Reachable via ${esc(P[P[c.cid].via].name.split(' ')[0])} · 2 hops`:'Out of range · messages will wait'}</small>`;
-  $('#chh').innerHTML=`<button class="ib" data-a="closeChat" aria-label="Back">${ic('back')}</button>${av(cHue(c),cName(c),'sm')}<button class="who" data-a="chatInfo"><b>${esc(cName(c))}${c.type==='dm'&&P[c.cid]?bdg(P[c.cid].plan):''}</b>${sub}</button>${c.type==='dm'?`${NATIVE&&isNet(c.cid)?`<button class="ib" data-a="startVideo" data-v="${c.cid}" aria-label="Video call">${ic('video',21)}</button>`:''}<button class="ib" data-a="startCall" data-v="${c.cid}" aria-label="Voice call">${ic('phone',21)}</button>`:''}<button class="ib" data-a="chatMenu" aria-label="More">${ic('more')}</button>`;
+  $('#chh').innerHTML=`<button class="ib" data-a="closeChat" aria-label="Back">${ic('back')}</button>${av(cHue(c),cName(c),'sm')}<button class="who" data-a="chatInfo"><b>${esc(cName(c))}${c.type==='dm'&&P[c.cid]?bdg(P[c.cid].plan):''}</b>${sub}</button>${c.type==='dm'?`${NATIVE&&isNet(c.cid)?`<button class="ib" data-a="startVideo" data-v="${c.cid}" aria-label="Video call">${ic('video',21)}</button>`:''}<button class="ib" data-a="startCall" data-v="${c.cid}" aria-label="Voice call">${ic('phone',21)}</button>`:(c.type==='group'&&NATIVE&&NET.s&&c.members.some(isNet)?`<button class="ib" data-a="gcStart" data-v="${esc(c.id)}|1" aria-label="Group video call">${ic('video',21)}</button><button class="ib" data-a="gcStart" data-v="${esc(c.id)}|0" aria-label="Group voice call">${ic('phone',21)}</button>`:'')}<button class="ib" data-a="chatMenu" aria-label="More">${ic('more')}</button>`;
 }
 const hl=t=>esc(t).replace(/@(\w+)/g,'<span class="mention">@$1</span>');
 function msgHTML(c,m,i){
@@ -1733,6 +1743,7 @@ window.nativeData=(a,raw)=>{
   if(!o||typeof o!=='object')return;
   if(o.t==='hi'){const p=ensurePeer(a,o.name,o.about,o.dp);const was=p.range;p.range=true;flushQ(a);stSyncTo(a);if(!was)toast('Connected to '+p.name);refresh();return}
   if(o.t==='typ'){if(P[a]&&SET.typing){const c0=chats.find(x=>x.id===a&&x.type==='dm');if(c0&&!c0.blocked){c0.typing=P[a].name.split(' ')[0];clearTimeout(TY[a]);TY[a]=setTimeout(()=>{c0.typing=null;if(S.chat===c0.id)drawHead();else if(!S.chat)render()},5000);if(S.chat===c0.id)drawHead();else if(!S.chat)render()}}return}
+  if(o.t==='gcall'){if(P[a]&&window.gcRx)window.gcRx(a,o);return}
   if(o.t==='call'){if(P[a]){const bc=chats.find(x=>x.id===a&&x.type==='dm');if(bc&&bc.blocked){if(o.op==='ring')tx(a,JSON.stringify({t:'call',op:'rej'}));return}callRx(a,o)}return}
   if(o.t==='st'&&P[a]){
     if(typeof o.id!=='string'||o.id.length>40)return;
@@ -1904,6 +1915,8 @@ if(NATIVE){
 
   /* ---- voice and video calls ---- */
   const CALLTO=40000,csend=(k,op,x)=>tx(k,JSON.stringify({t:'call',op,...(x||{})}));
+  const GC={on:false,gid:null,video:false,peers:{},local:null,jt:0,had:false,mute:false,camOff:false,ring:null};
+  window.__GC=GC;
   const RTC={pc:null,stream:null,audio:null,pend:[],ready:null,rs:null,diag:0,cam:'user',ticks:0,lastRtp:0,dis:0};
   const ICE={iceServers:[{urls:['stun:stun.l.google.com:19302','stun:stun1.l.google.com:19302','stun:stun.cloudflare.com:3478']},{urls:['turn:openrelay.metered.ca:80','turn:openrelay.metered.ca:443','turn:openrelay.metered.ca:443?transport=tcp'],username:'openrelayproject',credential:'openrelayproject'}],iceCandidatePoolSize:2,bundlePolicy:'max-bundle'};
   window.nativeCam=ok=>toast(ok?'Camera allowed. Tap again to continue':'Camera is needed for video calls');
@@ -1966,6 +1979,59 @@ if(NATIVE){
       (vid&&st==='live'?`<div class="cbtns c3 c2"><button data-a="ccam" aria-label="Camera"><span class="cb">${ic('video',24)}</span><small>Camera</small></button><button data-a="cflip" aria-label="Switch camera"><span class="cb">${ic('camera',24)}</span><small>Flip</small></button></div>`:'')+
       `<div class="cbtns c3"><button data-a="cspk" class="${S.spk?'on':''}" aria-label="Speaker"><span class="cb">${ic('vol',26)}</span><small>Speaker</small></button><button class="end" data-a="endCall" aria-label="End call"><span class="cb">${ic('phone',28)}</span><small>End</small></button><button data-a="cmute" class="${S.mute?'on':''}" aria-label="Mute"><span class="cb">${ic('mic',26)}</span><small>${S.mute?'Unmute':'Mute'}</small></button></div>`);
     phone.append(v);rtcAttach()};
+
+  /* ---- group calls (mesh, up to 4 people) ---- */
+  const gcMembers=c=>c.members.filter(isNet);
+  const gcChat=()=>chats.find(z=>z.id===GC.gid&&z.type==='group');
+  function gcSend(k,op,x){tx(k,JSON.stringify({t:'gcall',op,gid:GC.gid,...(x||{})}))}
+  function gcAll(op,x){const c=gcChat();if(c)gcMembers(c).forEach(k=>gcSend(k,op,x))}
+  function gcPeer(k){const old=GC.peers[k];if(old)return old;
+    const pc=new RTCPeerConnection(ICE),p=GC.peers[k]={pc,stream:null,pend:[]};
+    if(GC.local)GC.local.getTracks().forEach(t=>pc.addTrack(t,GC.local));
+    pc.ontrack=e=>{p.stream=e.streams[0];gcDraw()};
+    pc.onicecandidate=e=>{if(e.candidate&&GC.peers[k]===p)gcSend(k,'ice',{c:{candidate:e.candidate.candidate,sdpMid:e.candidate.sdpMid,sdpMLineIndex:e.candidate.sdpMLineIndex}})};
+    pc.oniceconnectionstatechange=()=>{if(pc.iceConnectionState==='failed'){setTimeout(()=>{if(GC.peers[k]===p&&pc.iceConnectionState==='failed')gcDrop(k)},2500)}};
+    return p}
+  function gcDrop(k){const p=GC.peers[k];if(!p)return;try{p.pc.close()}catch(e){}delete GC.peers[k];gcDraw();
+    if(GC.on&&GC.had&&!Object.keys(GC.peers).length){clearTimeout(GC.alone);GC.alone=setTimeout(()=>{if(GC.on&&!Object.keys(GC.peers).length){toast('Everyone left');gcEnd()}},4000)}}
+  async function gcOffer(k){const p=gcPeer(k),o=await p.pc.createOffer();await p.pc.setLocalDescription(o);gcSend(k,'offer',{sdp:o.sdp})}
+  function gcDraw(){if(!GC.on)return;let v=$('#gcv');const c=gcChat(),ks=Object.keys(GC.peers),n=ks.length+1;
+    if(!v){v=document.createElement('div');v.className='screen gcv';v.id='gcv';phone.append(v)}
+    const vid=GC.video,tile=(k,nm)=>`<div class="gt"><video ${k?`data-k="${esc(k)}"`:'id="gl" muted'} class="${vid?'':'hid'}" autoplay playsinline></video>${vid&&(k?GC.peers[k].stream:GC.local)?'':`<span class="gav">${PERSON}</span>`}<span class="gn">${esc(nm)}</span></div>`;
+    v.innerHTML=`<div class="gtop">${esc(c?c.name:'Group call')}<small id="gct">${ks.length?(n+' people'):'Calling…'}</small></div><div class="gcg n${n}">${tile('', 'You')}${ks.map(k=>tile(k,P[k]?P[k].name.split(' ')[0]:'Member')).join('')}</div>
+    <div class="cbtns c3 ${vid?'':'c2'}">${vid?`<button data-a="gcCam" class="${GC.camOff?'on':''}" aria-label="Camera"><span class="cb">${ic('video',24)}</span><small>Camera</small></button>`:''}<button data-a="gcSpk" class="${S.spk?'on':''}" aria-label="Speaker"><span class="cb">${ic('vol',26)}</span><small>Speaker</small></button><button class="end" data-a="gcEnd" aria-label="Leave"><span class="cb">${ic('phone',28)}</span><small>Leave</small></button><button data-a="gcMute" class="${GC.mute?'on':''}" aria-label="Mute"><span class="cb">${ic('mic',26)}</span><small>${GC.mute?'Unmute':'Mute'}</small></button></div>`;
+    const l=$('#gl');if(l&&GC.local){l.srcObject=GC.local;l.play().catch(()=>{})}
+    v.querySelectorAll('video[data-k]').forEach(e=>{const p=GC.peers[e.dataset.k];if(p&&p.stream){e.srcObject=p.stream;e.play().catch(()=>{})}})}
+  async function gcMedia(){const c={audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true,channelCount:1}};if(GC.video)c.video={facingMode:'user',width:{ideal:480},height:{ideal:360},frameRate:{ideal:20,max:24}};return navigator.mediaDevices.getUserMedia(c)}
+  async function gcEnter(gid,video,ring){
+    if(!Android.micOk())return false;if(video&&!Android.camOk())return false;
+    Object.assign(GC,{on:true,gid,video:!!video,peers:{},local:null,jt:Date.now(),had:false,mute:false,camOff:false});
+    try{GC.local=await gcMedia()}catch(e){GC.on=false;toast('Could not use the microphone or camera');return false}
+    Android.rtcMode(true);S.spk=!!video;Android.callSpeaker(!!S.spk);gcDraw();return true}
+  function gcCleanup(){clearTimeout(GC.nt);clearTimeout(GC.alone);Object.keys(GC.peers).forEach(k=>{try{GC.peers[k].pc.close()}catch(e){}});GC.peers={};
+    if(GC.local)GC.local.getTracks().forEach(t=>t.stop());GC.local=null;GC.on=false;const v=$('#gcv');if(v)v.remove();try{Android.rtcMode(false)}catch(e){}}
+  function gcEnd(){if(!GC.on)return;const st=GC.had;gcAll('leave');gcCleanup();render()}
+  function gcRingStop(){clearTimeout(GC.rto);GC.ring=null;try{Android.ringStop()}catch(e){}const r=$('#gring');if(r)r.remove()}
+  window.gcStart=async(id,video)=>{const c=chats.find(z=>z.id===id&&z.type==='group');if(!c||!NET.s)return;
+    if(S.call||GC.on){toast('You are already in a call');return}
+    const net=gcMembers(c).filter(k=>P[k]&&P[k].range);if(!net.length){toast('Nobody from this group is online right now');return}
+    if(!(await gcEnter(c.id,video)))return;gcAll('ring',{name:c.name,video:!!video,ts:Date.now()});
+    GC.nt=setTimeout(()=>{if(GC.on&&!Object.keys(GC.peers).length){toast('Nobody joined');gcEnd()}},45000)};
+  window.gcRx=async(a,o)=>{const op=o.op;
+    if(op==='ring'){if(S.call||GC.on||GC.ring)return;if(Date.now()-(+o.ts||0)>45000)return;const c=chats.find(z=>z.id===o.gid&&z.type==='group');if(!c||!c.members.includes(a))return;
+      GC.ring={gid:c.id,from:a,video:!!o.video};const r=document.createElement('div');r.className='screen gring';r.id='gring';phone.append(r);
+      r.innerHTML=`<span class="gav" style="width:90px;height:90px;border-radius:50%;background:#9aa0a6;display:grid;place-items:center"><span style="width:62px;height:62px;display:block;margin-top:10px">${PERSON}</span></span><h2>${esc(c.name)}</h2><p>${esc(P[a]?P[a].name:'Someone')} is calling · Group ${o.video?'video':'voice'} call</p><div class="cbtns"><button class="end" data-a="gcRej" aria-label="Decline"><span class="cb">${ic('phone',28)}</span></button><button class="acc" data-a="gcAcc" aria-label="Join"><span class="cb">${ic(o.video?'video':'phone',28)}</span></button></div>`;
+      try{Android.ringStart()}catch(e){}GC.rto=setTimeout(gcRingStop,40000);return}
+    if((op==='leave'||op==='cancel')&&GC.ring&&GC.ring.gid===o.gid&&GC.ring.from===a){gcRingStop();return}
+    if(!GC.on||GC.gid!==o.gid)return;const c=gcChat();if(!c||!c.members.includes(a))return;
+    try{
+      if(op==='join'){if(!GC.peers[a]&&Object.keys(GC.peers).length>=3)return;const mine=GC.jt,th=+o.jt||0,me=NET.s?NET.s.uid:'';
+        if(mine<th||(mine===th&&me<a.slice(2))){if(GC.peers[a])gcDrop(a);GC.had=true;clearTimeout(GC.alone);await gcOffer(a)}}
+      else if(op==='offer'&&typeof o.sdp==='string'&&o.sdp.length<30000){if(!GC.peers[a]&&Object.keys(GC.peers).length>=3)return;GC.had=true;clearTimeout(GC.alone);const p=gcPeer(a);await p.pc.setRemoteDescription({type:'offer',sdp:o.sdp});for(const q of p.pend.splice(0)){try{await p.pc.addIceCandidate(q)}catch(e){}}const an=await p.pc.createAnswer();await p.pc.setLocalDescription(an);gcSend(a,'answer',{sdp:an.sdp})}
+      else if(op==='answer'&&typeof o.sdp==='string'&&o.sdp.length<30000){const p=GC.peers[a];if(p){await p.pc.setRemoteDescription({type:'answer',sdp:o.sdp});for(const q of p.pend.splice(0)){try{await p.pc.addIceCandidate(q)}catch(e){}}}}
+      else if(op==='ice'&&o.c&&typeof o.c.candidate==='string'&&o.c.candidate.length<600){const p=GC.peers[a];if(!p)return;const cc={candidate:o.c.candidate,sdpMid:cl(String(o.c.sdpMid||'0'),10),sdpMLineIndex:+o.c.sdpMLineIndex||0};if(p.pc.remoteDescription){try{await p.pc.addIceCandidate(cc)}catch(e){}}else p.pend.push(cc)}
+      else if(op==='leave')gcDrop(a)
+    }catch(e){}}
   window.finishCall=function(missed){
     const k=S.call;if(!k)return;
     clearTimeout(S.cto);clearInterval(S.ci);Android.callStop();Android.ringStop();rtcStop();
@@ -1985,7 +2051,7 @@ if(NATIVE){
   window.callRx=function(a,o){
     const op=o.op;
     if(op==='ring'){
-      if(S.call){csend(a,'busy');return}
+      if(S.call||GC.on){csend(a,'busy');return}
       S.cvideo=!!o.video&&isNet(a);S.spk=!!S.cvideo;S.mute=false;
       S.call=a;S.cdir='in';S.cst='in';S.cs=0;callUI(a,'in');Android.ringStart();netSched();
       S.cto=setTimeout(()=>{if(S.call===a&&S.cst==='in')finishCall(true)},CALLTO);return}
@@ -1995,7 +2061,7 @@ if(NATIVE){
     else if(op==='rej'||op==='busy'){toast(op==='busy'?P[a].name+' is on another call':P[a].name+' declined the call');finishCall(false)}
     else if(op==='end')finishCall(S.cst==='in')};
   function startCallX(v,video){
-    if(S.call){toast('You are already in a call');return}
+    if(S.call||GC.on){toast('You are already in a call');return}
     if(!P[v]||!P[v].range){toast((P[v]?P[v].name.split(' ')[0]:'This person')+' is not connected. Calls need an internet or Bluetooth link');return}
     if(video&&!isNet(v)){toast('Video calls work over the internet');return}
     if(!Android.micOk())return;
@@ -2012,6 +2078,13 @@ if(NATIVE){
     newCall:()=>{const ks=Object.keys(P);if(!ks.length){toast('Find someone first: New chat, Find by username');return}
       sheet('Call someone',ks.map(k=>`<div class="act">${av(P[k].hue,P[k].name,'sm',dotOf(k))}<span class="grow">${esc(P[k].name)}<small>${P[k].range?(isNet(k)?'Online':'Connected'):'Not connected'}</small></span>${P[k].range?`<button class="ib" data-a="startCall" data-v="${esc(k)}" aria-label="Voice call">${ic('phone',21)}</button>${isNet(k)?`<button class="ib" data-a="startVideo" data-v="${esc(k)}" aria-label="Video call">${ic('video',21)}</button>`:''}`:''}</div>`).join(''))},
     callAcc:()=>{const k=S.call;if(!k||S.cst!=='in')return;if(!Android.micOk())return;if(S.cvideo&&!Android.camOk())return;csend(k,'acc');goLive(k)},
+    gcStart:v=>{const[id,vd]=v.split('|');window.gcStart(id,vd==='1')},
+    gcAcc:async()=>{const r=GC.ring;if(!r)return;const{gid,video}=r;gcRingStop();if(!(await gcEnter(gid,video)))return;gcAll('join',{jt:GC.jt});GC.nt=setTimeout(()=>{if(GC.on&&!Object.keys(GC.peers).length){toast('Nobody else is in the call');gcEnd()}},30000)},
+    gcRej:()=>{gcRingStop()},
+    gcEnd:()=>gcEnd(),
+    gcMute:()=>{GC.mute=!GC.mute;if(GC.local)GC.local.getAudioTracks().forEach(t=>t.enabled=!GC.mute);gcDraw()},
+    gcCam:()=>{GC.camOff=!GC.camOff;if(GC.local)GC.local.getVideoTracks().forEach(t=>t.enabled=!GC.camOff);gcDraw()},
+    gcSpk:()=>{S.spk=!S.spk;try{Android.callSpeaker(S.spk)}catch(e){}gcDraw()},
     callRej:()=>{const k=S.call;if(!k)return;csend(k,'rej');finishCall(true)},
     endCall:()=>{const k=S.call;if(!k)return;csend(k,'end');finishCall(false)},
     cmute:(v,el)=>{S.mute=!S.mute;el.classList.toggle('on',S.mute);const sm=el.querySelector('small');if(sm)sm.textContent=S.mute?'Unmute':'Mute';try{if(RTC.stream)RTC.stream.getAudioTracks().forEach(t=>t.enabled=!S.mute);Android.callMute(S.mute)}catch(e){}},
@@ -2056,7 +2129,7 @@ if(NATIVE){
 <b>Changes.</b> If this policy changes, the app will tell you.<br><br>
 <b>Contact.</b> Shah Zain, founder of Vynk.</div>`),
     appinfo:()=>{aboutTaps++;if(aboutTaps>=7){aboutTaps=0;ACT.ownerLogin();return}
-      sheet('About Vynk',`<div class="note2" style="font-size:14px">Version 4.4. Chat, post and call over the internet, or with people nearby over Bluetooth. Sponsored posts and updates download when your phone is online.</div><button class="btn" data-a="updCheck">Check for updates</button>`)},
+      sheet('About Vynk',`<div class="note2" style="font-size:14px">Version 4.5. Chat, post and call over the internet, or with people nearby over Bluetooth. Sponsored posts and updates download when your phone is online.</div><button class="btn" data-a="updCheck">Check for updates</button>`)},
     spNew:()=>{sheet('New sponsored post',`<div class="field"><input id="spb" placeholder="Brand name" maxlength="40" autocomplete="off"></div><div class="field"><textarea id="spcap" rows="3" maxlength="300" placeholder="What are you promoting?" class="txt"></textarea></div><div class="field"><input id="spct" placeholder="Phone or address (optional)" maxlength="60" autocomplete="off"></div><div class="field"><input id="spv" placeholder="Video file name, e.g. chai.mp4 (optional)" maxlength="80" autocomplete="off" autocapitalize="none"></div><div class="sec" style="padding-top:2px">Runs for</div><div class="chips" id="spdur">${[3,7,14,30,60].map(d=>`<button class="chip ${d===7?'on':''}" data-a="spDur" data-v="${d}">${d} days</button>`).join('')}</div><button class="act" data-a="spPick">${ic('image')}<span class="grow" id="spmi">Add a photo (optional)<small>Photos are made small so they fit in the post</small></span></button><button class="btn" data-a="spPost">Create post data</button>`);S.spm=null;S.spd=7},
     spPick:()=>pickFile('image/*',f=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,640/Math.max(im.width,im.height)),cv=document.createElement('canvas');cv.width=im.width*k;cv.height=im.height*k;cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);const src=cv.toDataURL('image/jpeg',.6);S.spm={kind:'image',src};const e=$('#spmi');if(e)e.innerHTML=`${esc(f.name)}<small>Photo · ${size(src.length*.75)}</small>`};im.src=r.result};r.readAsDataURL(f)}),
     spPost:()=>{

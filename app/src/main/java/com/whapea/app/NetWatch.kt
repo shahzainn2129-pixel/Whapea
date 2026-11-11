@@ -124,6 +124,9 @@ object NetWatch {
                                     }
                                 } catch (e: Exception) { }
                             }
+                            "gcall" -> if (p.optString("op") == "ring" && System.currentTimeMillis() - p.optLong("ts", 0L) < 45000) {
+                                Core.notifyCallFrom(who + " (group)"); Core.ringStart(); ringUntil = System.currentTimeMillis() + 40000
+                            } else if (p.optString("op") == "leave" || p.optString("op") == "cancel") { Core.ringStop(); Core.clearCallNotice(); ringUntil = 0 }
                             "call" -> when (p.optString("op")) {
                                 "ring" -> { Core.notifyCallFrom(who); Core.ringStart(); ringUntil = System.currentTimeMillis() + 40000 }
                                 "end", "rej", "busy" -> { Core.ringStop(); Core.clearCallNotice(); ringUntil = 0 }
