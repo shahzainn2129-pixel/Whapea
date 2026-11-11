@@ -65,7 +65,7 @@ class MainActivity : ComponentActivity() {
             if (result.values.all { it }) {
                 askAndStart()
             } else {
-                Core.say("Allow the Bluetooth (Nearby devices) permission so Whapea can work")
+                Core.say("Allow the Bluetooth (Nearby devices) permission so Vynk can work")
             }
         }
 
@@ -189,7 +189,7 @@ class MainActivity : ComponentActivity() {
         ContextCompat.startForegroundService(this, Intent(this, BtService::class.java))
     }
 
-    /** Asks once to keep Whapea out of battery saving, so Android does not stop it in the background. */
+    /** Asks once to keep Vynk out of battery saving, so Android does not stop it in the background. */
     private fun askBatteryOnce() {
         try {
             val pm = getSystemService(Context.POWER_SERVICE) as android.os.PowerManager
@@ -314,13 +314,13 @@ class MainActivity : ComponentActivity() {
                     val cv = android.content.ContentValues()
                     cv.put(android.provider.MediaStore.Images.Media.DISPLAY_NAME, fn)
                     cv.put(android.provider.MediaStore.Images.Media.MIME_TYPE, mime)
-                    cv.put(android.provider.MediaStore.Images.Media.RELATIVE_PATH, "Pictures/Whapea")
+                    cv.put(android.provider.MediaStore.Images.Media.RELATIVE_PATH, "Pictures/Vynk")
                     val uri = this@MainActivity.contentResolver.insert(android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI, cv) ?: return false
                     val os = this@MainActivity.contentResolver.openOutputStream(uri) ?: return false
                     os.use { it.write(bytes) }
                     true
                 } else {
-                    val dir = java.io.File(android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_PICTURES), "Whapea")
+                    val dir = java.io.File(android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_PICTURES), "Vynk")
                     dir.mkdirs()
                     java.io.File(dir, fn).writeBytes(bytes)
                     true
@@ -338,7 +338,7 @@ class MainActivity : ComponentActivity() {
                 val rq = android.app.DownloadManager.Request(android.net.Uri.parse(url.substringBefore("#")))
                     .setTitle(fn)
                     .setNotificationVisibility(android.app.DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-                    .setDestinationInExternalPublicDir(android.os.Environment.DIRECTORY_MOVIES, "Whapea/" + fn)
+                    .setDestinationInExternalPublicDir(android.os.Environment.DIRECTORY_MOVIES, "Vynk/" + fn)
                 dm.enqueue(rq)
                 true
             } catch (e: Exception) { false }
@@ -430,7 +430,7 @@ class MainActivity : ComponentActivity() {
                         override fun onAuthenticationError(code: Int, msg: CharSequence?) { js("bioDone(false)") }
                     }
                     val p = android.hardware.biometrics.BiometricPrompt.Builder(this@MainActivity)
-                        .setTitle("Unlock Whapea")
+                        .setTitle("Unlock Vynk")
                         .setNegativeButton("Use code", exec) { _, _ -> js("bioDone(false)") }
                         .build()
                     p.authenticate(android.os.CancellationSignal(), exec, cb)
@@ -468,7 +468,7 @@ class MainActivity : ComponentActivity() {
         fun copy(text: String) {
             runOnUiThread {
                 val cm = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                cm.setPrimaryClip(ClipData.newPlainText("Whapea", text))
+                cm.setPrimaryClip(ClipData.newPlainText("Vynk", text))
             }
         }
     }

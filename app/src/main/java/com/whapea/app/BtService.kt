@@ -7,7 +7,7 @@ import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 
-/** Keeps Whapea listening for Bluetooth messages while the screen is closed. */
+/** Keeps Vynk listening for Bluetooth messages while the screen is closed. */
 class BtService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -46,7 +46,7 @@ class BtService : Service() {
         )
         val n = NotificationCompat.Builder(this, Core.CH_SVC)
             .setSmallIcon(android.R.drawable.stat_sys_data_bluetooth)
-            .setContentTitle("Whapea")
+            .setContentTitle("Vynk")
             .setContentText(if (NetWatch.session() != null) "Waiting for messages" else "Listening for messages over Bluetooth")
             .setOngoing(true).setContentIntent(pi).build()
         if (Build.VERSION.SDK_INT >= 29) {

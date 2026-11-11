@@ -29,8 +29,8 @@
     <application
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
-        android:label="Whapea"
-        android:theme="@style/Theme.Whapea">
+        android:label="Vynk"
+        android:theme="@style/Theme.Vynk">
         <activity
             android:name=".MainActivity"
             android:exported="true"

@@ -5,7 +5,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.content.ContextCompat
 
-/** Starts Whapea's background listening again after the phone restarts or Whapea is updated. */
+/** Starts Vynk's background listening again after the phone restarts or Vynk is updated. */
 class BootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         Core.init(context)

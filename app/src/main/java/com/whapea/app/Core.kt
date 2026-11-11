@@ -92,7 +92,7 @@ object Core {
             )
             cc.enableVibration(true)
             nm.createNotificationChannel(cc)
-            nm.createNotificationChannel(android.app.NotificationChannel(CH_SVC, "Whapea is running", android.app.NotificationManager.IMPORTANCE_LOW))
+            nm.createNotificationChannel(android.app.NotificationChannel(CH_SVC, "Vynk is running", android.app.NotificationManager.IMPORTANCE_LOW))
         }
     }
 
@@ -132,7 +132,7 @@ object Core {
                 android.app.PendingIntent.FLAG_IMMUTABLE or android.app.PendingIntent.FLAG_UPDATE_CURRENT)
             val n = NotificationCompat.Builder(app, CH_CALL)
                 .setSmallIcon(android.R.drawable.stat_sys_phone_call)
-                .setContentTitle("Whapea call").setContentText("$who is calling you")
+                .setContentTitle("Vynk call").setContentText("$who is calling you")
                 .setCategory(NotificationCompat.CATEGORY_CALL)
                 .setPriority(NotificationCompat.PRIORITY_MAX)
                 .setFullScreenIntent(pi, true).setContentIntent(pi)
@@ -267,7 +267,7 @@ object Core {
             return
         }
         if (!a.isEnabled) {
-            say("Turn on Bluetooth, then open Whapea again")
+            say("Turn on Bluetooth, then open Vynk again")
             return
         }
         running = true
@@ -297,7 +297,7 @@ object Core {
         io.execute {
             while (running) {
                 try {
-                    val ss = a.listenUsingInsecureRfcommWithServiceRecord("Whapea", APP_UUID)
+                    val ss = a.listenUsingInsecureRfcommWithServiceRecord("Vynk", APP_UUID)
                     server = ss
                     while (running) {
                         val s = ss.accept()
@@ -382,7 +382,7 @@ object Core {
                 s.connect()
                 setupSocket(s)
             } catch (e: Exception) {
-                main.post { say("Could not connect. Is Whapea open on $label?") }
+                main.post { say("Could not connect. Is Vynk open on $label?") }
             }
         }
     }
