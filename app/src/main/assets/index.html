@@ -628,6 +628,12 @@ img.spm{aspect-ratio:auto;height:auto;max-height:560px;object-fit:contain}
 .gcv .cbtns{position:static;padding:10px 0 22px}
 .gring{align-items:center;justify-content:center;text-align:center;gap:10px}.gring h2{margin:0}.gring .cbtns{position:static;margin-top:26px}
 .gcv .cbtns{display:flex!important;justify-content:space-evenly;gap:0;padding:10px 4px 22px;width:100%;box-sizing:border-box}.gcv .cbtns button{flex:0 0 auto;min-width:64px}
+
+.tkheart{position:absolute;left:50%;top:44%;width:110px;height:110px;margin:-55px 0 0 -55px;z-index:5;color:#ff2d55;pointer-events:none;animation:tkh .8s ease forwards}.tkheart svg{width:100%;height:100%;fill:currentColor;filter:drop-shadow(0 4px 12px rgba(0,0,0,.35))}
+@keyframes tkh{0%{transform:scale(.3);opacity:0}25%{transform:scale(1.15);opacity:1}60%{transform:scale(1);opacity:1}100%{transform:scale(1.25) translateY(-30px);opacity:0}}
+.tkptr{position:absolute;top:58px;left:50%;width:34px;height:34px;margin-left:-17px;z-index:8;display:grid;place-items:center;background:rgba(0,0,0,.6);border-radius:50%;opacity:0;transition:opacity .15s,transform .15s;pointer-events:none}.tkptr.on{opacity:1}.tkptr i{width:18px;height:18px;border:2.5px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%}.tkptr.spin i{animation:tksp .7s linear infinite}
+.tksk{height:var(--tkh,600px);position:relative;background:#111;overflow:hidden}.tksk::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.07) 50%,transparent 70%);transform:translateX(-100%);animation:tksh 1.3s infinite}@keyframes tksh{to{transform:translateX(100%)}}
+.tksk i{position:absolute;background:#262628;border-radius:8px;display:block}
 </style>
 </head><body>
 
@@ -918,7 +924,7 @@ function setNative(row,sw){
   ${NATIVE?row('goSpons','mega','Sponsors','','Offers from our partners'):''}
   ${NATIVE?row('cfOpen','users','Close friends','',Object.keys(SET.cf||{}).length+' people'):''}
   ${row('privPol','shield','Privacy policy','','How Vynk treats your data')}
-  ${row('appinfo','info','About Vynk','','Version 4.6')}
+  ${row('appinfo','info','About Vynk','','Version 4.7')}
   ${NET.s?`<button class="act bad" data-a="netOut" data-v=""><span class="grow">Log out</span></button>`:''}
   <div style="height:40px"></div>`}
 function setHTML(){
@@ -1586,9 +1592,10 @@ async function loadPosts(reset){
   if(S.tab==='posts'&&!S.chat&&!document.querySelector('.scrim'))render();
   try{const city=PF.scope==='city'?ME.city:null;
     if(PF.scope==='city'&&!ME.city){PF.busy=false;PF.ok=true;render();return}
-    const bf=reset||!PF.items.length?null:PF.items[PF.items.length-1].id;
+    const bf=reset||!PF.items.length?null:Math.min(...PF.items.map(x=>+x.id));
     const a=PF.scope==='follow'?await rpc('feed_following',{p_before:bf,p_limit:10}):await rpc('feed',{p_city:city||null,p_before:bf,p_limit:10});
-    PF.items=(reset?[]:PF.items).concat(a||[]);PF.more=(a||[]).length>=10;PF.ok=true;if(PF.scope==='all'&&(reset||bf===null))try{const j=JSON.stringify(PF.items.slice(0,10).map(p=>({...p,_x:0,_ci:0})));if(j.length<500000)localStorage.setItem('pfc',j)}catch(e){}}
+    let got=a||[];if(PF.scope==='all'){const hid=SET.hideA||[];got=got.filter(x=>!hid.includes(x.author));const now=Date.now();const sc=x=>((+x.likes||0)*2+(+x.comments||0)*3+(+x.views||0)*.05+1)/Math.pow((now-new Date(x.created_at))/36e5+2,.6);got=got.slice().sort((x,y)=>sc(y)-sc(x))}
+    PF.items=(reset?[]:PF.items).concat(got);PF.more=(a||[]).length>=10;PF.ok=true;if(PF.scope==='all'&&(reset||bf===null))try{const j=JSON.stringify(PF.items.slice(0,10).map(p=>({...p,_x:0,_ci:0})));if(j.length<500000)localStorage.setItem('pfc',j)}catch(e){}}
   catch(e){PF.err='Could not load posts. Check internet'}
   PF.busy=false;if(S.tab==='posts'&&!S.chat)render()}
 
@@ -1612,7 +1619,7 @@ function postCard(p){
 const TK={sig:'',io:null};
 function tkCard(p){
   const imgOk=p.image&&okImg(p.image),imgs=imgOk?[p.image].concat((p.more||[]).filter(okImg)):[],n=+p.likes||0,c=+p.comments||0,uh=hueOf(p.username),hasM=p.video||imgOk;
-  const media=p.video?`<video class="tkm" src="${vidUrl(p)}" loop playsinline preload="${DS()?'none':'auto'}" data-a="tkTap"></video><button class="tkvol" data-a="tkMute" aria-label="Sound">${ic(S.vm?'mute':'vol',20)}</button>`:imgOk?`<img class="tkm" src="${imgs[0]}" data-a="postImg" data-v="${p.id}" alt="Post photo">${imgs.length>1?`<span class="tkn">1/${imgs.length}</span>`:''}`:`<div class="tkt2" style="--h:${uh}" data-a="postImg" data-v="${p.id}"><span>${rich(p.body||p.title||'')}</span></div>`;
+  const media=p.video?`<video class="tkm" src="${vidUrl(p)}" loop playsinline preload="${DS()?'none':'metadata'}" data-a="tkMedia" data-v="${p.id}"></video><button class="tkvol" data-a="tkMute" aria-label="Sound">${ic(S.vm?'mute':'vol',20)}</button>`:imgOk?`<img class="tkm" src="${imgs[0]}" data-a="tkMedia" data-v="${p.id}" alt="Post photo">${imgs.length>1?`<span class="tkn">1/${imgs.length}</span>`:''}`:`<div class="tkt2" style="--h:${uh}" data-a="tkMedia" data-v="${p.id}"><span>${rich(p.body||p.title||'')}</span></div>`;
   return `<article class="tkp" data-pid="${p.id}">${media}<div class="tkshade"></div>
   <div class="tkrail"><button class="tkav" data-a="openProf" data-v="${p.author}" aria-label="Profile"><span class="ring sm">${av0(uh,p.name||p.username,'sm')}</span></button>
   <button data-a="postLike" data-v="${p.id}" class="${p.liked?'on':''}" aria-label="Like">${ic('heart',32)}<i>${fmtN(n)}</i></button>
@@ -1624,18 +1631,24 @@ function tkCard(p){
 function tkFeed(){
   if(!NET.s)return `<div class="tkempty"><b>Join Vynk</b><span>Create a free account to watch and share posts.</span><button class="btn" data-a="netAcct">Create internet account</button></div>`;
   if(PF.scope==='city'&&!ME.city)return `<div class="tkempty"><b>Choose your city</b><span>See posts from people near you.</span><button class="btn" data-a="pickCity">Choose city</button></div>`;
-  if(!PF.items.length)return PF.busy?`<div class="tkempty"><div class="tkspin"></div></div>`:PF.err?`<div class="tkempty"><b>Could not load</b><span>${esc(PF.err)}</span><button class="btn" data-a="postRefresh">Try again</button></div>`:`<div class="tkempty"><b>${PF.scope==='follow'?'Nothing here yet':'No posts yet'}</b><span>${PF.scope==='follow'?'Follow people to see their posts here.':'Be the first. Tap + to share something.'}</span></div>`;
+  if(!PF.items.length)return PF.busy?tkSkel():PF.err?`<div class="tkempty"><b>Could not load</b><span>${esc(PF.err)}</span><button class="btn" data-a="postRefresh">Try again</button></div>`:`<div class="tkempty"><b>${PF.scope==='follow'?'Nothing here yet':'No posts yet'}</b><span>${PF.scope==='follow'?'Follow people to see their posts here.':'Be the first. Tap + to share something.'}</span></div>`;
   return PF.items.map(tkCard).join('')}
 function tkSync(){document.querySelectorAll('.tkp[data-pid]').forEach(a=>{const p=postFind(a.dataset.pid);if(!p)return;
   const l=a.querySelector('[data-a=postLike]');if(l){l.classList.toggle('on',!!p.liked);l.querySelector('i').textContent=fmtN(+p.likes||0)}
   const cm=a.querySelector('[data-a=postCom] i');if(cm)cm.textContent=(+p.comments)?fmtN(+p.comments):'';
   const sv=a.querySelector('[data-a=postSave]');if(sv)sv.classList.toggle('on',!!p.saved);
   const cp=a.querySelector('.tkc');if(cp)cp.classList.toggle('cl',!p._x)})}
+function tkHeart(el){const a=el.closest('.tkp');if(!a)return;const h=document.createElement('div');h.className='tkheart';h.innerHTML=ic('heart',110);a.append(h);setTimeout(()=>h.remove(),850);try{navigator.vibrate&&navigator.vibrate(12)}catch(e){}}
+const tkSkel=()=>`<div class="tksk"><i style="left:14px;bottom:70px;width:140px;height:14px"></i><i style="left:14px;bottom:44px;width:240px;height:12px"></i><i style="left:14px;bottom:22px;width:180px;height:12px"></i><i style="right:12px;bottom:200px;width:40px;height:40px;border-radius:50%"></i><i style="right:12px;bottom:140px;width:36px;height:36px;border-radius:50%"></i><i style="right:12px;bottom:90px;width:36px;height:36px;border-radius:50%"></i></div>`;
 function tkVol(){document.querySelectorAll('.tkvol').forEach(b=>b.innerHTML=ic(S.vm?'mute':'vol',20))}
 function tkInit(){const b=document.querySelector('.body.tkb');if(TK.io){TK.io.disconnect();TK.io=null}if(!b)return;
   b.style.setProperty('--tkh',b.clientHeight+'px');
   if(typeof IntersectionObserver!=='undefined'){TK.io=new IntersectionObserver(es=>{es.forEach(e=>{const v=e.target.querySelector('video');if(!v)return;
-    if(e.isIntersecting&&e.intersectionRatio>=.7){v.muted=!!S.vm;const pr=v.play();if(pr&&pr.catch)pr.catch(()=>{v.muted=true;S.vm=true;tkVol();v.play().catch(()=>{})})}else v.pause()})},{root:b,threshold:[0,.7]});b.querySelectorAll('.tkp').forEach(a=>TK.io.observe(a))}
+    if(e.isIntersecting&&e.intersectionRatio>=.7){let nx=e.target.nextElementSibling;for(let i=0;i<2&&nx;i++,nx=nx.nextElementSibling){const nv=nx.querySelector('video');if(nv&&nv.preload!=='auto'&&!DS())nv.preload='auto'}v.muted=!!S.vm;const pr=v.play();if(pr&&pr.catch)pr.catch(()=>{v.muted=true;S.vm=true;tkVol();v.play().catch(()=>{})})}else v.pause()})},{root:b,threshold:[0,.7]});b.querySelectorAll('.tkp').forEach(a=>TK.io.observe(a))}
+  let ind=document.querySelector('.tkptr');if(!ind){ind=document.createElement('div');ind.className='tkptr';ind.innerHTML='<i></i>';$('#main').append(ind)}
+  let y0=null,dy=0;b.ontouchstart=e=>{y0=b.scrollTop<=0&&!PF.busy?e.touches[0].clientY:null;dy=0};
+  b.ontouchmove=e=>{if(y0===null)return;dy=e.touches[0].clientY-y0;if(dy>0){ind.classList.add('on');ind.style.transform='translateY('+Math.min(dy/3,40)+'px) rotate('+dy*3+'deg)'}else{ind.classList.remove('on')}};
+  b.ontouchend=()=>{if(y0!==null&&dy>110&&!PF.busy){ind.classList.add('spin');ind.style.transform='translateY(34px)';PF._keep=true;loadPosts(true).then(()=>{ind.classList.remove('on','spin');ind.style.transform=''})}else{ind.classList.remove('on');ind.style.transform=''}y0=null;dy=0};
   b.onscroll=()=>{if(PF.more&&!PF.busy&&b.scrollTop+b.clientHeight*2>b.scrollHeight)loadPosts(false)}}
 const tkTop=()=>`<div class="top tkt"><button class="ib" data-a="tab" data-v="explore" aria-label="Search">${ic('search',24)}</button><div class="tktabs">${[['follow','Following'],['all','For you'],['city',ME.city?esc(ME.city):'City']].map(([k,l])=>`<button class="${PF.scope===k?'on':''}" data-a="postScope" data-v="${k}">${l}</button>`).join('')}</div>${NET.s?`<button class="ib nb" data-a="notifOpen" aria-label="Notifications">${ic('heart',24)}${NT.n?`<span class="nbd">${NT.n>9?'9+':NT.n}</span>`:''}</button>`:`<button class="ib" data-a="netAcct" aria-label="Log in">${ic('user',24)}</button>`}</div>`;
 
@@ -2129,7 +2142,7 @@ if(NATIVE){
 <b>Changes.</b> If this policy changes, the app will tell you.<br><br>
 <b>Contact.</b> Shah Zain, founder of Vynk.</div>`),
     appinfo:()=>{aboutTaps++;if(aboutTaps>=7){aboutTaps=0;ACT.ownerLogin();return}
-      sheet('About Vynk',`<div class="note2" style="font-size:14px">Version 4.6. Chat, post and call over the internet, or with people nearby over Bluetooth. Sponsored posts and updates download when your phone is online.</div><button class="btn" data-a="updCheck">Check for updates</button>`)},
+      sheet('About Vynk',`<div class="note2" style="font-size:14px">Version 4.7. Chat, post and call over the internet, or with people nearby over Bluetooth. Sponsored posts and updates download when your phone is online.</div><button class="btn" data-a="updCheck">Check for updates</button>`)},
     spNew:()=>{sheet('New sponsored post',`<div class="field"><input id="spb" placeholder="Brand name" maxlength="40" autocomplete="off"></div><div class="field"><textarea id="spcap" rows="3" maxlength="300" placeholder="What are you promoting?" class="txt"></textarea></div><div class="field"><input id="spct" placeholder="Phone or address (optional)" maxlength="60" autocomplete="off"></div><div class="field"><input id="spv" placeholder="Video file name, e.g. chai.mp4 (optional)" maxlength="80" autocomplete="off" autocapitalize="none"></div><div class="sec" style="padding-top:2px">Runs for</div><div class="chips" id="spdur">${[3,7,14,30,60].map(d=>`<button class="chip ${d===7?'on':''}" data-a="spDur" data-v="${d}">${d} days</button>`).join('')}</div><button class="act" data-a="spPick">${ic('image')}<span class="grow" id="spmi">Add a photo (optional)<small>Photos are made small so they fit in the post</small></span></button><button class="btn" data-a="spPost">Create post data</button>`);S.spm=null;S.spd=7},
     spPick:()=>pickFile('image/*',f=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,640/Math.max(im.width,im.height)),cv=document.createElement('canvas');cv.width=im.width*k;cv.height=im.height*k;cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);const src=cv.toDataURL('image/jpeg',.6);S.spm={kind:'image',src};const e=$('#spmi');if(e)e.innerHTML=`${esc(f.name)}<small>Photo · ${size(src.length*.75)}</small>`};im.src=r.result};r.readAsDataURL(f)}),
     spPost:()=>{
@@ -2301,11 +2314,17 @@ if(NATIVE){
     cmCancel:()=>{S.cmRep=null;S.pcpaint()},
     postComSend:async v=>{const t=($('#pcm').value||'').trim();if(!t)return;try{await rpc('add_comment',{p_post:+v,p_body:t,p_parent:S.cmRep?S.cmRep.id:null});S.cmRep=null;const p=postFind(v);if(p)p.comments++;await S.pcpaint();postRedraw()}catch(e){toast(rpcErr(e))}},
     postMenu:v=>{const p=postFind(v);if(!p)return;const mine=NET.s&&p.author===NET.s.uid;
-      sheet('',((p.image||p.video)?A('postDl',v,'down','Save to phone',p.video?'Original video':'Same quality as in the app'):'')+(mine?'':A('netOpen',p.author,'chat','Message @'+p.username))+(mine||S.owner?A('postDel',v,'x','Delete post'):'')+(mine?'':A('postRep',v,'ban','Report post','Hateful, rude or fake')))},
+      sheet('',((p.image||p.video)?A('postDl',v,'down','Save to phone',p.video?'Original video':'Same quality as in the app'):'')+(mine?'':A('netOpen',p.author,'chat','Message @'+p.username))+(mine||S.owner?A('postDel',v,'x','Delete post'):'')+(mine?'':A('postNi',v,'x','Not interested','See fewer posts like this')+A('postRep',v,'ban','Report post','Spam, hateful or fake')))},
     postDl:v=>{const p=postFind(v);if(!p)return;closeSheet();try{if(p.video){toast(Android.downloadVideo(vidUrl(p),'whapea-'+p.id)?'Downloading… check your notifications':'Could not download')}
       else{const L=[p.image].concat(p.more||[]).filter(okImg);let ok=0;L.forEach((u,i)=>{if(Android.saveImage('whapea-'+p.id+'-'+(i+1),u))ok++});toast(ok?(ok>1?ok+' photos saved to Pictures/Vynk':'Saved to Pictures/Vynk'):'Could not save')}}catch(e){toast('Saving works in the Vynk app')}},
     postDel:async v=>{try{const pp=postFind(v);if(pp&&pp.video&&NET.s&&pp.author===NET.s.uid)rmVideo(pp.video);await rpc('delete_post',{p_post:+v});PF.items=PF.items.filter(x=>String(x.id)!==v);EX.items=EX.items.filter(x=>String(x.id)!==v);PS.items=PS.items.filter(x=>String(x.id)!==v);PS.ok=false;if(PROF)PROF.items=PROF.items.filter(x=>String(x.id)!==v);closeSheet();postRedraw();toast('Deleted')}catch(e){toast(rpcErr(e))}},
-    postRep:async v=>{try{await rpc('report_post',{p_post:+v,p_reason:''});closeSheet();toast('Reported. Thank you')}catch(e){toast(rpcErr(e))}},
+    tkMedia:(v,el)=>{const p=postFind(v),was=p&&p.liked,now=Date.now();
+      if(el.tagName==='VIDEO'){if(S.vtV===v&&now-S.vtT<320){clearTimeout(S.vtO);S.vtT=0;if(p&&!p.liked){p.liked=true;p.likes++;postRedraw(v);rpc('toggle_like',{p_post:+v}).catch(()=>{p.liked=false;p.likes--;postRedraw()})}tkHeart(el)}
+        else{S.vtV=v;S.vtT=now;clearTimeout(S.vtO);S.vtO=setTimeout(()=>{S.vtT=0;if(el.paused)el.play().catch(()=>{});else el.pause()},300)}return}
+      ACT.postImg(v);if(p&&p.liked&&!was)tkHeart(el)},
+    postNi:v=>{const p=postFind(v);if(!p)return;SET.hideA=(SET.hideA||[]).filter(x=>x!==p.author).concat(p.author).slice(-100);PF.items=PF.items.filter(x=>x.author!==p.author);closeSheet();persistSoon();render();toast('We will show fewer posts like this')},
+    postRep:v=>{closeSheet();sheet('Report post',['Spam or ads|spam','Hateful or rude|hate','Nudity or sexual content|nudity','Fake, scam or impersonation|fake','Violence or dangerous|violence','Something else|other'].map(x=>{const[t,k]=x.split('|');return A('postRepGo',v+'|'+k,'ban',t)}).join('')+'<div class="note2">Reports are private. The owner reviews them.</div>')},
+    postRepGo:async v=>{const[id,r]=v.split('|');try{await rpc('report_post',{p_post:+id,p_reason:r});closeSheet();toast('Reported. Thank you')}catch(e){toast(rpcErr(e))}},
     plus:async()=>{if(!NET.s){ACT.netAcct();return}closeSheet();const el=sheet('Vynk Plus','<div class="note2">Loading…</div>');
       let cfg={},pay=[],vr=[];try{const r=await sb('/rest/v1/app_config?select=key,value');(await r.json()).forEach(x=>cfg[x.key]=x.value)}catch(e){}
       try{pay=await rpc('my_payments')||[]}catch(e){}try{vr=await rpc('my_verify')||[]}catch(e){}loadMe();
