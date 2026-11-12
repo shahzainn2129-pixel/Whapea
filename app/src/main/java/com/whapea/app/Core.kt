@@ -134,6 +134,7 @@ object Core {
                 .setSmallIcon(android.R.drawable.stat_sys_phone_call)
                 .setContentTitle("Vynk call").setContentText("$who is calling you")
                 .setCategory(NotificationCompat.CATEGORY_CALL)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setPriority(NotificationCompat.PRIORITY_MAX)
                 .setFullScreenIntent(pi, true).setContentIntent(pi)
                 .setOngoing(true).setTimeoutAfter(40000).build()

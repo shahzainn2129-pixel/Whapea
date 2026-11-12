@@ -215,6 +215,41 @@ class MainActivity : ComponentActivity() {
     /** Functions the screen (index.html) can call. */
     inner class Bridge {
         @JavascriptInterface
+        fun alertStatus(): String {
+            val j = JSONObject()
+            try {
+                j.put("notif", androidx.core.app.NotificationManagerCompat.from(this@MainActivity).areNotificationsEnabled())
+                val m = getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
+                j.put("calls", (m.getNotificationChannel(Core.CH_CALL)?.importance ?: 4) >= 3)
+                j.put("msgs", (m.getNotificationChannel(Core.CH)?.importance ?: 4) >= 3)
+                j.put("fsi", if (Build.VERSION.SDK_INT >= 34) m.canUseFullScreenIntent() else true)
+                val pm = getSystemService(Context.POWER_SERVICE) as android.os.PowerManager
+                j.put("battery", pm.isIgnoringBatteryOptimizations(packageName))
+                j.put("maker", Build.MANUFACTURER.lowercase())
+            } catch (e: Exception) { }
+            return j.toString()
+        }
+
+        @JavascriptInterface
+        fun openAlertSettings(kind: String) {
+            runOnUiThread {
+                try {
+                    val i = when (kind) {
+                        "fsi" -> if (Build.VERSION.SDK_INT >= 34)
+                            Intent("android.settings.MANAGE_APP_USE_FULL_SCREEN_INTENT", Uri.parse("package:$packageName"))
+                        else Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$packageName"))
+                        "battery" -> Intent(android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, Uri.parse("package:$packageName"))
+                        "app" -> Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$packageName"))
+                        else -> Intent(android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(android.provider.Settings.EXTRA_APP_PACKAGE, packageName)
+                    }
+                    startActivity(i)
+                } catch (e: Exception) {
+                    try { startActivity(Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$packageName"))) } catch (e2: Exception) { }
+                }
+            }
+        }
+
+        @JavascriptInterface
         fun load(): String = Core.loadState()
 
         @JavascriptInterface
