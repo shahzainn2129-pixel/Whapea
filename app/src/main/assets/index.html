@@ -657,6 +657,18 @@ img.spm{aspect-ratio:auto;height:auto;max-height:560px;object-fit:contain}
 .call .ci .av,.call .ci .pfv-av{width:168px!important;height:168px!important;font-size:64px!important;box-shadow:0 12px 40px rgba(0,0,0,.5)}
 .call .ci p.ctm,.call .ci #cst.ctm{font:600 34px var(--font-display);opacity:1;letter-spacing:.02em;font-variant-numeric:tabular-nums;margin-top:10px}
 .call.vc .cbg{display:none}
+
+.splash.sp2{animation:spOut .4s ease-in 1.45s forwards}.splash.sp2 .sl{animation:spIn .5s cubic-bezier(.2,1.4,.4,1);filter:none}
+.sp2 .sl path{stroke-dasharray:90;stroke-dashoffset:90;animation:spDraw .6s ease-out .15s forwards}
+.sp2 .sl circle{transform-box:fill-box;transform-origin:center;transform:scale(0);animation:spPop .35s cubic-bezier(.2,1.6,.4,1) forwards}
+.sp2 .sl circle:nth-of-type(1){animation-delay:.1s}.sp2 .sl circle:nth-of-type(2){animation-delay:.35s}.sp2 .sl circle:nth-of-type(3){animation-delay:.6s}
+.sp2 b{display:flex}.sp2 b span{opacity:0;transform:translateY(8px);animation:spLt .35s ease-out forwards}
+@keyframes spDraw{to{stroke-dashoffset:0}}@keyframes spPop{to{transform:scale(1)}}@keyframes spLt{to{opacity:1;transform:none}}
+.skg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:4px 0 8px}.skp{background:var(--surface2);border-radius:14px;padding:12px 8px;text-align:center}.skp b{display:block;font:700 22px var(--font-display)}.skp small{color:var(--muted);font-size:11.5px}
+.sbars{display:flex;align-items:flex-end;gap:3px;height:92px}.sbars span{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:2px}.sbars i{width:100%;background:var(--ink);border-radius:3px 3px 0 0}.sbars small{font-size:9.5px;color:var(--muted)}
+html.ur body{font-family:"Noto Nastaliq Urdu","Noto Naskh Arabic","Segoe UI",var(--font),sans-serif}
+html.ur .tkb,html.ur .call,html.ur #npv,html.ur .mrow,html.ur .sacts,html.ur .srw,html.ur .grid3,html.ur .ptabs,html.ur .pfs3{direction:ltr}
+html.ur .mrow .b,html.ur .tkcap{direction:rtl}
 </style>
 </head><body>
 
@@ -916,6 +928,7 @@ function setNative(row,sw){
   return `<button class="card" style="width:calc(100% - 32px);text-align:left" data-a="editProfile">${avMe('')}<span style="flex:1;min-width:0"><b style="font-size:18px;font-family:var(--font-display)">${esc(ME.name)}</b><div class="val">${esc(ME.about||'')}</div></span>${ic('chev',18)}</button>
   ${sec('user','Account')}
   ${row('editProfile','user','Edit profile','','Name, bio, website and photo')}
+  ${row('langPick','globe','Language / زبان',SET.lang==='ur'?'اردو':'English')}
   ${row('myProf2','image','Your profile and posts')}
   ${row('plus','verified','Vynk Plus',isPlus()?(ME.plan==='gold'?'Verified':'Active'):'',isPlus()?'Until '+new Date(ME.plan_until).toLocaleDateString():'Badge, longer videos and more')}
   ${NET.s?row('pickCity','pin','My city',ME.city||'Not set','Used for city posts'):''}
@@ -945,11 +958,11 @@ function setNative(row,sw){
   ${sec('radar','Nearby (Bluetooth)')}${btRows()}
   ${A('tab','near','radar','Nearby phones','Find people close to you')}
   ${o?`<div class="sec">Owner</div>${row('ownerOff','verified','Owner mode is on','','Tap to sign out')}
-  ${NET.s?row('netOwner','verified','Internet users','','See accounts and block for 3 hours')+row('ownerPay','db','Plus payments','','Approve or reject payment requests')+row('ownerVer','verified','Verification requests','','Give the golden badge')+row('ownerRep','ban','Reported posts','','Delete or clear reports')+row('ownerUsr','ban','Reported users','','Block people who are reported'):''}`:''}
+  ${NET.s?row('ownerStats','db','Owner stats','','Users, posts and views')+row('netOwner','verified','Internet users','','See accounts and block for 3 hours')+row('ownerPay','db','Plus payments','','Approve or reject payment requests')+row('ownerVer','verified','Verification requests','','Give the golden badge')+row('ownerRep','ban','Reported posts','','Delete or clear reports')+row('ownerUsr','ban','Reported users','','Block people who are reported'):''}`:''}
   ${sec('help','Help')}
   ${row('goSpons','mega','Sponsors','','Offers from our partners')}
   ${row('privPol','shield','Privacy policy','','How Vynk treats your data')}
-  ${row('appinfo','info','About Vynk','','Version 4.9')}
+  ${row('appinfo','info','About Vynk','','Version 5.0')}
   ${NET.s?`<button class="act bad" data-a="netOut" data-v=""><span class="grow">Log out</span></button>`:''}
   <div style="height:40px"></div>`}
 function setHTML(){
@@ -1469,7 +1482,7 @@ function lockOffer(){if(SET.lockOn||SET.lockAsked||!NATIVE)return;SET.lockAsked=
   setTimeout(()=>{if(!$('#lock')&&!S.chat&&!document.querySelector('.scrim'))sheet('Protect your chats',`<div class="note2">Add a 4-digit code${bioAvail()?' and fingerprint':''} so only you can open Vynk. You can change this any time in Settings.</div>`+A('lockMenu','','lock','Set up app lock')+A('lockSkip','','x','Not now'))},2500)}
 
 /* ---------- polish: motion, skeletons, profiles, follow ---------- */
-function splash(){const e=document.createElement('div');e.className='splash';e.innerHTML=`<div class="sl">${WLOGO}</div><b>Vynk</b>`;phone.append(e);setTimeout(()=>e.remove(),1200)}
+function splash(){const e=document.createElement('div');e.className='splash sp2';e.innerHTML=`<div class="sl">${WLOGO}</div><b>${'Vynk'.split('').map((c,i)=>`<span style="animation-delay:${.55+i*.07}s">${c}</span>`).join('')}</b>`;phone.append(e);setTimeout(()=>e.remove(),1900)}
 function tabAnim(){const b=$('#body');if(!b)return;b.classList.remove('tabin');let i=0;b.querySelectorAll('.li,.pc,.sp,.act,.card,.st1,.sec').forEach(e=>{if(i<14)e.style.setProperty('--i',i++)});void b.offsetWidth;b.classList.add('tabin')}
 const skel=n=>Array(n).fill(0).map(()=>`<div class="pc"><header><span class="av sm skb"></span><span style="flex:1"><i class="skl" style="width:40%"></i><i class="skl" style="width:25%;margin-top:6px"></i></span></header><div class="skb" style="height:210px"></div><div style="padding:12px 14px"><i class="skl" style="width:80%"></i></div></div>`).join('');
 let PROF=null;
@@ -2176,7 +2189,7 @@ if(NATIVE){
 <b>Changes.</b> If this policy changes, the app will tell you.<br><br>
 <b>Contact.</b> Shah Zain, founder of Vynk.</div>`),
     appinfo:()=>{aboutTaps++;if(aboutTaps>=7){aboutTaps=0;ACT.ownerLogin();return}
-      sheet('About Vynk',`<div class="note2" style="font-size:14px">Version 4.9. Chat, post and call over the internet, or with people nearby over Bluetooth. Sponsored posts and updates download when your phone is online.</div><button class="btn" data-a="updCheck">Check for updates</button>`)},
+      sheet('About Vynk',`<div class="note2" style="font-size:14px">Version 5.0. Chat, post and call over the internet, or with people nearby over Bluetooth. Sponsored posts and updates download when your phone is online.</div><button class="btn" data-a="updCheck">Check for updates</button>`)},
     spNew:()=>{sheet('New sponsored post',`<div class="field"><input id="spb" placeholder="Brand name" maxlength="40" autocomplete="off"></div><div class="field"><textarea id="spcap" rows="3" maxlength="300" placeholder="What are you promoting?" class="txt"></textarea></div><div class="field"><input id="spct" placeholder="Phone or address (optional)" maxlength="60" autocomplete="off"></div><div class="field"><input id="spv" placeholder="Video file name, e.g. chai.mp4 (optional)" maxlength="80" autocomplete="off" autocapitalize="none"></div><div class="sec" style="padding-top:2px">Runs for</div><div class="chips" id="spdur">${[3,7,14,30,60].map(d=>`<button class="chip ${d===7?'on':''}" data-a="spDur" data-v="${d}">${d} days</button>`).join('')}</div><button class="act" data-a="spPick">${ic('image')}<span class="grow" id="spmi">Add a photo (optional)<small>Photos are made small so they fit in the post</small></span></button><button class="btn" data-a="spPost">Create post data</button>`);S.spm=null;S.spd=7},
     spPick:()=>pickFile('image/*',f=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,640/Math.max(im.width,im.height)),cv=document.createElement('canvas');cv.width=im.width*k;cv.height=im.height*k;cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);const src=cv.toDataURL('image/jpeg',.6);S.spm={kind:'image',src};const e=$('#spmi');if(e)e.innerHTML=`${esc(f.name)}<small>Photo · ${size(src.length*.75)}</small>`};im.src=r.result};r.readAsDataURL(f)}),
     spPost:()=>{
@@ -2442,6 +2455,42 @@ render();
  document.addEventListener('touchend',e=>{if(!t)return;const x=e.changedTouches[0],dx=x.clientX-t.x,T=t;t=null;if(!T.on)return;T.el.style.transition='';
   if(T.k==='c'){const open=(T.base+dx)<-W/2;T.el.style.transform=open?'translateX('+(-W)+'px)':'';T.el._open=open;T.el._lp=true;setTimeout(()=>{T.el._lp=false},350)}
   else{T.el.style.transform='';if(dx>55){const id=T.b.dataset.v;if(id&&ACT.replyTo){try{navigator.vibrate&&navigator.vibrate(15)}catch(_){}ACT.replyTo(id)}}}},{passive:true});
+})();
+const UR={
+"Home":"ہوم","Explore":"ایکسپلور","Search":"تلاش","Search people or #tags":"لوگ یا #ٹیگ تلاش کریں","Chats":"چیٹس","Calls":"کالز","Settings":"سیٹنگز","Help":"مدد","Notifications":"اطلاعات","Account":"اکاؤنٹ","Privacy":"پرائیویسی","Language":"زبان",
+"Primary":"اہم","Unread":"ان پڑھے","Favourites":"پسندیدہ","Groups":"گروپس","Following":"فالونگ","Followers":"فالوورز","Likes":"لائکس","For you":"آپ کے لیے","City":"شہر","Posts":"پوسٹس","Saved":"محفوظ","Liked":"پسند کیے",
+"Aaj":"آج","Kal":"کل","Is hafte":"اس ہفتے","Pehle":"پہلے","Trending":"ٹرینڈنگ","New post":"نئی پوسٹ","Post":"پوسٹ","Posted":"پوسٹ ہو گئی","Message":"پیغام","Follow":"فالو","Follow back":"فالو بیک","Requested":"درخواست بھیجی",
+"Edit profile":"پروفائل ایڈٹ کریں","Share profile":"پروفائل شیئر کریں","Your profile and posts":"آپ کی پروفائل اور پوسٹس","Mute":"میوٹ","Unmute":"ان میوٹ","Archive":"آرکائیو","Delete":"ڈیلیٹ","Delete this chat?":"یہ چیٹ ڈیلیٹ کریں؟","Delete chat":"چیٹ ڈیلیٹ کریں","Archived":"آرکائیو شدہ","Archived chats":"آرکائیو چیٹس",
+"About Vynk":"وِنک کے بارے میں","Accept":"قبول کریں","App lock":"ایپ لاک","Also blocks screenshots":"اسکرین شاٹ بھی بند","Apply for Verified badge":"ویری فائیڈ بیج کے لیے درخواست دیں","Approve":"منظور","Back":"واپس","Badge":"بیج","Bio":"تعارف","Blocked":"بلاک","Blocked contacts":"بلاک کیے ہوئے رابطے","Brand owner":"برانڈ اونر","Camera":"کیمرا","Cancel":"منسوخ","Change password":"پاسورڈ بدلیں","Chat backup":"چیٹ بیک اپ","Chat wallpaper":"چیٹ وال پیپر","Check for updates":"اپڈیٹ چیک کریں","Choose city":"شہر چنیں","Choose your city":"اپنا شہر چنیں","Clear":"صاف کریں","Close friends":"قریبی دوست","Comments":"تبصرے","Confirm":"تصدیق","Connect":"جوڑیں","Connected":"جڑا ہوا","Connecting…":"جڑ رہا ہے…","Continue":"جاری رکھیں","Copied":"کاپی ہو گیا","Create group":"گروپ بنائیں","Create internet account":"انٹرنیٹ اکاؤنٹ بنائیں","Data saver":"ڈیٹا سیور","Decline":"مسترد","Default disappearing messages":"غائب ہونے والے پیغامات","Delivered":"پہنچ گیا","Device key":"ڈیوائس کی","Disappearing messages":"غائب ہونے والے پیغامات","Documents":"دستاویزات","Done":"مکمل","Edit":"ایڈٹ","End":"ختم","English":"English","Enter key sends":"اینٹر سے بھیجیں","Everyone":"سب","Faster photos and files":"تیز فوٹو اور فائلیں","Find by username":"یوزرنیم سے تلاش کریں","Find people and posts":"لوگ اور پوسٹس تلاش کریں","Flip":"پلٹیں","Follow requests":"فالو کی درخواستیں","Followers.":"فالوورز","Font size":"فونٹ سائز","Forgot password?":"پاسورڈ بھول گئے؟","Forward to":"آگے بھیجیں","Get alerts when app is closed":"ایپ بند ہو تب بھی اطلاع","Get started":"شروع کریں","Hide in recent apps":"حالیہ ایپس میں چھپائیں","Internet account":"انٹرنیٹ اکاؤنٹ","Join Vynk":"وِنک میں شامل ہوں","Join the community":"کمیونٹی میں شامل ہوں","Keep":"رکھیں","Last seen and online":"آخری بار دیکھا اور آن لائن","Leave":"چھوڑیں","Load earlier messages":"پرانے پیغامات لوڈ کریں","Load more":"مزید لوڈ کریں","Loading…":"لوڈ ہو رہا ہے…","Lock after":"لاک ہو بعد","Log in":"لاگ اِن","Log out":"لاگ آؤٹ","Manage storage":"اسٹوریج","My city":"میرا شہر","My profile":"میری پروفائل","My status":"میرا اسٹیٹس","Name":"نام","New chat":"نئی چیٹ","New group":"نیا گروپ","New poll":"نیا پول","New status":"نیا اسٹیٹس","No calls yet":"ابھی کوئی کال نہیں","No chats yet":"ابھی کوئی چیٹ نہیں","No comments yet":"ابھی کوئی تبصرہ نہیں","No connection":"کنکشن نہیں","No liked posts yet":"ابھی کوئی پسند کی پوسٹ نہیں","No notifications yet":"ابھی کوئی اطلاع نہیں","No posts yet":"ابھی کوئی پوسٹ نہیں","Nothing saved yet":"ابھی کچھ محفوظ نہیں","Nothing to explore yet":"ابھی ایکسپلور کرنے کو کچھ نہیں","Online":"آن لائن","Owner":"اونر","Photo":"تصویر","Photo quality":"تصویر کا معیار","Photos":"تصاویر","Plus payments":"پلس ادائیگیاں","Poll":"پول","Private account":"نجی اکاؤنٹ","Privacy policy":"پرائیویسی پالیسی","Profile saved":"پروفائل محفوظ","Pronouns":"ضمیر","Read":"پڑھا","Read receipts":"پڑھنے کی رسید","Recent":"حالیہ","Refresh":"ریفریش","Reject":"مسترد","Remove":"ہٹائیں","Reply":"جواب","Report post":"پوسٹ رپورٹ کریں","Reported posts":"رپورٹ شدہ پوسٹس","Reset password":"پاسورڈ ری سیٹ","Save":"محفوظ کریں","Send":"بھیجیں","Send code":"کوڈ بھیجیں","Sent":"بھیج دیا","Share":"شیئر","Sign out":"سائن آؤٹ","Sign up":"سائن اپ","Smaller photos use less data":"چھوٹی تصاویر کم ڈیٹا لیتی ہیں","Sounds":"آوازیں","Speaker":"اسپیکر","Sponsors":"اسپانسرز","Starred messages":"ستارہ شدہ پیغامات","Storage and data":"اسٹوریج اور ڈیٹا","Submit":"جمع کریں","Suggested for you":"آپ کے لیے تجاویز","Theme":"تھیم","This account is private":"یہ اکاؤنٹ نجی ہے","Try again":"دوبارہ کوشش کریں","Typing indicator":"ٹائپنگ کا نشان","Unblock":"ان بلاک","Verification requests":"تصدیق کی درخواستیں","Verified badge":"ویری فائیڈ بیج","Vibration":"وائبریشن","Video":"ویڈیو","Video call":"ویڈیو کال","Voice call":"وائس کال","Voice notes":"وائس نوٹس","Vynk Plus":"وِنک پلس","Wallpaper":"وال پیپر","Who can message me":"مجھے کون پیغام بھیج سکتا ہے","Who can see this":"یہ کون دیکھ سکتا ہے","You":"آپ","Your story":"آپ کی اسٹوری","Mute notifications":"اطلاعات میوٹ","Pin chat":"چیٹ پن کریں","Unpin chat":"چیٹ ان پن کریں","Archive chat":"چیٹ آرکائیو","Clear chat":"چیٹ صاف کریں","Block":"بلاک","Report user":"صارف رپورٹ کریں","Copy":"کاپی","Forward":"آگے بھیجیں","Star":"ستارہ","Unstar":"ستارہ ہٹائیں","Pin to top":"اوپر پن کریں","Nearby phones":"قریبی فون","Sponsored":"اسپانسرڈ","Not interested":"دلچسپی نہیں","Light":"لائٹ","Dark":"ڈارک","Read more":"مزید","Language":"زبان","Theme.":"تھیم","Edit message":"پیغام ایڈٹ","Who can message me.":"","How you use Vynk":"آپ وِنک کیسے استعمال کرتے ہیں","Nearby (Bluetooth)":"قریب (بلوٹوتھ)","Version 5.0":"ورژن 5.0","Usage":"","Message":"پیغام","Aaj.":"","Your name shows on your profile and in chats.":"آپ کا نام پروفائل اور چیٹس میں نظر آتا ہے۔","Create a free account to post, follow friends and chat online.":"پوسٹ کرنے، دوستوں کو فالو کرنے اور آن لائن چیٹ کے لیے مفت اکاؤنٹ بنائیں۔","Create a free account to watch and share posts.":"پوسٹس دیکھنے اور شیئر کرنے کے لیے مفت اکاؤنٹ بنائیں۔","Posts from everyone will show up here.":"سب کی پوسٹس یہاں نظر آئیں گی۔","Posts you like will show here.":"جو پوسٹس آپ پسند کریں گے یہاں نظر آئیں گی۔","Tap the bookmark under a post to keep it here.":"پوسٹ کے نیچے بک مارک دبائیں، وہ یہاں محفوظ ہو جائے گی۔","Follow this account to see their posts.":"ان کی پوسٹس دیکھنے کے لیے فالو کریں۔","Tap the pencil icon to find someone by username and start chatting.":"پنسل کا نشان دبا کر یوزرنیم سے کسی کو تلاش کریں اور چیٹ شروع کریں۔","Find friends by their username. No phone number needed.":"دوستوں کو یوزرنیم سے تلاش کریں۔ فون نمبر کی ضرورت نہیں۔","Blue ticks when someone reads your message":"کوئی پیغام پڑھے تو نیلے ٹک","If off, others cannot see you and you cannot see them":"بند ہو تو نہ وہ آپ کو دیکھیں گے نہ آپ انہیں","Code or fingerprint to open Vynk":"وِنک کھولنے کے لیے کوڈ یا فنگر پرنٹ","Name, bio, website and photo":"نام، تعارف، ویب سائٹ اور تصویر","Chat and post with anyone online":"آن لائن کسی سے بھی چیٹ اور پوسٹ کریں","Badge, longer videos and more":"بیج، لمبی ویڈیوز اور بہت کچھ","Set battery to Unrestricted":"بیٹری کو Unrestricted کریں","Find people close to you":"اپنے قریب لوگ تلاش کریں","Used for city posts":"شہر کی پوسٹس کے لیے","How Vynk treats your data":"وِنک آپ کا ڈیٹا کیسے سنبھالتا ہے","Offers from our partners":"ہمارے پارٹنرز کی پیشکشیں","Videos load only when you tap play":"ویڈیو صرف پلے دبانے پر لوڈ ہو گی","Contacts are people you already chat with":"رابطے وہ جن سے آپ پہلے چیٹ کر چکے","Show when you are typing, and see others typing":"ٹائپ کرتے وقت دکھائیں اور دوسروں کی بھی دیکھیں","Approve who can follow you":"منظور کریں کون آپ کو فالو کرے","Check":"","Everyone left":"سب چلے گئے","Online.":"",
+"Users":"صارفین","Active today":"آج فعال","Active this week":"اس ہفتے فعال","Live posts":"موجودہ پوسٹس","Views today":"آج کے ویوز","Signups, last 14 days":"سائن اپ، آخری 14 دن","Posts, last 14 days":"پوسٹس، آخری 14 دن","Stats":"اعداد و شمار","Owner stats":"اونر اعداد و شمار","Users, posts and views":"صارفین، پوسٹس اور ویوز"
+};
+
+(()=>{
+ const SKIP='.mrow,.pv,.gtx,.tkcap,.rich,.nm,.quote,script,style,textarea,input,[data-noi18n]',ATT=['placeholder','aria-label','title'];
+ let busy=false,tm=0;
+ const lang=()=>SET.lang==='ur'?'ur':'en';
+ function node(n){if(n.__o!==undefined&&n.nodeValue!==n.__t){delete n.__o}
+  const p=n.parentElement;if(!p||p.closest(SKIP))return;
+  if(lang()==='ur'){if(n.__o!==undefined)return;const o=n.nodeValue,k=o.trim();if(!k)return;const v=UR[k];if(v){n.__o=o;n.__t=o.replace(k,v);n.nodeValue=n.__t}}
+  else if(n.__o!==undefined){n.nodeValue=n.__o;delete n.__o}}
+ function attrs(e){for(const a of ATT){const o=e.getAttribute('data-o-'+a)??e.getAttribute(a);if(o==null)continue;
+  if(lang()==='ur'){const v=UR[o.trim()];if(v){if(!e.hasAttribute('data-o-'+a))e.setAttribute('data-o-'+a,o);e.setAttribute(a,v)}}
+  else if(e.hasAttribute('data-o-'+a)){e.setAttribute(a,e.getAttribute('data-o-'+a));e.removeAttribute('data-o-'+a)}}}
+ function walk(root){busy=true;try{const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);let n;while(n=w.nextNode())node(n);
+  (root.querySelectorAll?root.querySelectorAll('[placeholder],[aria-label],[title],[data-o-placeholder],[data-o-aria-label],[data-o-title]'):[]).forEach(attrs)}finally{busy=false}}
+ window.i18nApply=()=>{const ur=lang()==='ur';document.documentElement.lang=ur?'ur':'en';document.documentElement.dir=ur?'rtl':'ltr';document.documentElement.classList.toggle('ur',ur);walk(document.body)};
+ new MutationObserver(()=>{if(busy||(lang()!=='ur'&&!document.querySelector('[data-o-placeholder],[data-o-aria-label]')))return;clearTimeout(tm);tm=setTimeout(()=>walk(document.body),30)}).observe(document.body,{childList:true,subtree:true,characterData:true});
+ Object.assign(ACT,{
+  langPick:()=>sheet('Language / زبان',A('setLang','en','globe','English','Left to right')+A('setLang','ur','globe','اردو','دائیں سے بائیں')),
+  setLang:v=>{SET.lang=v;persistSoon();closeSheet();render();i18nApply();toast(v==='ur'?'زبان اردو ہو گئی':'Language: English')},
+  ownerStats:async()=>{closeSheet();const el=sheet('Owner stats','<div class="note2">Loading…</div>');
+   try{if(S.okey){const c=await sb('/rest/v1/rpc/owner_claim',{m:'POST',b:{k:S.okey}});await c.text()}const d=await rpc('owner_stats');
+    const bars=(a,t)=>{const m=Math.max(1,...a.map(x=>x.n));return `<div class="sec" style="padding-left:0">${t}</div><div class="sbars">${a.map(x=>`<span title="${x.d}: ${x.n}"><i style="height:${Math.max(3,Math.round(x.n/m*64))}px"></i><small>${x.n}</small></span>`).join('')}</div>`};
+    const k=(n,l)=>`<div class="skp"><b>${n}</b><small>${l}</small></div>`;
+    el.querySelector('.sheet').innerHTML='<div class="grab"></div><h3>Owner stats</h3><div class="skg">'+k(d.users,'Users')+k(d.active24,'Active today')+k(d.active7,'Active this week')+k(d.posts,'Live posts')+k(d.views24,'Views today')+'</div>'+bars(d.signups||[],'Signups, last 14 days')+bars(d.postsday||[],'Posts, last 14 days')+'<div style="height:16px"></div>';i18nApply()}
+   catch(e){el.querySelector('.sheet').innerHTML='<div class="grab"></div><div class="note2">Could not load. Unlock owner mode again, then retry.</div>'}}
+ });
+ i18nApply();
 })();
 </script>
 </body></html>

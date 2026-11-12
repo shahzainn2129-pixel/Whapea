@@ -13,7 +13,7 @@ android {
         targetSdk = 34
         val run = (System.getenv("GITHUB_RUN_NUMBER") ?: "0").toInt()
         versionCode = if (run > 0) run else 5
-        versionName = "4.9"
+        versionName = "5.0"
         buildConfigField("int", "BUILD_N", run.toString())
     }
     buildFeatures { buildConfig = true }
@@ -27,6 +27,7 @@ android {
     }
     buildTypes {
         getByName("debug") { signingConfig = signingConfigs.getByName("whapea") }
+        getByName("release") { signingConfig = signingConfigs.getByName("whapea"); isMinifyEnabled = false }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
