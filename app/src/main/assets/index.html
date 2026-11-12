@@ -647,6 +647,16 @@ img.spm{aspect-ratio:auto;height:auto;max-height:560px;object-fit:contain}
 
 .nsec{padding:14px 16px 6px;font:700 14px var(--font-display);color:var(--ink)}.nrow{display:flex;align-items:center;gap:8px;padding-right:12px}.nrb{display:flex;align-items:center;gap:12px;flex:1;min-width:0;text-align:left}.nfb{flex:none;padding:7px 14px;font-size:13px}
 .nrb .pfv-av{width:48px!important;height:48px!important;flex:none}.nrb .mid{min-width:0}.nrb .nm{white-space:normal}.nrb .nm span{white-space:normal}
+
+.srw{position:relative;overflow:hidden}.srw>.li{position:relative;z-index:1;background:var(--bg);width:100%;transition:transform .2s}.sacts{position:absolute;right:0;top:0;bottom:0;display:flex;width:210px}.sacts button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:#fff;font-size:11.5px}.sacts .sm{background:#6b7280}.sacts .sa{background:#111}.sacts .sd{background:#e5393b}
+.ucnt{min-width:21px;height:21px;padding:0 6px;border-radius:99px;background:var(--ink);color:var(--bg);font:700 12px var(--font);display:grid;place-items:center;font-style:normal}.ucnt.mute{background:var(--muted)}
+.dlbl{display:flex;justify-content:center;padding:10px 0 4px}.dlbl span{background:var(--surface2);color:var(--muted);font-size:12px;font-weight:600;padding:4px 12px;border-radius:99px}
+.mrow.sw{transition:transform .15s}.mrow .rpi{position:absolute;left:8px;opacity:0}
+.sech{display:flex;align-items:center;gap:8px;color:var(--ink)!important;font:700 14px var(--font-display)!important;padding-top:22px!important}
+.call{overflow:hidden}.cbg{position:absolute;inset:-30px;background:#111 center/cover;filter:blur(34px) brightness(.45);z-index:0;transform:scale(1.1)}
+.call .ci .av,.call .ci .pfv-av{width:168px!important;height:168px!important;font-size:64px!important;box-shadow:0 12px 40px rgba(0,0,0,.5)}
+.call .ci p.ctm,.call .ci #cst.ctm{font:600 34px var(--font-display);opacity:1;letter-spacing:.02em;font-variant-numeric:tabular-nums;margin-top:10px}
+.call.vc .cbg{display:none}
 </style>
 </head><body>
 
@@ -847,9 +857,9 @@ function chatsHTML(){
 function rowHTML(c){
   const m=last(c),n=c.unread,r=chatReach(c),un=!!(n||c.mk);
   const sub=c.typing&&c.type==='dm'?'<span style="color:var(--accent)">typing…</span>':m?`${m.from==='me'&&!m.deleted?tick(m):''}<span class="pv">${c.type==='group'&&m.from!=='me'?esc(who(c,m))+': ':''}${m.type==='voice'?'🎙 ':m.type==='img'?'📷 ':''}${esc(prev(m))}</span><span class="ago">· ${agoS(m.t)}</span>`:'';
-  return `<button class="li${un?' unr':''}" data-a="open" data-v="${c.id}" data-lp="${c.id}">${av(cHue(c),cName(c),'',c.type==='dm'?dotOf(c.cid):'')}
+  return `<div class="srw"><button class="li${un?' unr':''}" data-a="open" data-v="${c.id}" data-lp="${c.id}">${av(cHue(c),cName(c),'',c.type==='dm'?dotOf(c.cid):'')}
   <span class="mid"><span class="nm"><span>${esc(cName(c))}</span>${c.type==='dm'&&P[c.cid]?bdg(P[c.cid].plan):''}${c.fav?ic('star',13):''}</span><span class="sub">${sub}</span></span>
-  <span class="rt"><span style="display:flex;gap:8px;align-items:center">${c.muted?ic('mute',16):''}${c.pinned?ic('pin',15):''}${un?`<i class="udot${c.muted?' mute':''}"></i>`:''}</span></span></button>`}
+  <span class="rt"><span style="display:flex;gap:8px;align-items:center">${c.muted?ic('mute',16):''}${c.pinned?ic('pin',15):''}${un?(n>0?`<i class="ucnt${c.muted?' mute':''}">${n>99?'99+':n}</i>`:`<i class="udot${c.muted?' mute':''}"></i>`):''}</span></span></button><span class="sacts"><button data-a="swMute" data-v="${c.id}" class="sm">${ic('mute',20)}<small>${c.muted?'Unmute':'Mute'}</small></button><button data-a="swArch" data-v="${c.id}" class="sa">${ic('archive',20)}<small>Archive</small></button><button data-a="swDel" data-v="${c.id}" class="sd">${ic('trash',20)}<small>Delete</small></button></span></div>`}
 
 function statusHTML(){
   pruneSt();
@@ -901,43 +911,45 @@ function callsHTML(){
   return `${quick}${onl}${rec}<div class="note2" style="padding-bottom:90px">Voice and video calls use the internet. Voice calls also work over Bluetooth when people are nearby.</div>`}
 
 function setNative(row,sw){
-  const rows=[];
   const o=S.owner;
-  return `<div class="sec">How you use Vynk</div>
+  const sec=(i,t)=>`<div class="sec sech">${ic(i,16)}<span>${t}</span></div>`;
+  return `<button class="card" style="width:calc(100% - 32px);text-align:left" data-a="editProfile">${avMe('')}<span style="flex:1;min-width:0"><b style="font-size:18px;font-family:var(--font-display)">${esc(ME.name)}</b><div class="val">${esc(ME.about||'')}</div></span>${ic('chev',18)}</button>
+  ${sec('user','Account')}
   ${row('editProfile','user','Edit profile','','Name, bio, website and photo')}
   ${row('myProf2','image','Your profile and posts')}
   ${row('plus','verified','Vynk Plus',isPlus()?(ME.plan==='gold'?'Verified':'Active'):'',isPlus()?'Until '+new Date(ME.plan_until).toLocaleDateString():'Badge, longer videos and more')}
   ${NET.s?row('pickCity','pin','My city',ME.city||'Not set','Used for city posts'):''}
   ${NET.s&&ME.city?row('cityPeople','users','People in my city'):''}
-  ${sw('dsave','down','Data saver','Videos load only when you tap play')}
-  ${NET.s&&ME.priv?row('reqList','users','Follow requests','','Approve who can follow you'):''}
   ${row('netAcct','users','Internet account',NET.s?'@'+esc(NET.s.user):'','Chat and post with anyone online')}
-  <div class="sec">Who can see your content</div>
+  ${sec('lock','Privacy')}
   ${row('lockMenu','lock','App lock',SET.lockOn?'On':'Off','Code or fingerprint to open Vynk')}
   ${SET.lockOn&&bioAvail()?`<button class="act" data-a="bioTog" data-v="">${ic('user')}<span class="grow">Unlock with fingerprint</span>${tg(SET.bio)}</button>`:''}
   ${SET.lockOn?row('lockAfter','timer','Lock after',({0:'Immediately',30000:'30 seconds',60000:'1 minute',300000:'5 minutes'})[SET.lockMs]||'30 seconds'):''}
   <button class="act" data-a="secureTog" data-v="">${ic('shield')}<span class="grow">Hide in recent apps<small>Also blocks screenshots</small></span>${tg(SET.secure)}</button>
-  ${row('blocked','ban','Blocked',chats.filter(c=>c.blocked).length)}
-  <div class="sec">How others can interact with you</div>
+  ${NET.s&&ME.priv?row('reqList','users','Follow requests','','Approve who can follow you'):''}
   ${row('msgPick','send','Who can message me',SET.msgFrom==='contacts'?'My contacts':'Everyone','Contacts are people you already chat with')}
   ${sw('receipts','eye','Read receipts','Blue ticks when someone reads your message')}
   ${sw('online','eye','Last seen and online','If off, others cannot see you and you cannot see them')}
   ${sw('typing','edit','Typing indicator','Show when you are typing, and see others typing')}
-  <div class="sec">Your app and media</div>
+  ${NATIVE?row('cfOpen','users','Close friends','',Object.keys(SET.cf||{}).length+' people'):''}
+  ${row('blocked','ban','Blocked',chats.filter(c=>c.blocked).length)}
+  ${sec('bell','Notifications')}
+  ${row('notifHelp','bell','Get alerts when app is closed','','Set battery to Unrestricted')}
+  ${sw('dsave','down','Data saver','Videos load only when you tap play')}
+  ${sec('chat','Chats')}
   ${row('themePick','moon','Theme',SET.theme[0].toUpperCase()+SET.theme.slice(1))}
   ${row('wpPick','image','Chat wallpaper',SET.wpx?'Custom':SET.wp[0].toUpperCase()+SET.wp.slice(1))}
   ${row('fsPick','edit','Font size',SET.fs+' px')}
   ${sw('enter','send','Enter key sends')}
   ${row('qualityPick','image','Photo quality',SET.quality[0].toUpperCase()+SET.quality.slice(1),'Smaller photos use less data')}
-  <div class="sec">Nearby (Bluetooth)</div>${btRows()}
+  ${sec('radar','Nearby (Bluetooth)')}${btRows()}
   ${A('tab','near','radar','Nearby phones','Find people close to you')}
   ${o?`<div class="sec">Owner</div>${row('ownerOff','verified','Owner mode is on','','Tap to sign out')}
   ${NET.s?row('netOwner','verified','Internet users','','See accounts and block for 3 hours')+row('ownerPay','db','Plus payments','','Approve or reject payment requests')+row('ownerVer','verified','Verification requests','','Give the golden badge')+row('ownerRep','ban','Reported posts','','Delete or clear reports')+row('ownerUsr','ban','Reported users','','Block people who are reported'):''}`:''}
-  <div class="sec">More info and support</div>
-  ${NATIVE?row('goSpons','mega','Sponsors','','Offers from our partners'):''}
-  ${NATIVE?row('cfOpen','users','Close friends','',Object.keys(SET.cf||{}).length+' people'):''}
+  ${sec('help','Help')}
+  ${row('goSpons','mega','Sponsors','','Offers from our partners')}
   ${row('privPol','shield','Privacy policy','','How Vynk treats your data')}
-  ${row('appinfo','info','About Vynk','','Version 4.8')}
+  ${row('appinfo','info','About Vynk','','Version 4.9')}
   ${NET.s?`<button class="act bad" data-a="netOut" data-v=""><span class="grow">Log out</span></button>`:''}
   <div style="height:40px"></div>`}
 function setHTML(){
@@ -1030,13 +1042,14 @@ function msgHTML(c,m,i){
   const rx=Object.entries(m.rx||{}).map(([e,n])=>`<span>${e}${n>1?' '+n:''}</span>`).join('');
   return `<div class="mrow ${own?'out':'in'}${Date.now()-m.t<800?' pop':''}" style="--h:${own?0:P[m.from].hue}"><div class="b" role="button" tabindex="0" data-a="msg" data-v="${m.id}">${g&&!own?`<div class="who">${esc(P[m.from].name)}</div>`:''}${m.fwd?`<div class="fwd">${ic('fwd',13)} Forwarded</div>`:''}${q}${body}<span class="meta">${m.star?ic('star',12):''}${m.edited&&!m.deleted?'edited':''}${c.disap?ic('timer',12):''}${fmt(m.t)}${own?tick(m):''}</span></div>${rx?`<div class="rx">${rx}</div>`:''}</div>`}
 const pinTxt=m=>m.type==='text'?m.text:({voice:'Voice message',img:'Photo',video:'Video',file:'File',loc:'Location',poll:'Poll'})[m.type]||'Message';
+function dayLbl(a,m){const d=new Date(m.t),k=x=>new Date(x).toDateString();if(a&&k(a.t)===k(m.t))return '';const t=new Date(),y=new Date(Date.now()-864e5);const l=k(m.t)===k(t)?'Aaj':k(m.t)===k(y)?'Kal':d.toLocaleDateString(undefined,{day:'numeric',month:'short',year:d.getFullYear()===t.getFullYear()?undefined:'numeric'});return `<div class="dlbl"><span>${l}</span></div>`}
 function drawMsgs(scroll){
   const c=chatOf(S.chat);if(!c)return;const el=$('#msgs');if(!el)return;
   const q=c.find?c.find.toLowerCase():'';
   let list=c.msgs.filter(m=>!q||(m.text||'').toLowerCase().includes(q));const lim=c._lim||120,more=list.length>lim;if(more)list=list.slice(-lim);
   const nearBottom=el.scrollHeight-el.scrollTop-el.clientHeight<120;
   el.innerHTML=`<div class="note">${ic('lock',14)}<span>${NATIVE&&c.type==='dm'&&isNet(c.cid)?'Say hello 👋':'Messages travel straight from phone to phone over Bluetooth.'}${c.disap?` Disappearing messages: ${({24:'24 hours',168:'7 days',2160:'90 days'})[c.disap]}.`:''}</span></div>`+
-   (c.pin&&c.msgs.find(x=>x.id===c.pin&&!x.deleted)?`<div class="pinb" data-a="goPin">${ic('star',15)}<span>${esc(pinTxt(c.msgs.find(x=>x.id===c.pin)))}</span></div>`:'')+(more?`<button class="earlier" data-a="earlier">Load earlier messages</button>`:'')+list.map((m,i)=>msgHTML(c,m,i)).join('')+(c.typing?`<div class="typing"><i></i><i></i><i></i></div>`:'');
+   (c.pin&&c.msgs.find(x=>x.id===c.pin&&!x.deleted)?`<div class="pinb" data-a="goPin">${ic('star',15)}<span>${esc(pinTxt(c.msgs.find(x=>x.id===c.pin)))}</span></div>`:'')+(more?`<button class="earlier" data-a="earlier">Load earlier messages</button>`:'')+list.map((m,i)=>dayLbl(list[i-1],m)+msgHTML(c,m,i)).join('')+(c.typing?`<div class="typing"><i></i><i></i><i></i></div>`:'');
   if(scroll||nearBottom)el.scrollTop=el.scrollHeight;
 }
 function drawComp(){
@@ -1091,7 +1104,7 @@ const ACT={
  tab:v=>{S.tab=v;render()},
  filter:v=>{S.filter=v;render()},
  toggleSearch:()=>{S.qOpen=!S.qOpen;if(!S.qOpen)S.q='';render();$('#q')?.focus()},
- open:(v,el,e)=>{if(el._lp){el._lp=false;return}openChat(v)},
+ open:(v,el,e)=>{if(el._lp){el._lp=false;return}if(el._open){el.style.transform='';el._open=false;return}openChat(v)},
  openCid:v=>{closeSheet();S.tab='chats';openChat(v)},
  closeChat,
  archived:()=>{const L=chats.filter(c=>c.archived);sheet('Archived chats',L.map(c=>A('unarch',c.id,null,cName(c),prev(last(c)))).join(''))},
@@ -1107,6 +1120,8 @@ const ACT={
  /* row context menu */
  cm_pin:v=>{const c=chatOf(v);if(!c.pinned&&chats.filter(x=>x.pinned).length>=3){toast('You can pin up to 3 chats');return}c.pinned=!c.pinned;closeSheet();render()},
  cm_fav:v=>{const c=chatOf(v);c.fav=!c.fav;closeSheet();render()},
+ swMute:v=>{ACT.cm_mute(v)},swArch:v=>{ACT.cm_arch(v)},swDel:v=>{sheet('Delete this chat?',A('cm_del',v,'trash','Delete chat','All messages in it will be removed','bad'))},
+ notifHelp:()=>sheet('Alerts when app is closed',`<div class="note2" style="font-size:13.5px;line-height:1.6;text-align:left">Vynk checks for new messages and likes in the background. Some phones stop this to save battery.<br><br>1. Open phone <b>Settings → Apps → Vynk → Battery</b><br>2. Choose <b>Unrestricted</b><br>3. Allow <b>Notifications</b> for Vynk</div>`),
  cm_mute:v=>{const c=chatOf(v);c.muted=!c.muted;closeSheet();render();toast(c.muted?'Muted':'Unmuted')},
  cm_arch:v=>{chatOf(v).archived=true;closeSheet();if(S.chat)closeChat();render();toast('Chat archived')},
  cm_unread:v=>{const c=chatOf(v);if(c.unread||c.mk){c.unread=0;c.mk=false}else c.mk=true;closeSheet();render()},
@@ -2006,7 +2021,7 @@ if(NATIVE){
     const p=P[k],vid=!!S.cvideo,vc=vid&&st==='live',v=document.createElement('div');v.className='screen call'+(vc?' vc':'');v.id='callv';
     const title=st==='out'?(isNet(k)?(vid?'Video calling…':'Calling…'):'Calling over Bluetooth…'):st==='in'?(vid?'Incoming Vynk video call':'Incoming Vynk call'):dur(S.cs);
     v.innerHTML=(vc?'<video id="rv" class="rv" autoplay playsinline></video><video id="lv" class="lv" autoplay muted playsinline></video>':'')+
-     `<div class="ci"><span class="av" style="--h:${p.hue}">${esc((p.name||'?')[0])}</span><h2>${esc(p.name)}</h2><p id="cst">${title}</p><p id="cdiag" class="cd"></p></div>`+
+     (okImg(p.dp)?`<div class="cbg" style="background-image:url('${p.dp}')"></div>`:'<div class="cbg"></div>')+`<div class="ci">${av(p.hue,p.name,'')}<h2>${esc(p.name)}</h2><p id="cst" class="${st==='live'?'ctm':''}">${title}</p><p id="cdiag" class="cd"></p></div>`+
      (st==='in'?`<div class="cbtns"><button class="end" data-a="callRej" aria-label="Decline">${ic('phone',28)}</button><button class="acc" data-a="callAcc" aria-label="Answer">${ic(vid?'video':'phone',28)}</button></div>`:
       (vid&&st==='live'?`<div class="cbtns c3 c2"><button data-a="ccam" aria-label="Camera"><span class="cb">${ic('video',24)}</span><small>Camera</small></button><button data-a="cflip" aria-label="Switch camera"><span class="cb">${ic('camera',24)}</span><small>Flip</small></button></div>`:'')+
       `<div class="cbtns c3"><button data-a="cspk" class="${S.spk?'on':''}" aria-label="Speaker"><span class="cb">${ic('vol',26)}</span><small>Speaker</small></button><button class="end" data-a="endCall" aria-label="End call"><span class="cb">${ic('phone',28)}</span><small>End</small></button><button data-a="cmute" class="${S.mute?'on':''}" aria-label="Mute"><span class="cb">${ic('mic',26)}</span><small>${S.mute?'Unmute':'Mute'}</small></button></div>`);
@@ -2161,7 +2176,7 @@ if(NATIVE){
 <b>Changes.</b> If this policy changes, the app will tell you.<br><br>
 <b>Contact.</b> Shah Zain, founder of Vynk.</div>`),
     appinfo:()=>{aboutTaps++;if(aboutTaps>=7){aboutTaps=0;ACT.ownerLogin();return}
-      sheet('About Vynk',`<div class="note2" style="font-size:14px">Version 4.8. Chat, post and call over the internet, or with people nearby over Bluetooth. Sponsored posts and updates download when your phone is online.</div><button class="btn" data-a="updCheck">Check for updates</button>`)},
+      sheet('About Vynk',`<div class="note2" style="font-size:14px">Version 4.9. Chat, post and call over the internet, or with people nearby over Bluetooth. Sponsored posts and updates download when your phone is online.</div><button class="btn" data-a="updCheck">Check for updates</button>`)},
     spNew:()=>{sheet('New sponsored post',`<div class="field"><input id="spb" placeholder="Brand name" maxlength="40" autocomplete="off"></div><div class="field"><textarea id="spcap" rows="3" maxlength="300" placeholder="What are you promoting?" class="txt"></textarea></div><div class="field"><input id="spct" placeholder="Phone or address (optional)" maxlength="60" autocomplete="off"></div><div class="field"><input id="spv" placeholder="Video file name, e.g. chai.mp4 (optional)" maxlength="80" autocomplete="off" autocapitalize="none"></div><div class="sec" style="padding-top:2px">Runs for</div><div class="chips" id="spdur">${[3,7,14,30,60].map(d=>`<button class="chip ${d===7?'on':''}" data-a="spDur" data-v="${d}">${d} days</button>`).join('')}</div><button class="act" data-a="spPick">${ic('image')}<span class="grow" id="spmi">Add a photo (optional)<small>Photos are made small so they fit in the post</small></span></button><button class="btn" data-a="spPost">Create post data</button>`);S.spm=null;S.spd=7},
     spPick:()=>pickFile('image/*',f=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,640/Math.max(im.width,im.height)),cv=document.createElement('canvas');cv.width=im.width*k;cv.height=im.height*k;cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);const src=cv.toDataURL('image/jpeg',.6);S.spm={kind:'image',src};const e=$('#spmi');if(e)e.innerHTML=`${esc(f.name)}<small>Photo · ${size(src.length*.75)}</small>`};im.src=r.result};r.readAsDataURL(f)}),
     spPost:()=>{
@@ -2413,5 +2428,20 @@ if(NATIVE){
 }
 
 render();
+
+/* ---------- v4.9 swipe gestures ---------- */
+(()=>{let t=null;const W=210;
+ const closeAll=ex=>document.querySelectorAll('.srw>.li').forEach(l=>{if(l!==ex&&l.style.transform){l.style.transform='';l._open=false}});
+ document.addEventListener('touchstart',e=>{const x=e.touches[0],li=e.target.closest('.srw>.li'),mb=e.target.closest('.mrow .b');
+  if(!li)closeAll();
+  t=li?{k:'c',el:li,x:x.clientX,y:x.clientY,base:li._open?-W:0}:mb?{k:'m',el:mb.closest('.mrow'),b:mb,x:x.clientX,y:x.clientY,base:0}:null;if(t)t.on=false},{passive:true});
+ document.addEventListener('touchmove',e=>{if(!t)return;const x=e.touches[0],dx=x.clientX-t.x,dy=x.clientY-t.y;
+  if(!t.on){if(Math.abs(dy)>12&&Math.abs(dy)>Math.abs(dx)){t=null;return}if(Math.abs(dx)>12&&Math.abs(dx)>Math.abs(dy)*1.3){t.on=true;t.el.style.transition='none'}else return}
+  if(t.k==='c'){const v=Math.max(-W,Math.min(0,t.base+dx));t.el.style.transform='translateX('+v+'px)'}
+  else{const v=Math.max(0,Math.min(70,dx));t.el.style.transform='translateX('+v+'px)'}},{passive:true});
+ document.addEventListener('touchend',e=>{if(!t)return;const x=e.changedTouches[0],dx=x.clientX-t.x,T=t;t=null;if(!T.on)return;T.el.style.transition='';
+  if(T.k==='c'){const open=(T.base+dx)<-W/2;T.el.style.transform=open?'translateX('+(-W)+'px)':'';T.el._open=open;T.el._lp=true;setTimeout(()=>{T.el._lp=false},350)}
+  else{T.el.style.transform='';if(dx>55){const id=T.b.dataset.v;if(id&&ACT.replyTo){try{navigator.vibrate&&navigator.vibrate(15)}catch(_){}ACT.replyTo(id)}}}},{passive:true});
+})();
 </script>
 </body></html>
