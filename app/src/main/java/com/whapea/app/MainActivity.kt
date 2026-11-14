@@ -2,7 +2,6 @@ package com.whapea.app
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.bluetooth.BluetoothAdapter
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -65,7 +64,7 @@ class MainActivity : ComponentActivity() {
             if (result.values.all { it }) {
                 askAndStart()
             } else {
-                Core.say("Allow the Bluetooth (Nearby devices) permission so Vynk can work")
+                Core.say("Permission needed")
             }
         }
 
@@ -153,21 +152,9 @@ class MainActivity : ComponentActivity() {
         js("nativeUi(${q(Core.uiJson())})")
     }
 
-    private fun neededPermissions(): List<String> {
-        val list = mutableListOf<String>()
-        if (Build.VERSION.SDK_INT >= 31) {
-            list.add(Manifest.permission.BLUETOOTH_SCAN)
-            list.add(Manifest.permission.BLUETOOTH_ADVERTISE)
-            list.add(Manifest.permission.BLUETOOTH_CONNECT)
-        } else {
-            list.add(Manifest.permission.ACCESS_FINE_LOCATION)
-        }
-        return list
-    }
+    private fun neededPermissions(): List<String> = emptyList()
 
-    private fun hasPermissions(): Boolean = neededPermissions().all {
-        ContextCompat.checkSelfPermission(this, it) == PackageManager.PERMISSION_GRANTED
-    }
+    private fun hasPermissions(): Boolean = true
 
     private fun askAndStart() {
         wantStart = true
@@ -178,12 +165,6 @@ class MainActivity : ComponentActivity() {
             permissionLauncher.launch(missing.toTypedArray())
             return
         }
-        if (!Core.btOn()) {
-            Core.say("Turn on Bluetooth")
-            startActivity(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE))
-            return
-        }
-        Core.start()
         Core.auto = true
         askBatteryOnce()
         ContextCompat.startForegroundService(this, Intent(this, BtService::class.java))
@@ -202,15 +183,7 @@ class MainActivity : ComponentActivity() {
         } catch (e: Exception) { }
     }
 
-    private fun makeVisible() {
-        if (!hasPermissions() || !Core.btOn()) {
-            askAndStart()
-            return
-        }
-        val i = Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE)
-        i.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 86400)
-        startActivity(i)
-    }
+    private fun makeVisible() {}
 
     /** Functions the screen (index.html) can call. */
     inner class Bridge {

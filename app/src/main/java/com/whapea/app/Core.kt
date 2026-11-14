@@ -1,11 +1,6 @@
 package com.whapea.app
 
 import android.annotation.SuppressLint
-import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothDevice
-import android.bluetooth.BluetoothManager
-import android.bluetooth.BluetoothServerSocket
-import android.bluetooth.BluetoothSocket
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -19,43 +14,25 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import org.json.JSONArray
 import org.json.JSONObject
-import java.io.DataInputStream
-import java.io.DataOutputStream
 import java.net.URL
 import java.security.MessageDigest
-import java.util.UUID
 import javax.net.ssl.HttpsURLConnection
 import java.util.concurrent.Executors
 
-data class Found(val address: String, val name: String, val paired: Boolean)
-
-/**
- * All Bluetooth work lives here. It uses plain Android Bluetooth (RFCOMM sockets),
- * so it does not need Google Play services. The screen (index.html) decides what
- * the messages mean; this class only moves text between phones.
- */
+/** Notifications, local storage, media and updates. (Bluetooth was removed.) */
 @SuppressLint("MissingPermission")
 object Core {
-    private val APP_UUID: UUID = UUID.fromString("8f2b6c1e-5d3a-4c7e-9b1a-0a6c3e5f7d21")
-    private const val MAX_FRAME = 6_000_000
     private const val FEED_URL = "https://raw.githubusercontent.com/shahzainn2129-pixel/Whapea/main/sponsors.json"
     private const val OWNER_HASH = "cd3c52d11ece85816bab73c0147660f24d46de44591dbe6ef7e4d60103d43f46"
 
     private var ready = false
     private lateinit var app: Context
     lateinit var prefs: SharedPreferences
-    private var adapter: BluetoothAdapter? = null
-    private var server: BluetoothServerSocket? = null
-    private var receiverOn = false
 
     private val main = Handler(Looper.getMainLooper())
     val io = Executors.newCachedThreadPool()
     private val writer = Executors.newSingleThreadExecutor()
 
-    private class Conn(val socket: BluetoothSocket, val out: DataOutputStream)
-
-    private val conns = mutableMapOf<String, Conn>()
-    private val found = mutableListOf<Found>() // main thread only
 
     var running = false
     var scanning = false
@@ -78,7 +55,6 @@ object Core {
         if (ready) return
         app = context.applicationContext
         prefs = app.getSharedPreferences("whapea", Context.MODE_PRIVATE)
-        adapter = (app.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager).adapter
         ready = true
         if (Build.VERSION.SDK_INT >= 26) {
             val nm = app.getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
@@ -259,211 +235,22 @@ object Core {
         prefs.edit().putString("state", s).apply()
     }
 
-    fun btOn(): Boolean = adapter?.isEnabled == true
+    fun btOn(): Boolean = false
 
     fun say(t: String) {
         status = t
         onUi()
     }
 
-    fun uiJson(): String {
-        val arr = JSONArray()
-        for (f in found) arr.put(JSONObject().put("a", f.address).put("n", f.name).put("p", f.paired))
-        return JSONObject().put("running", running).put("scanning", scanning)
-            .put("text", status).put("btOn", btOn()).put("found", arr).toString()
-    }
+    fun uiJson(): String = JSONObject().put("running", false).put("scanning", false)
+        .put("text", status).put("btOn", false).put("found", JSONArray()).toString()
 
-    // ---------- start / stop ----------
-    fun start() {
-        if (running) return
-        val a = adapter
-        if (a == null) {
-            say("This phone has no Bluetooth")
-            return
-        }
-        if (!a.isEnabled) {
-            say("Turn on Bluetooth, then open Vynk again")
-            return
-        }
-        running = true
-        status = "Ready. Waiting for people nearby"
-        listenForever(a)
-        registerScanReceiver()
-        refreshPaired()
-        scan()
-        onUi()
-    }
-
-    fun stop() {
-        running = false
-        scanning = false
-        try { adapter?.cancelDiscovery() } catch (e: Exception) { }
-        try { server?.close() } catch (e: Exception) { }
-        synchronized(conns) {
-            for (c in conns.values) try { c.socket.close() } catch (e: Exception) { }
-            conns.clear()
-        }
-        found.clear()
-        status = "Stopped"
-        onUi()
-    }
-
-    private fun listenForever(a: BluetoothAdapter) {
-        io.execute {
-            while (running) {
-                try {
-                    val ss = a.listenUsingInsecureRfcommWithServiceRecord("Vynk", APP_UUID)
-                    server = ss
-                    while (running) {
-                        val s = ss.accept()
-                        io.execute { setupSocket(s) }
-                    }
-                } catch (e: Exception) {
-                    if (!running) break
-                    try { Thread.sleep(1500) } catch (ie: InterruptedException) { break }
-                }
-            }
-        }
-    }
-
-    // ---------- finding people ----------
-    private val scanReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-            when (intent.action) {
-                BluetoothDevice.ACTION_FOUND -> {
-                    val d: BluetoothDevice? = if (Build.VERSION.SDK_INT >= 33) {
-                        intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE, BluetoothDevice::class.java)
-                    } else {
-                        @Suppress("DEPRECATION")
-                        intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE)
-                    }
-                    if (d != null && found.none { it.address == d.address }) {
-                        found.add(Found(d.address, d.name ?: d.address, d.bondState == BluetoothDevice.BOND_BONDED))
-                        onUi()
-                    }
-                }
-                BluetoothAdapter.ACTION_DISCOVERY_FINISHED -> {
-                    scanning = false
-                    onUi()
-                }
-            }
-        }
-    }
-
-    private fun registerScanReceiver() {
-        if (receiverOn) return
-        val f = IntentFilter()
-        f.addAction(BluetoothDevice.ACTION_FOUND)
-        f.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED)
-        ContextCompat.registerReceiver(app, scanReceiver, f, ContextCompat.RECEIVER_EXPORTED)
-        receiverOn = true
-    }
-
-    private fun refreshPaired() {
-        val a = adapter ?: return
-        try {
-            for (d in a.bondedDevices) {
-                if (found.none { it.address == d.address }) {
-                    found.add(Found(d.address, d.name ?: d.address, true))
-                }
-            }
-        } catch (e: SecurityException) {
-            status = "Allow the Nearby devices permission"
-        }
-    }
-
-    fun scan() {
-        val a = adapter ?: return
-        if (!running) return
-        try {
-            a.cancelDiscovery()
-            refreshPaired()
-            scanning = a.startDiscovery()
-        } catch (e: SecurityException) {
-            status = "Allow the Nearby devices permission"
-        }
-        onUi()
-    }
-
-    // ---------- connecting ----------
-    fun connect(address: String) {
-        val a = adapter ?: return
-        val label = found.firstOrNull { it.address == address }?.name ?: address
-        say("Connecting to $label...")
-        io.execute {
-            try {
-                a.cancelDiscovery()
-                val s = a.getRemoteDevice(address).createInsecureRfcommSocketToServiceRecord(APP_UUID)
-                s.connect()
-                setupSocket(s)
-            } catch (e: Exception) {
-                main.post { say("Could not connect. Is Vynk open on $label?") }
-            }
-        }
-    }
-
-    /** Runs on a background thread for the whole life of one connection. */
-    private fun setupSocket(s: BluetoothSocket) {
-        val addr = s.remoteDevice.address
-        try {
-            val out = DataOutputStream(s.outputStream)
-            val inp = DataInputStream(s.inputStream)
-            synchronized(conns) {
-                conns.remove(addr)?.let { try { it.socket.close() } catch (e: Exception) { } }
-                conns[addr] = Conn(s, out)
-            }
-            main.post {
-                status = "Connected"
-                onLink(addr, true)
-                onUi()
-            }
-            while (true) {
-                val n = inp.readInt()
-                if (n <= 0 || n > MAX_FRAME) break
-                val b = ByteArray(n)
-                inp.readFully(b)
-                if (b[0] == 1.toByte()) { CallAudio.onFrame(addr, b); continue }
-                val raw = String(b, Charsets.UTF_8)
-                main.post { dispatch(addr, raw) }
-            }
-        } catch (e: Exception) {
-            // connection closed
-        } finally {
-            val last = synchronized(conns) {
-                if (conns[addr]?.socket === s) { conns.remove(addr); true } else false
-            }
-            try { s.close() } catch (e: Exception) { }
-            if (last) main.post { onLink(addr, false) }
-        }
-    }
-
-    fun send(addr: String, json: String) {
-        writer.execute {
-            try {
-                val c = synchronized(conns) { conns[addr] } ?: return@execute
-                val b = json.toByteArray(Charsets.UTF_8)
-                synchronized(c.out) {
-                    c.out.writeInt(b.size)
-                    c.out.write(b)
-                    c.out.flush()
-                }
-            } catch (e: Exception) {
-                // the reader thread notices a broken connection
-            }
-        }
-    }
-
-    /** Sends raw bytes (live voice) right away, without waiting behind messages. */
-    fun sendFrame(addr: String, b: ByteArray) {
-        try {
-            val c = synchronized(conns) { conns[addr] } ?: return
-            synchronized(c.out) {
-                c.out.writeInt(b.size)
-                c.out.write(b)
-                c.out.flush()
-            }
-        } catch (e: Exception) { }
-    }
+    fun start() {}
+    fun stop() { running = false }
+    fun scan() {}
+    fun connect(address: String) {}
+    fun send(addr: String, json: String) {}
+    fun sendFrame(addr: String, b: ByteArray) {}
 
     // ---------- sponsor posts (need internet, nothing else does) ----------
     fun fetchFeed(done: (String?) -> Unit) {
