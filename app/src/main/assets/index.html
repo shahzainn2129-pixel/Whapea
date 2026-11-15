@@ -502,7 +502,18 @@ const ACT={
       sheet('Alerts when app is closed',`<div id="alchk">${it(st.notif,'Notifications','Allow Vynk to show alerts','notif')}${it(st.msgs,'Message alerts','Sound and pop-up for new messages','notif')}${it(st.calls,'Call alerts','Ringing and incoming call notice','notif')}${it(st.fsi,'Call screen when phone is locked','Lets the call open over the lock screen','fsi')}${it(st.battery,'Battery: Unrestricted','So Android does not stop Vynk in the background','battery')}
       ${mk?`<div class="note2" style="font-size:13px;line-height:1.6;text-align:left"><b>Your phone brand needs one more step.</b> Open App settings, then: <b>Battery → Launch / App launch → Manage manually</b> and allow Auto-launch, Background activity. Also allow <b>Pop-up windows while in background</b> and <b>Lock screen notifications</b>.<br><button class="tag" style="margin-top:8px" data-a="alOpen" data-v="app">Open App settings</button></div>`:''}
       <div class="note2" style="font-size:13px">${bad?'Fix the red items, then come back here. This page updates by itself.':'All good. You will get message and call alerts even when Vynk is closed.'}</div></div>`)},
-    alOpen:v=>{try{Android.openAlertSettings(v)}catch(e){}},
+    permSetup:async()=>{let st=null;try{st=JSON.parse(Android.alertStatus())}catch(e){}if(!st){return}
+  const q=async n=>{try{const r=await navigator.permissions.query({name:n});return r.state==='granted'}catch(e){return false}};
+  const mic=SET.pmic||await q('microphone'),cam=SET.pcam||await q('camera');
+  const it=(ok,ic2,t,sub,btn)=>`<div class="act" style="cursor:default">${ic(ic2,22)}<span class="grow">${t}<small>${sub}</small></span>${ok?`<span class="val" style="color:var(--ink);font-weight:700">${ic('check',18)}</span>`:`<button class="tag" data-a="pmAllow" data-v="${btn}">Allow</button>`}</div>`;
+  const all=st.notif&&st.fsi&&st.battery&&mic&&cam;
+  sheet('Allow Vynk to work properly',`<div id="pmset"><div class="note2" style="margin:0;padding:0 20px 6px;font-size:13px">So you get messages and calls on time, even when Vynk is closed. You can change these anytime in your phone settings.</div>${it(st.notif&&st.msgs,'bell','Notifications','New message alerts','notif')}${it(st.fsi&&st.calls,'phone','Calls on lock screen','Incoming calls open full screen','fsi')}${it(st.battery,'timer','Run in background','Battery set to Unrestricted','battery')}${it(mic,'mic','Microphone','For calls and voice notes','mic')}${it(cam,'camera','Camera','For video calls and photos','cam')}<div style="padding:10px 20px 14px"><button class="btn" data-a="pmDone">${all?'Done':'Continue'}</button></div></div>`)},
+ pmAllow:v=>{try{if(v==='mic'){if(Android.micOk()){SET.pmic=true;persistSoon()}else setTimeout(()=>{SET.pmic=true;persistSoon();if($('#pmset')){closeSheet();ACT.permSetup()}},5000)}
+   else if(v==='cam'){if(Android.camOk()){SET.pcam=true;persistSoon()}else setTimeout(()=>{SET.pcam=true;persistSoon();if($('#pmset')){closeSheet();ACT.permSetup()}},5000)}
+   else Android.openAlertSettings(v)}catch(e){}
+  if(v==='mic'||v==='cam'){closeSheet();setTimeout(()=>ACT.permSetup(),300)}},
+ pmDone:()=>{SET.permDone=true;persistSoon();closeSheet()},
+ alOpen:v=>{try{Android.openAlertSettings(v)}catch(e){}},
  cm_mute:v=>{const c=chatOf(v);c.muted=!c.muted;closeSheet();render();toast(c.muted?'Muted':'Unmuted')},
  cm_arch:v=>{chatOf(v).archived=true;closeSheet();if(S.chat)closeChat();render();toast('Chat archived')},
  cm_unread:v=>{const c=chatOf(v);if(c.unread||c.mk){c.unread=0;c.mk=false}else c.mk=true;closeSheet();render()},
@@ -1800,6 +1811,8 @@ const UR={
  setTimeout(()=>{try{if(ME.name&&SET.seenVer!=='5.1'){const first=SET.tutPending;SET.seenVer='5.1';persistSoon();if(!first)ACT.whatsNew()}}catch(e){}},3500)})();
 
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&document.getElementById('alchk')){closeSheet();ACT.notifHelp()}});
-setTimeout(()=>{try{if(!NATIVE||!NET.s||SET.tutPending)return;const st=JSON.parse(Android.alertStatus());const bad=!(st.notif&&st.calls&&st.msgs&&st.fsi&&st.battery);if(bad&&Date.now()-(SET.alertAskT||0)>864e5){SET.alertAskT=Date.now();persistSoon();ACT.notifHelp()}}catch(e){}},7000);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&document.getElementById('pmset')){closeSheet();setTimeout(()=>ACT.permSetup(),150)}});
+setTimeout(()=>{try{if(NATIVE&&ME.name&&!SET.permDone&&!SET.tutPending){ACT.permSetup();return}}catch(e){}},4500);
+setTimeout(()=>{try{if(!NATIVE||!NET.s||SET.tutPending||!SET.permDone)return;const st=JSON.parse(Android.alertStatus());const bad=!(st.notif&&st.calls&&st.msgs&&st.fsi&&st.battery);if(bad&&Date.now()-(SET.alertAskT||0)>864e5){SET.alertAskT=Date.now();persistSoon();ACT.notifHelp()}}catch(e){}},7000);
 </script>
 </body></html>
