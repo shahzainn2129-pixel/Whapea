@@ -43,6 +43,15 @@ class MainActivity : ComponentActivity() {
     private fun hasCam(): Boolean =
         ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
 
+    private val locLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { r ->
+            js("nativeLoc(${r.values.any { it }})")
+        }
+
+    private fun hasLoc(): Boolean =
+        ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
+            ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+
     private val micLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { ok ->
             js("nativeMic(${ok})")
@@ -114,7 +123,9 @@ class MainActivity : ComponentActivity() {
                 web.evaluateJavascript("nativeBack()") { r -> if (r != "true") finish() }
             }
         })
-        web.loadUrl("file:///android_asset/index.html")
+        val ota = Ota.current(this)
+        if (ota != null) web.loadUrl("file://" + ota.absolutePath) else web.loadUrl("file:///android_asset/index.html")
+        Ota.check(this)
     }
 
     override fun onPause() {
@@ -360,6 +371,68 @@ class MainActivity : ComponentActivity() {
 
         @JavascriptInterface
         fun buildNo(): Int = BuildConfig.BUILD_N
+
+        @JavascriptInterface
+        fun otaOk() { Ota.confirm(this@MainActivity) }
+
+        @JavascriptInterface
+        fun otaVer(): Int = Ota.version(this@MainActivity)
+
+        @JavascriptInterface
+        fun fileSave(id: String, dataUrl: String, ext: String): String = Core.fileSave(id, dataUrl, ext)
+
+        @JavascriptInterface
+        fun fileRead(uri: String): String = Core.fileRead(uri)
+
+        @JavascriptInterface
+        fun fileExport(uri: String, name: String, mime: String): Boolean = Core.fileExport(uri, name, mime)
+
+        @JavascriptInterface
+        fun locOk(): Boolean {
+            if (hasLoc()) return true
+            runOnUiThread { locLauncher.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)) }
+            return false
+        }
+
+        @SuppressLint("MissingPermission")
+        @JavascriptInterface
+        fun locGet() {
+            runOnUiThread {
+                try {
+                    if (!hasLoc()) { js("nativeLocRes(null)"); return@runOnUiThread }
+                    val lm = getSystemService(Context.LOCATION_SERVICE) as android.location.LocationManager
+                    val provs = listOf(android.location.LocationManager.GPS_PROVIDER, android.location.LocationManager.NETWORK_PROVIDER)
+                        .filter { try { lm.isProviderEnabled(it) } catch (e: Exception) { false } }
+                    if (provs.isEmpty()) { js("nativeLocRes(null)"); return@runOnUiThread }
+                    var best: android.location.Location? = null
+                    for (p in provs) {
+                        val l = lm.getLastKnownLocation(p)
+                        if (l != null && (best == null || l.accuracy < best!!.accuracy)) best = l
+                    }
+                    var done = false
+                    val finish = { l: android.location.Location? ->
+                        if (!done) {
+                            done = true
+                            val x = l ?: best
+                            if (x == null) js("nativeLocRes(null)")
+                            else js("nativeLocRes({lat:${x.latitude},lng:${x.longitude},acc:${Math.round(x.accuracy)}})")
+                        }
+                    }
+                    if (best != null && System.currentTimeMillis() - best!!.time < 60000) { finish(best); return@runOnUiThread }
+                    web.postDelayed({ finish(null) }, 12000)
+                    if (Build.VERSION.SDK_INT >= 30) {
+                        lm.getCurrentLocation(provs[0], null, mainExecutor) { l -> finish(l) }
+                    } else {
+                        lm.requestSingleUpdate(provs[0], object : android.location.LocationListener {
+                            override fun onLocationChanged(l: android.location.Location) { finish(l) }
+                            override fun onStatusChanged(p: String?, st: Int, e: Bundle?) { }
+                            override fun onProviderEnabled(p: String) { }
+                            override fun onProviderDisabled(p: String) { }
+                        }, android.os.Looper.getMainLooper())
+                    }
+                } catch (e: Exception) { js("nativeLocRes(null)") }
+            }
+        }
 
         @JavascriptInterface
         fun checkUpdate() {

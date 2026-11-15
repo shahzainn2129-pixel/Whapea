@@ -25,12 +25,28 @@ jobs:
         if: failure()
         run: |
           grep -E "^e: |error:|What went wrong|Execution failed|Could not " build.log | head -30 | while IFS= read -r l; do echo "::error::$l"; done
+      - name: Sign app screen for over-the-air updates
+        env:
+          OTA_KEY: ${{ secrets.OTA_KEY }}
+        run: |
+          if [ -z "$OTA_KEY" ]; then echo "OTA_KEY not set, skipping"; exit 0; fi
+          mkdir -p ota && cp app/src/main/assets/index.html ota/ota-index.html
+          printf '%s\n' "$OTA_KEY" > ota/key.pem
+          H=$(sha256sum ota/ota-index.html | cut -d' ' -f1)
+          V=${{ github.run_number }}
+          printf '%s' "$V:0:$H" > ota/msg.txt
+          SIG=$(openssl dgst -sha256 -sign ota/key.pem ota/msg.txt | base64 -w0)
+          printf '{"v":%s,"min":0,"sha":"%s","sig":"%s"}' "$V" "$H" "$SIG" > ota/ota-manifest.json
+          rm ota/key.pem ota/msg.txt
       - name: Publish APK in Releases
         uses: softprops/action-gh-release@v2
         with:
           tag_name: build-${{ github.run_number }}
           name: Vynk build ${{ github.run_number }}
-          files: app/build/outputs/apk/debug/app-debug.apk
+          files: |
+            app/build/outputs/apk/debug/app-debug.apk
+            ota/ota-index.html
+            ota/ota-manifest.json
       - name: Build release bundle (for Play Store)
         continue-on-error: true
         run: gradle bundleRelease --no-daemon --console=plain

@@ -214,6 +214,54 @@ object Core {
         } catch (e: Exception) { "" }
     }
 
+    /** Saves a document or audio file (any type, up to 1 MB) in the app's own folder. */
+    fun fileSave(id: String, dataUrl: String, ext: String): String {
+        return try {
+            val comma = dataUrl.indexOf(',')
+            if (comma < 0 || !dataUrl.startsWith("data:")) return ""
+            val raw = android.util.Base64.decode(dataUrl.substring(comma + 1), android.util.Base64.DEFAULT)
+            if (raw.size > 1_000_000) return ""
+            val name = id.filter { it.isLetterOrDigit() || it == '-' || it == '_' }.take(40).ifEmpty { "f" }
+            val e = ext.lowercase().filter { it in 'a'..'z' || it in '0'..'9' }.take(5).ifEmpty { "bin" }
+            val f = java.io.File(mediaDir(), "$name.$e")
+            f.writeBytes(raw)
+            "file://" + f.absolutePath
+        } catch (e: Exception) { "" }
+    }
+
+    /** Copies a saved file into the phone's Downloads/Vynk folder. */
+    fun fileExport(uri: String, name: String, mime: String): Boolean {
+        return try {
+            val f = java.io.File(uri.removePrefix("file://"))
+            if (!f.exists() || f.parentFile?.canonicalPath != mediaDir().canonicalPath) return false
+            val safe = name.replace(Regex("[^A-Za-z0-9._ -]"), "_").take(80).ifEmpty { "file" }
+            if (android.os.Build.VERSION.SDK_INT >= 29) {
+                val cv = android.content.ContentValues()
+                cv.put(android.provider.MediaStore.Downloads.DISPLAY_NAME, safe)
+                cv.put(android.provider.MediaStore.Downloads.MIME_TYPE, mime.ifBlank { "application/octet-stream" })
+                cv.put(android.provider.MediaStore.Downloads.RELATIVE_PATH, "Download/Vynk")
+                val u = app.contentResolver.insert(android.provider.MediaStore.Downloads.EXTERNAL_CONTENT_URI, cv) ?: return false
+                val os = app.contentResolver.openOutputStream(u) ?: return false
+                os.use { o -> f.inputStream().use { it.copyTo(o) } }
+                true
+            } else {
+                val dir = java.io.File(android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_DOWNLOADS), "Vynk")
+                dir.mkdirs()
+                f.copyTo(java.io.File(dir, safe), true)
+                true
+            }
+        } catch (e: Exception) { false }
+    }
+
+    /** Reads a saved file as base64 (for sending). */
+    fun fileRead(uri: String): String {
+        return try {
+            val f = java.io.File(uri.removePrefix("file://"))
+            if (f.parentFile?.canonicalPath != mediaDir().canonicalPath) return ""
+            android.util.Base64.encodeToString(f.readBytes(), android.util.Base64.NO_WRAP)
+        } catch (e: Exception) { "" }
+    }
+
     fun mediaRead(uri: String): String {
         return try {
             val f = java.io.File(uri.removePrefix("file://"))
