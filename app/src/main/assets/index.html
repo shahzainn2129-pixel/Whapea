@@ -65,6 +65,14 @@ html.vk .grid4 .c{width:54px;height:54px;background:transparent!important;border
 html.vk .grid4 button:active .c{transform:scale(.92);background:var(--ink)!important;color:var(--bg)}
 html.vk .grid4 .c svg{fill:none!important;stroke:currentColor;stroke-width:1.7}
 .fdl{margin-left:auto;width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:transparent;color:inherit;display:grid;place-items:center;flex:none}.locb{display:block;width:100%;margin-top:6px;height:34px;border-radius:10px;border:1px solid var(--line);background:transparent;color:inherit;font-weight:600;font-size:13px}
+html.vk .mrow .b{padding:6px 11px 5px}
+html.vk .b.tx{display:block}
+html.vk .b.tx::after{display:none}
+html.vk .b.tx .tt{display:inline}
+html.vk .b.ts{white-space:nowrap;width:max-content;max-width:100%}
+html.vk .b.tx .meta{display:inline-flex;float:none;vertical-align:bottom;margin:0 0 -1px 10px;top:0;white-space:nowrap;line-height:1;position:relative;bottom:-1px}
+.vk .b:not(.tx) .meta{white-space:nowrap;margin:4px 0 -2px 8px;top:0;line-height:1}
+.vk .voice small{white-space:nowrap}
 </style>
 </head><body>
 
@@ -400,7 +408,7 @@ function msgHTML(c,m,i){
   let body='';
   if(m.deleted)body=`<div class="gone">${ic('ban',15)} ${own?'You deleted this message':'This message was deleted'}</div>`;
   else{
-    if(m.type==='text'){body=hl(m.text)}
+    if(m.type==='text'){body=`<span class="tt">${hl(m.text)}</span>`}
     if(m.type==='voice'){const on=S.playing===m.id;body=`<div class="voice"><button class="pp" data-a="play" data-v="${m.id}" aria-label="Play">${ic(on?'pause':'play',18)}</button><div class="wave">${[...Array(26)].map((_,k)=>`<i class="${on&&k<S.pp?'on':''}" style="height:${6+((k*7+m.dur*3)%19)}px"></i>`).join('')}</div><small>${dur(on?Math.round(m.dur*S.pp/26):m.dur)}</small>${on?`<button class="spd" data-a="rate" data-v="">${S.rate||1}x</button>`:''}</div>`}
     if(m.type==='img')body=`<img class="img" data-a="openMedia" data-v="${m.id}" src="${m.src}" alt="Photo">${m.text?hl(m.text):''}`;
     if(m.type==='video')body=`<div class="vid" data-a="openMedia" data-v="${m.id}"><video src="${m.src}#t=0.2" preload="metadata" muted playsinline></video><span class="vp">${ic('play',30)}</span>${m.dur?`<small>${dur(m.dur)}</small>`:''}</div>${m.text?hl(m.text):''}`;
@@ -411,7 +419,7 @@ function msgHTML(c,m,i){
   }
   const q=m.reply?`<div class="quote"><b>${esc(m.reply.who)}</b>${esc(m.reply.text)}</div>`:'';
   const rx=Object.entries(m.rx||{}).map(([e,n])=>`<span>${e}${n>1?' '+n:''}</span>`).join('');
-  return `<div class="mrow ${own?'out':'in'}${Date.now()-m.t<800?' pop':''}" style="--h:${own?0:P[m.from].hue}"><div class="b" role="button" tabindex="0" data-a="msg" data-v="${m.id}">${g&&!own?`<div class="who">${esc(P[m.from].name)}</div>`:''}${m.fwd?`<div class="fwd">${ic('fwd',13)} Forwarded</div>`:''}${q}${body}<span class="meta">${m.star?ic('star',12):''}${m.edited&&!m.deleted?'edited':''}${c.disap?ic('timer',12):''}${fmt(m.t)}${own?tick(m):''}</span></div>${rx?`<div class="rx">${rx}</div>`:''}</div>`}
+  return `<div class="mrow ${own?'out':'in'}${Date.now()-m.t<800?' pop':''}" style="--h:${own?0:P[m.from].hue}"><div class="b${m.type==='text'&&!m.deleted?' tx'+((m.text||'').length<=26&&!/\n/.test(m.text||'')?' ts':''):''}" style="--mw:${(own?80:62)+(m.edited?44:0)+(m.star?14:0)+(c.disap?14:0)}px" role="button" tabindex="0" data-a="msg" data-v="${m.id}">${g&&!own?`<div class="who">${esc(P[m.from].name)}</div>`:''}${m.fwd?`<div class="fwd">${ic('fwd',13)} Forwarded</div>`:''}${q}${body}<span class="meta">${m.star?ic('star',12):''}${m.edited&&!m.deleted?'edited':''}${c.disap?ic('timer',12):''}${fmt(m.t)}${own?tick(m):''}</span></div>${rx?`<div class="rx">${rx}</div>`:''}</div>`}
 const pinTxt=m=>m.type==='text'?m.text:({voice:'Voice message',img:'Photo',video:'Video',file:'File',loc:'Location',poll:'Poll'})[m.type]||'Message';
 function dayLbl(a,m){const d=new Date(m.t),k=x=>new Date(x).toDateString();if(a&&k(a.t)===k(m.t))return '';const t=new Date(),y=new Date(Date.now()-864e5);const l=k(m.t)===k(t)?'Today':k(m.t)===k(y)?'Yesterday':d.toLocaleDateString(undefined,{day:'numeric',month:'short',year:d.getFullYear()===t.getFullYear()?undefined:'numeric'});return `<div class="dlbl"><span>${l}</span></div>`}
 function drawMsgs(scroll){
@@ -1336,7 +1344,11 @@ if(NATIVE){
       if(AUD)AUD.pause();
       const a=AUD=new Audio(m.src);a.playbackRate=S.rate||1;S.playing=v;S.pp=0;
       const fail=()=>{if(AUD===a){S.playing=null;toast('Could not play this voice message');drawMsgs(false)}};
-      a.ontimeupdate=()=>{if(AUD!==a)return;S.pp=Math.min(26,Math.round(26*a.currentTime/Math.max(1,m.dur)));drawMsgs(false)};
+      a.ontimeupdate=()=>{if(AUD!==a)return;const pp=Math.min(26,Math.round(26*a.currentTime/Math.max(1,m.dur)));if(pp===S.pp)return;S.pp=pp;
+        const bt=document.querySelector('.pp[data-v="'+v+'"]'),vb=bt&&bt.closest('.voice');
+        if(!vb){drawMsgs(false);return}
+        vb.querySelectorAll('.wave i').forEach((e,k)=>e.classList.toggle('on',k<pp));
+        const sm=vb.querySelector('small');if(sm)sm.textContent=dur(Math.min(m.dur,Math.round(a.currentTime)))};
       a.onended=()=>{if(AUD===a){S.playing=null;drawMsgs(false)}};
       a.onerror=fail;a.play().catch(fail);drawMsgs(false)},
   });
