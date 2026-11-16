@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "375107127013",
+    "project_id": "vynk-f4350",
+    "storage_bucket": "vynk-f4350.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:375107127013:android:9bd9d13dd21558b65cf60c",
+        "android_client_info": {
+          "package_name": "com.whapea.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDmRkh30vcp0HbdCW60yyqDg6QQ5BaAO_4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

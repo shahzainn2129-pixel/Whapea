@@ -467,6 +467,7 @@ class MainActivity : ComponentActivity() {
                 runOnUiThread { askBatteryOnce() }
                 try { ContextCompat.startForegroundService(this@MainActivity, Intent(this@MainActivity, BtService::class.java)) } catch (e: Exception) { }
                 NetWatch.start()
+                NetWatch.registerPush()
             }
         }
 

@@ -26,17 +26,43 @@ object NetWatch {
         Core.prefs.edit().putString("netsess", s).apply()
     }
 
+    /** Tells the server which phone to wake. Safe to call often; it only sends when needed. */
+    fun registerPush() {
+        Core.io.execute {
+            try {
+                val s = session() ?: return@execute
+                val uid = s.optString("uid")
+                if (uid.isBlank()) return@execute
+                var tok = Core.prefs.getString("fcm", null)
+                if (tok == null) {
+                    try {
+                        val t = com.google.android.gms.tasks.Tasks.await(com.google.firebase.messaging.FirebaseMessaging.getInstance().token, 15, java.util.concurrent.TimeUnit.SECONDS)
+                        tok = t
+                        Core.prefs.edit().putString("fcm", t).apply()
+                    } catch (e: Exception) { return@execute }
+                }
+                if (Core.prefs.getBoolean("fcmSent", false) && Core.prefs.getString("fcmUid", "") == uid) return@execute
+                val body = JSONObject().put("owner", uid).put("token", tok).put("updated_at", java.time.Instant.now().toString()).toString()
+                var r = call("/rest/v1/push_tokens?on_conflict=owner", "POST", body, s.optString("at"), "resolution=merge-duplicates,return=minimal")
+                if (r.first == 401 && refresh(s)) r = call("/rest/v1/push_tokens?on_conflict=owner", "POST", body, (session() ?: s).optString("at"), "resolution=merge-duplicates,return=minimal")
+                if (r.first in 200..299) Core.prefs.edit().putBoolean("fcmSent", true).putString("fcmUid", uid).apply()
+            } catch (e: Exception) { }
+        }
+    }
+
     fun start() {
         if (thread?.isAlive == true || session() == null) return
+        registerPush()
         thread = Thread { loop() }.also { it.isDaemon = true; it.start() }
     }
 
-    private fun call(path: String, method: String = "GET", body: String? = null, token: String): Pair<Int, String> {
+    private fun call(path: String, method: String = "GET", body: String? = null, token: String, prefer: String? = null): Pair<Int, String> {
         val c = URL(SB + path).openConnection() as HttpURLConnection
         c.requestMethod = method; c.connectTimeout = 10000; c.readTimeout = 15000
         c.setRequestProperty("apikey", KEY)
         c.setRequestProperty("Authorization", "Bearer $token")
         c.setRequestProperty("Content-Type", "application/json")
+        if (prefer != null) c.setRequestProperty("Prefer", prefer)
         if (body != null) { c.doOutput = true; c.outputStream.use { it.write(body.toByteArray()) } }
         val code = c.responseCode
         val txt = try { (if (code < 400) c.inputStream else c.errorStream)?.bufferedReader()?.readText() ?: "" } catch (e: Exception) { "" }
