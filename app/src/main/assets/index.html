@@ -73,6 +73,18 @@ html.vk .b.ts{white-space:nowrap;width:max-content;max-width:100%}
 html.vk .b.tx .meta{display:inline-flex;float:none;vertical-align:bottom;margin:0 0 -1px 10px;top:0;white-space:nowrap;line-height:1;position:relative;bottom:-1px}
 .vk .b:not(.tx) .meta{white-space:nowrap;margin:4px 0 -2px 8px;top:0;line-height:1}
 .vk .voice small{white-space:nowrap}
+.splash.vks2{background:radial-gradient(120% 70% at 50% 40%,#1c1c1c 0%,#0a0a0a 45%,#000 75%)!important;display:block}
+.splash.vks2 .sl{position:absolute;left:50%;top:41%;width:132px;height:132px;margin:-66px 0 0 -66px}
+.splash.vks2 .r1,.splash.vks2 .r2{position:absolute;left:50%;top:41%;border-radius:50%;border:1px solid rgba(255,255,255,.12);transform:translate(-50%,-50%);animation:spRing .9s ease-out both}
+.splash.vks2 .r1{width:210px;height:210px}
+.splash.vks2 .r2{width:300px;height:300px;border-color:rgba(255,255,255,.06);animation-delay:.12s}
+@keyframes spRing{from{opacity:0;transform:translate(-50%,-50%) scale(.8)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+.splash.vks2 .slock{position:absolute;left:0;right:0;bottom:152px;display:flex;gap:7px;justify-content:center;align-items:center;color:#9a9a9a;font:500 12px var(--font-body,Inter,Arial,sans-serif);letter-spacing:.04em}
+.splash.vks2 .sbar{position:absolute;left:50%;bottom:118px;width:56px;height:2px;margin-left:-28px;border-radius:2px;background:#262626;overflow:hidden}
+.splash.vks2 .sbar i{display:block;width:22px;height:100%;background:#fff;border-radius:2px;animation:spBar 1.1s ease-in-out infinite}
+@keyframes spBar{0%{transform:translateX(-24px)}100%{transform:translateX(58px)}}
+.splash.vks2 .sfrom{bottom:36px;font:500 12px var(--font-body,Inter,Arial,sans-serif);letter-spacing:.18em;text-transform:uppercase;color:#6f6f6f}
+.splash.vks2 .sfrom b{font:600 15px var(--font-body,Inter,Arial,sans-serif);letter-spacing:.22em;text-decoration:none;color:#d8d8d8;margin-top:6px}
 </style>
 </head><body>
 
@@ -961,7 +973,7 @@ function lockOffer(){if(SET.lockOn||SET.lockAsked||!NATIVE)return;SET.lockAsked=
   setTimeout(()=>{if(!$('#lock')&&!S.chat&&!document.querySelector('.scrim'))sheet('Protect your chats',`<div class="note2">Add a 4-digit code${bioAvail()?' and fingerprint':''} so only you can open Vynk. You can change this any time in Settings.</div>`+A('lockMenu','','lock','Set up app lock')+A('lockSkip','','x','Not now'))},2500)}
 
 /* ---------- polish: motion, skeletons, profiles ---------- */
-function splash(){const e=document.createElement('div');e.className='splash sp2 vks2';e.innerHTML=`<div class="sl">${WLOGO}</div><div class="sfrom">from<b>ZG Pro</b></div>`;phone.append(e);setTimeout(()=>e.remove(),1900)}
+function splash(){const e=document.createElement('div');e.className='splash sp2 vks2';e.innerHTML=`<i class="r2"></i><i class="r1"></i><div class="sl">${WLOGO}</div><div class="slock">${ic('lock',13)}End-to-end encrypted</div><div class="sbar"><i></i></div><div class="sfrom">from<b>ZG PRO</b></div>`;phone.append(e);setTimeout(()=>e.remove(),1900)}
 function tabAnim(){const b=$('#body');if(!b)return;b.classList.remove('tabin');let i=0;b.querySelectorAll('.li,.pc,.sp,.act,.card,.st1,.sec').forEach(e=>{if(i<14)e.style.setProperty('--i',i++)});void b.offsetWidth;b.classList.add('tabin')}
 
 let PROF=null;
