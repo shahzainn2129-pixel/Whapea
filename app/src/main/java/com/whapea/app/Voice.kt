@@ -43,6 +43,8 @@ object VoiceNote {
         }
     }
 
+    fun level(): Int = try { ((rec?.maxAmplitude ?: 0) * 60 / 12000).coerceIn(0, 60) } catch (e: Exception) { 0 }
+
     /** Returns {"src":"data:audio/mp4;base64,...","dur":seconds} or null. */
     fun stop(): String? {
         val r = rec ?: return null

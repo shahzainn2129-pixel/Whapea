@@ -297,6 +297,9 @@ class MainActivity : ComponentActivity() {
         fun recStart(): Boolean = hasMic() && VoiceNote.start(this@MainActivity)
 
         @JavascriptInterface
+        fun recLevel(): Int = VoiceNote.level()
+
+        @JavascriptInterface
         fun recStop(cancel: Boolean): String {
             if (cancel) { VoiceNote.cancel(); return "" }
             return VoiceNote.stop() ?: ""
