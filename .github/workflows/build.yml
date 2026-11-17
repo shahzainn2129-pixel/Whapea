@@ -1,7 +1,7 @@
 name: Build APK
 on:
   push:
-    branches: [main, master]
+    branches: [main, master, 'dev/**']
   workflow_dispatch:
 permissions:
   contents: write
@@ -26,6 +26,7 @@ jobs:
         run: |
           grep -E "^e: |error:|What went wrong|Execution failed|Could not " build.log | head -30 | while IFS= read -r l; do echo "::error::$l"; done
       - name: Sign app screen for over-the-air updates
+        if: github.ref_name == 'main' || github.ref_name == 'master'
         env:
           OTA_KEY: ${{ secrets.OTA_KEY }}
         run: |
@@ -39,6 +40,7 @@ jobs:
           printf '{"v":%s,"min":0,"sha":"%s","sig":"%s"}' "$V" "$H" "$SIG" > ota/ota-manifest.json
           rm ota/key.pem ota/msg.txt
       - name: Publish APK in Releases
+        if: github.ref_name == 'main' || github.ref_name == 'master'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: build-${{ github.run_number }}
@@ -48,9 +50,11 @@ jobs:
             ota/ota-index.html
             ota/ota-manifest.json
       - name: Build release bundle (for Play Store)
+        if: github.ref_name == 'main' || github.ref_name == 'master'
         continue-on-error: true
         run: gradle bundleRelease --no-daemon --console=plain
       - name: Keep release bundle
+        if: github.ref_name == 'main' || github.ref_name == 'master'
         continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
