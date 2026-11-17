@@ -125,9 +125,9 @@ object NetWatch {
                 val s = session() ?: break
                 if (Core.uiAttached) { if (Core.prefs.getLong("soclast", -1L) != -1L) Core.prefs.edit().putLong("soclast", -1L).apply(); socTick = 0; Thread.sleep(4000); continue }
                 val last = Core.prefs.getLong("netlast", 0L)
-                var (code, txt) = call("/rest/v1/frames?select=id,sender,payload&id=gt.$last&order=id.asc&limit=20", token = s.optString("at"))
+                var (code, txt) = call("/rest/v1/frames?select=id,sender,payload,created_at&id=gt.$last&order=id.asc&limit=20", token = s.optString("at"))
                 if (code == 401 && refresh(s)) {
-                    val r = call("/rest/v1/frames?select=id,sender,payload&id=gt.$last&order=id.asc&limit=20", token = s.optString("at"))
+                    val r = call("/rest/v1/frames?select=id,sender,payload,created_at&id=gt.$last&order=id.asc&limit=20", token = s.optString("at"))
                     code = r.first; txt = r.second
                 }
                 if (code == 200) {
@@ -138,6 +138,19 @@ object NetWatch {
                         max = maxOf(max, f.getLong("id"))
                         val p = try { JSONObject(f.getString("payload")) } catch (e: Exception) { continue }
                         val who = nameOf(f.getString("sender"), s.optString("at"))
+                        if (p.has("e") && p.has("c")) {
+                            // End-to-end encrypted: the phone cannot read it here, only the hint (m = message, c = call ring).
+                            val fresh = try {
+                                val df = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", java.util.Locale.US)
+                                df.timeZone = java.util.TimeZone.getTimeZone("UTC")
+                                System.currentTimeMillis() - (df.parse(f.optString("created_at").take(19))?.time ?: 0L) < 45000
+                            } catch (e: Exception) { false }
+                            when (p.optString("h")) {
+                                "m" -> Core.notifyMsg(f.getString("sender"), who, "New message")
+                                "c" -> if (fresh) { Core.notifyCallFrom(who); Core.ringStart(); ringUntil = System.currentTimeMillis() + 40000 }
+                            }
+                            continue
+                        }
                         when (p.optString("t")) {
                             "msg" -> {
                                 val body = when (p.optString("type")) { "img" -> "Photo"; "voice" -> "Voice message"; "contact" -> "Contact"; else -> p.optString("text").take(120) }
