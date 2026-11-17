@@ -877,6 +877,7 @@ async function e2Enc(uid,s){try{const ks=await e2Keys();const pe=await e2Peer(ui
   const key=await e2Mix(stat,dh2),iv=crypto.getRandomValues(new Uint8Array(12)),ad=new TextEncoder().encode(NET.s.uid+'>'+uid);
   const c=await E2.sub.encrypt({name:'AES-GCM',iv,additionalData:ad},key,new TextEncoder().encode(s));
   o.i=b64(iv);o.c=b64(c);return JSON.stringify(o)}catch(e){return null}}
+function plainAck(raw){try{const o=JSON.parse(raw);if(o&&o.t==='ack'&&typeof o.id==='string'&&o.id.length<=40&&Object.keys(o).length===2)return raw}catch(e){}return null}
 async function e2Dec(sender,raw){let o;try{o=JSON.parse(raw)}catch(e){return null}if(!o||!o.i||!o.c||(o.e!==1&&o.e!==2))return null;
   const ad=new TextEncoder().encode(sender+'>'+NET.s.uid);
   for(const force of [false,true]){try{const pe=await e2Peer(sender,force);if(!pe)return null;let key;
@@ -910,7 +911,7 @@ function bkData(){return{ME:{...ME},P,calls:calls.slice(0,50),chats:chats.map(c=
 async function bkInfo(){try{const r=await sb('/rest/v1/backups?select=updated_at');if(!r.ok)return null;const a=await r.json();return a&&a[0]?a[0].updated_at:null}catch(e){return null}}
 async function netTx(uid,s){
   const plain=s;s=await e2Enc(uid,s);
-  if(s){try{const q=JSON.parse(plain),hh=((q.t==='call'||q.t==='gcall')&&q.op==='ring')?'c':q.t==='msg'?'m':'';if(hh){const o=JSON.parse(s);o.h=hh;s=JSON.stringify(o)}}catch(e){}}
+  if(s){try{const q=JSON.parse(plain),hh=((q.t==='call'||q.t==='gcall')&&q.op==='ring')?'c':q.t==='msg'?'m':'';if(hh){const o=JSON.parse(s);o.h=hh;if(q.t==='msg'&&q.id)o.mid=String(q.id).slice(0,40);s=JSON.stringify(o)}}catch(e){}}
   if(!s){if(!E2.warned[uid]||Date.now()-E2.warned[uid]>60000){E2.warned[uid]=Date.now();if(!/^\{"t":"(typ|ack|read)"/.test(plain))toast(E2.sub?'Waiting for secure connection. Both people need the latest Vynk':'Encryption is not available on this phone')}return false}
   try{let mid=null;try{const q=JSON.parse(plain);if(q.t==='msg'&&(q.type==='img'||q.type==='video'||q.type==='file'||q.type==='audio'))mid=q.id}catch(e){}const r=await sbUp('/rest/v1/frames',{m:'POST',h:{Prefer:'return=minimal'},b:{sender:NET.s.uid,receiver:uid,payload:s}},mid);if(!r){NET.down=true;return false}
     if(r.status===403||r.status===401){const b=await sb('/rest/v1/rpc/am_i_banned',{m:'POST',b:{}});let t=null;try{t=await b.json()}catch(e){}
@@ -919,7 +920,7 @@ async function netTx(uid,s){
   catch(e){NET.down=true;if(!/^\{"t":"(typ|ack|read)"/.test(s))toast('No internet. Message will wait');return false}}
 const SEENF=new Set();
 async function netFrame(f){if(SEENF.has(f.id))return;SEENF.add(f.id);if(SEENF.size>400){const a=[...SEENF].slice(-200);SEENF.clear();a.forEach(x=>SEENF.add(x))}
-  try{const p=await netPeer(f.sender);const pt=p&&await e2Dec(f.sender,f.payload);if(pt!=null)window.nativeData('u:'+f.sender,pt)}catch(e){}
+  try{const p=await netPeer(f.sender);let pt=p&&await e2Dec(f.sender,f.payload);if(pt==null&&p)pt=plainAck(f.payload);if(pt!=null)window.nativeData('u:'+f.sender,pt)}catch(e){}
   sb('/rest/v1/frames?id=eq.'+f.id,{m:'DELETE',h:{Prefer:'return=minimal'}}).catch(()=>{});persistSoon()}
 async function netPull(){
   if(NET.busy||!NET.s)return;NET.busy=true;
@@ -927,7 +928,7 @@ async function netPull(){
     if(!r.ok){NET.busy=false;return}
     NET.ok=true;const rows=await r.json();if(NET.down){NET.down=false;setTimeout(netFlush,200)}
     if(rows.length){
-      for(const f of rows){if(SEENF.has(f.id))continue;SEENF.add(f.id);const p=await netPeer(f.sender);if(!p)continue;try{const pt=await e2Dec(f.sender,f.payload);if(pt!=null)window.nativeData('u:'+f.sender,pt)}catch(e){}}
+      for(const f of rows){if(SEENF.has(f.id))continue;SEENF.add(f.id);const p=await netPeer(f.sender);if(!p)continue;try{let pt=await e2Dec(f.sender,f.payload);if(pt==null)pt=plainAck(f.payload);if(pt!=null)window.nativeData('u:'+f.sender,pt)}catch(e){}}
       await sb('/rest/v1/frames?id=in.('+rows.map(f=>f.id).join(',')+')',{m:'DELETE',h:{Prefer:'return=minimal'}});
       persistSoon()}
   }catch(e){}

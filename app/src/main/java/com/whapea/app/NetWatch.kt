@@ -146,7 +146,16 @@ object NetWatch {
                                 System.currentTimeMillis() - (df.parse(f.optString("created_at").take(19))?.time ?: 0L) < 45000
                             } catch (e: Exception) { false }
                             when (p.optString("h")) {
-                                "m" -> Core.notifyMsg(f.getString("sender"), who, "New message")
+                                "m" -> {
+                                    Core.notifyMsg(f.getString("sender"), who, "New message")
+                                    try {
+                                        val mid = p.optString("mid")
+                                        if (mid.isNotBlank() && mid.length <= 40 && s.optString("uid").isNotBlank()) {
+                                            val ack = JSONObject().put("t", "ack").put("id", mid).toString()
+                                            call("/rest/v1/frames", "POST", JSONObject().put("sender", s.optString("uid")).put("receiver", f.getString("sender")).put("payload", ack).toString(), s.optString("at"))
+                                        }
+                                    } catch (e: Exception) { }
+                                }
                                 "c" -> if (fresh) { Core.notifyCallFrom(who); Core.ringStart(); ringUntil = System.currentTimeMillis() + 40000 }
                             }
                             continue
