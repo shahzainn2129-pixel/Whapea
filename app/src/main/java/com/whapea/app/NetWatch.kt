@@ -142,9 +142,9 @@ object NetWatch {
                 val s = session() ?: break
                 if (Core.uiAttached) { Notif.clearAll(); if (Core.prefs.getLong("soclast", -1L) != -1L) Core.prefs.edit().putLong("soclast", -1L).apply(); socTick = 0; Thread.sleep(4000); continue }
                 val last = Core.prefs.getLong("netlast", 0L)
-                var (code, txt) = call("/rest/v1/frames?select=id,sender,payload,created_at&id=gt.$last&order=id.asc&limit=20", token = s.optString("at"))
+                var (code, txt) = call("/rest/v1/frames?select=id,sender,payload,created_at&id=gt.$last&order=id.asc&limit=8", token = s.optString("at"))
                 if (code == 401 && refresh(s)) {
-                    val r = call("/rest/v1/frames?select=id,sender,payload,created_at&id=gt.$last&order=id.asc&limit=20", token = s.optString("at"))
+                    val r = call("/rest/v1/frames?select=id,sender,payload,created_at&id=gt.$last&order=id.asc&limit=8", token = s.optString("at"))
                     code = r.first; txt = r.second
                 }
                 if (code == 200) {
@@ -175,7 +175,14 @@ object NetWatch {
                                         }
                                     } catch (e: Exception) { }
                                 }
-                                "c" -> if (fresh) { Core.notifyCallFrom(who); Core.ringStart(); ringUntil = System.currentTimeMillis() + 40000 }
+                                "c" -> if (fresh) { Core.notifyCallFrom(who); Core.ringStart(); ringUntil = System.currentTimeMillis() + 40000
+                                    try {
+                                        if (s.optString("uid").isNotBlank()) {
+                                            val rg = JSONObject().put("t", "call").put("op", "rng").toString()
+                                            call("/rest/v1/frames", "POST", JSONObject().put("sender", s.optString("uid")).put("receiver", f.getString("sender")).put("payload", rg).toString(), s.optString("at"))
+                                        }
+                                    } catch (e: Exception) { }
+                                }
                             }
                             continue
                         }
@@ -201,7 +208,14 @@ object NetWatch {
                                 Core.notifyCallFrom(who + " (group)"); Core.ringStart(); ringUntil = System.currentTimeMillis() + 40000
                             } else if (p.optString("op") == "leave" || p.optString("op") == "cancel") { Core.ringStop(); Core.clearCallNotice(); ringUntil = 0 }
                             "call" -> when (p.optString("op")) {
-                                "ring" -> if (isFresh(f.optString("created_at"))) { Core.notifyCallFrom(who); Core.ringStart(); ringUntil = System.currentTimeMillis() + 40000 }
+                                "ring" -> if (isFresh(f.optString("created_at"))) { Core.notifyCallFrom(who); Core.ringStart(); ringUntil = System.currentTimeMillis() + 40000
+                                    try {
+                                        if (s.optString("uid").isNotBlank()) {
+                                            val rg = JSONObject().put("t", "call").put("op", "rng").toString()
+                                            call("/rest/v1/frames", "POST", JSONObject().put("sender", s.optString("uid")).put("receiver", f.getString("sender")).put("payload", rg).toString(), s.optString("at"))
+                                        }
+                                    } catch (e: Exception) { }
+                                }
                                 "end", "rej", "busy" -> { Core.ringStop(); Core.clearCallNotice(); ringUntil = 0 }
                             }
                         }

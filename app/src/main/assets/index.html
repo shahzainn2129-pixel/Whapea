@@ -445,9 +445,10 @@ function msgHTML(c,m,i){
   }
   const q=m.reply?`<div class="quote"><b>${esc(m.reply.who)}</b>${esc(m.reply.text)}</div>`:'';
   const rx=Object.entries(m.rx||{}).map(([e,n])=>`<span>${e}${n>1?' '+n:''}</span>`).join('');
-  return `<div class="mrow ${own?'out':'in'}${Date.now()-m.t<800?' pop':''}" style="--h:${own?0:P[m.from].hue}"><div class="b${m.type==='text'&&!m.deleted?' tx'+((m.text||'').length<=26&&!/\n/.test(m.text||'')?' ts':''):''}" style="--mw:${(own?80:62)+(m.edited?44:0)+(m.star?14:0)+(c.disap?14:0)}px" role="button" tabindex="0" data-a="msg" data-v="${m.id}">${g&&!own?`<div class="who">${esc(P[m.from].name)}</div>`:''}${m.fwd?`<div class="fwd">${ic('fwd',13)} Forwarded</div>`:''}${q}${body}<span class="meta">${m.star?ic('star',12):''}${m.edited&&!m.deleted?'edited':''}${c.disap?ic('timer',12):''}${fmt(m.t)}${own?tick(m):''}</span></div>${rx?`<div class="rx">${rx}</div>`:''}</div>`}
+  return `<div class="mrow ${own?'out':'in'}${(Date.now()-m.t<800&&!POPD.has(m.id)&&POPD.add(m.id))?' pop':''}" style="--h:${own?0:P[m.from].hue}"><div class="b${m.type==='text'&&!m.deleted?' tx'+((m.text||'').length<=26&&!/\n/.test(m.text||'')?' ts':''):''}" style="--mw:${(own?80:62)+(m.edited?44:0)+(m.star?14:0)+(c.disap?14:0)}px" role="button" tabindex="0" data-a="msg" data-v="${m.id}">${g&&!own?`<div class="who">${esc(P[m.from].name)}</div>`:''}${m.fwd?`<div class="fwd">${ic('fwd',13)} Forwarded</div>`:''}${q}${body}<span class="meta">${m.star?ic('star',12):''}${m.edited&&!m.deleted?'edited':''}${c.disap?ic('timer',12):''}${fmt(m.t)}${own?tick(m):''}</span></div>${rx?`<div class="rx">${rx}</div>`:''}</div>`}
 const pinTxt=m=>m.type==='text'?m.text:({voice:'Voice message',img:'Photo',video:'Video',file:'File',loc:'Location',poll:'Poll'})[m.type]||'Message';
 function dayLbl(a,m){const d=new Date(m.t),k=x=>new Date(x).toDateString();if(a&&k(a.t)===k(m.t))return '';const t=new Date(),y=new Date(Date.now()-864e5);const l=k(m.t)===k(t)?'Today':k(m.t)===k(y)?'Yesterday':d.toLocaleDateString(undefined,{day:'numeric',month:'short',year:d.getFullYear()===t.getFullYear()?undefined:'numeric'});return `<div class="dlbl"><span>${l}</span></div>`}
+const POPD=new Set();
 function drawMsgs(scroll){
   const c=chatOf(S.chat);if(!c)return;const el=$('#msgs');if(!el)return;
   const q=c.find?c.find.toLowerCase():'';
@@ -877,7 +878,7 @@ async function e2Enc(uid,s){try{const ks=await e2Keys();const pe=await e2Peer(ui
   const key=await e2Mix(stat,dh2),iv=crypto.getRandomValues(new Uint8Array(12)),ad=new TextEncoder().encode(NET.s.uid+'>'+uid);
   const c=await E2.sub.encrypt({name:'AES-GCM',iv,additionalData:ad},key,new TextEncoder().encode(s));
   o.i=b64(iv);o.c=b64(c);return JSON.stringify(o)}catch(e){return null}}
-function plainAck(raw){try{const o=JSON.parse(raw);if(o&&o.t==='ack'&&typeof o.id==='string'&&o.id.length<=40&&Object.keys(o).length===2)return raw}catch(e){}return null}
+function plainAck(raw){try{const o=JSON.parse(raw);if(o&&o.t==='ack'&&typeof o.id==='string'&&o.id.length<=40&&Object.keys(o).length===2)return raw;if(o&&o.t==='call'&&o.op==='rng'&&Object.keys(o).length===2)return raw}catch(e){}return null}
 async function e2Dec(sender,raw){let o;try{o=JSON.parse(raw)}catch(e){return null}if(!o||!o.i||!o.c||(o.e!==1&&o.e!==2))return null;
   const ad=new TextEncoder().encode(sender+'>'+NET.s.uid);
   for(const force of [false,true]){try{const pe=await e2Peer(sender,force);if(!pe)return null;let key;
@@ -922,14 +923,18 @@ const SEENF=new Set();
 async function netFrame(f){if(SEENF.has(f.id))return;SEENF.add(f.id);if(SEENF.size>400){const a=[...SEENF].slice(-200);SEENF.clear();a.forEach(x=>SEENF.add(x))}
   try{const p=await netPeer(f.sender);let pt=p&&await e2Dec(f.sender,f.payload);if(pt==null&&p)pt=plainAck(f.payload);if(pt!=null)window.nativeData('u:'+f.sender,pt)}catch(e){}
   sb('/rest/v1/frames?id=eq.'+f.id,{m:'DELETE',h:{Prefer:'return=minimal'}}).catch(()=>{});persistSoon()}
+const FAILF={};
 async function netPull(){
   if(NET.busy||!NET.s)return;NET.busy=true;
-  try{const r=await sb('/rest/v1/frames?select=id,sender,payload&order=id.asc&limit=50');
+  try{const r=await sb('/rest/v1/frames?select=id,sender,payload&order=id.asc&limit=8');
     if(!r.ok){NET.busy=false;return}
     NET.ok=true;const rows=await r.json();if(NET.down){NET.down=false;setTimeout(netFlush,200)}
     if(rows.length){
-      for(const f of rows){if(SEENF.has(f.id))continue;SEENF.add(f.id);const p=await netPeer(f.sender);if(!p)continue;try{let pt=await e2Dec(f.sender,f.payload);if(pt==null)pt=plainAck(f.payload);if(pt!=null)window.nativeData('u:'+f.sender,pt)}catch(e){}}
-      await sb('/rest/v1/frames?id=in.('+rows.map(f=>f.id).join(',')+')',{m:'DELETE',h:{Prefer:'return=minimal'}});
+      const del=[];
+      for(const f of rows){if(SEENF.has(f.id)){del.push(f.id);continue}SEENF.add(f.id);let ok=false;
+        try{const p=await netPeer(f.sender);if(p){let pt=await e2Dec(f.sender,f.payload);if(pt==null)pt=plainAck(f.payload);if(pt!=null){window.nativeData('u:'+f.sender,pt);ok=true}}}catch(e){}
+        if(ok)del.push(f.id);else{SEENF.delete(f.id);FAILF[f.id]=(FAILF[f.id]||0)+1;if(FAILF[f.id]>=6)del.push(f.id)}}
+      if(del.length)await sb('/rest/v1/frames?id=in.('+del.join(',')+')',{m:'DELETE',h:{Prefer:'return=minimal'}});
       persistSoon()}
   }catch(e){}
   NET.busy=false}
@@ -1441,7 +1446,7 @@ if(NATIVE){
   window.callUI=function(k,st){
     const old=$('#callv');if(old)old.remove();
     const p=P[k],vid=!!S.cvideo,vc=vid&&st==='live',v=document.createElement('div');v.className='screen call'+(vc?' vc':'');v.id='callv';
-    const title=st==='out'?(isNet(k)?(vid?'Video calling…':'Calling…'):'Calling…'):st==='in'?(vid?'Incoming Vynk video call':'Incoming Vynk call'):dur(S.cs);
+    const title=st==='out'?(S.rng?'Ringing…':vid?'Video calling…':'Calling…'):st==='in'?(vid?'Incoming Vynk video call':'Incoming Vynk call'):dur(S.cs);
     const pers=okImg(p.dp)?`<span class="av"><img src="${p.dp}" alt=""></span>`:`<span class="av">${PERSON}</span>`;
     const vv=(vc?'<video id="rv" class="rv" autoplay playsinline></video><video id="lv" class="lv" autoplay muted playsinline></video>':'');
     if(st==='in'){
@@ -1450,7 +1455,7 @@ if(NATIVE){
       <div class="cslide" id="cslide"><button class="sr" data-a="callRej" aria-label="Decline">${ic('phone',22)}</button><span class="arr">&lt;&lt;&lt;&lt;&lt;&lt;&lt;</span><span class="knob" id="cknob"></span><span class="arr">&gt;&gt;&gt;&gt;&gt;&gt;&gt;</span><button class="sa" data-a="callAcc" aria-label="Answer">${ic(vid?'video':'phone',22)}</button></div>`;
     }else{
       v.classList.add('cout');
-      v.innerHTML=vv+`<button class="cback" data-a="callMin" aria-label="Back">${ic('back',30)}</button><div class="chd"><h2>${esc(p.name)}</h2><p id="cst" class="${st==='live'?'ctm':''}">${st==='out'?'Calling':title}</p><p id="cdiag" class="cd"></p></div>
+      v.innerHTML=vv+`<button class="cback" data-a="callMin" aria-label="Back">${ic('back',30)}</button><div class="chd"><h2>${esc(p.name)}</h2><p id="cst" class="${st==='live'?'ctm':''}">${st==='out'?(S.rng?'Ringing':'Calling'):title}</p><p id="cdiag" class="cd"></p></div>
       <div class="cav">${pers}</div>
       <div class="cpill">${S.cvideo?`<button data-a="callMore" aria-label="More">${ic('dotsOut',22)}</button><button data-a="callVid" aria-label="Video">${ic('vidOut',22)}</button>`:''}<button data-a="cmute" class="${S.mute?'on':''}" aria-label="Mute">${ic(S.mute?'micOffOut':'micOut',22)}</button><button data-a="cspk" class="${S.spk?'on':''}" aria-label="Speaker">${ic('spkOut',22)}</button><button class="end" data-a="endCall" aria-label="End call">${ic('phOut',22)}</button></div>`}
     phone.append(v);rtcAttach();vkSlide()};
@@ -1534,10 +1539,11 @@ if(NATIVE){
     if(op==='ring'){
       if(S.call||GC.on){csend(a,'busy');return}
       S.cvideo=!!o.video&&isNet(a);S.spk=!!S.cvideo;S.mute=false;
-      S.call=a;S.cdir='in';S.cst='in';S.cs=0;callUI(a,'in');Android.ringStart();netSched();
+      S.call=a;S.cdir='in';S.cst='in';S.cs=0;callUI(a,'in');Android.ringStart();netSched();csend(a,'rng');
       S.cto=setTimeout(()=>{if(S.call===a&&S.cst==='in')finishCall(true)},CALLTO);return}
     if(S.call!==a)return;
     if(op==='offer'||op==='answer'||op==='ice'){if(S.cst==='live')rtcSig(a,o);return}
+    if(op==='rng'&&S.cst==='out'){S.rng=true;const e=$('#cst');if(e)e.textContent='Ringing';return}
     if(op==='acc'&&S.cst==='out')goLive(a);
     else if(op==='rej'||op==='busy'){toast(op==='busy'?P[a].name+' is on another call':P[a].name+' declined the call');finishCall(false)}
     else if(op==='end')finishCall(S.cst==='in')};
@@ -1547,7 +1553,7 @@ if(NATIVE){
     if(video&&!isNet(v)){toast('Video calls work over the internet');return}
     if(!Android.micOk())return;
     if(video&&!Android.camOk())return;
-    S.cvideo=!!video;S.spk=!!video;S.mute=false;S.call=v;S.cdir='out';S.cst='out';S.cs=0;closeSheet();csend(v,'ring',{video:!!video});callUI(v,'out');netSched();
+    S.cvideo=!!video;S.spk=!!video;S.mute=false;S.call=v;S.cdir='out';S.cst='out';S.rng=false;S.cs=0;closeSheet();csend(v,'ring',{video:!!video});callUI(v,'out');netSched();
     S.cto=setTimeout(()=>{if(S.call===v&&S.cst==='out'){csend(v,'end');toast('No answer');finishCall(false)}},CALLTO)}
   Object.assign(ACT,{
     startCall:v=>startCallX(v,false),
