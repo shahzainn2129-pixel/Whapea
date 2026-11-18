@@ -2114,5 +2114,44 @@ ACT.retryAll=()=>{NET.err=null;netFlush();toast('Trying again');drawComp()};
 const st=document.createElement('style');st.textContent='.sendwarn{width:100%;font-size:12px;padding:6px 12px;text-align:center;background:var(--surface2);color:var(--ink);border-radius:10px;margin-bottom:6px}';document.head.append(st);
 })();
 
+
+/* ===== v8.1 design: full-screen sign up and log in ===== */
+(()=>{
+const css=document.createElement('style');css.textContent=`
+.scrim.authpg{background:#050505;align-items:stretch;justify-content:stretch;padding:0}
+.authpg .sheet{position:absolute;inset:0;width:100%;max-width:none;max-height:none;height:100%;border-radius:0;box-shadow:none;overflow-y:auto;color:#fff;padding:40px 24px 22px;background:radial-gradient(circle at 15% -5%,rgba(255,255,255,.16),rgba(255,255,255,0) 45%),#050505;display:flex;flex-direction:column}
+.authpg .apx{position:absolute;top:14px;right:14px;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;color:#bbb;border:1px solid #2e2e2e}
+.authpg .aph{display:flex;align-items:center;gap:10px;margin-top:6px;color:#fff}.authpg .aph b{font-size:20px;letter-spacing:.2em;font-weight:700}
+.authpg .aplg{width:44px;height:44px;color:#fff}.authpg .aplg .wlg{display:block;width:44px;height:44px}
+.authpg .apt{margin-top:26px;font-size:27px;line-height:1.14;font-weight:700;letter-spacing:-.01em;color:#fff}
+.authpg .aps{margin-top:8px;font-size:13px;line-height:1.5;color:#a3a3a3}
+.authpg .field{display:flex;align-items:center;gap:10px;height:50px;margin:12px 0 0;padding:0 14px;border:1.2px solid #2e2e2e;background:#101010;border-radius:14px;color:#8a8a8a}
+.authpg .field:focus-within{border-color:#fff;color:#fff}
+.authpg .field input{flex:1;min-width:0;height:100%;background:none;border:0;outline:0;color:#fff;font-size:14px;padding:0}
+.authpg .field svg{width:19px;height:19px;flex:none}
+.authpg .apeye{width:30px;height:30px;display:grid;place-items:center;color:inherit;flex:none}
+.authpg .aph2{font-size:11.5px;color:#777;margin:6px 4px 0}
+.authpg .btn{height:52px;border-radius:26px;font-size:15px;font-weight:700;margin:16px 0 0;width:100%;box-sizing:border-box}
+.authpg .btn:not([style]){background:#fff;color:#000}
+.authpg .btn[style]{background:transparent!important;color:#fff!important;border:1.2px solid #3a3a3a!important;height:50px;margin:12px 0 0;font-size:14px;font-weight:600}
+.authpg .note2{margin-top:auto;padding-top:16px;text-align:center;font-size:11.5px;color:#8a8a8a}
+.authpg .tag{color:#aaa!important;font-size:13px}`;document.head.append(css);
+const MAIL='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3 8l9 6 9-6"/></svg>';
+function skin(s,up){const sh=s.querySelector('.sheet');if(!sh)return;s.classList.add('authpg');
+  const h3=sh.querySelector('h3');if(h3)h3.remove();const g=sh.querySelector('.grab');if(g)g.remove();
+  sh.insertAdjacentHTML('afterbegin',`<button class="apx" type="button" aria-label="Close">${ic('x',18)}</button><div class="aph"><span class="aplg">${WLOGO}</span><b>VYNK</b></div><h2 class="apt">${up?'Create your account,<br>start chatting.':'Welcome back.'}</h2><p class="aps">${up?'It takes a minute. Your chats are end-to-end encrypted.':'Log in to continue your chats.'}</p>`);
+  sh.querySelector('.apx').onclick=()=>closeSheet();
+  const icon={ne:MAIL,nu:ic('user',19),np:ic('lock',19)};
+  sh.querySelectorAll('.field').forEach(f=>{const i=f.querySelector('input');if(!i)return;f.insertAdjacentHTML('afterbegin',icon[i.id]||'');
+    if(i.id==='ne')i.placeholder=up?'Email':'Email or username';
+    if(i.id==='nu'){i.placeholder='Username';f.insertAdjacentHTML('afterend','<div class="aph2">Friends find you by this username.</div>')}
+    if(i.id==='np'){i.placeholder='Password';if(up)f.insertAdjacentHTML('afterend','<div class="aph2">At least 6 characters.</div>');
+      f.insertAdjacentHTML('beforeend',`<button class="apeye" type="button" aria-label="Show password">${ic('eye',19)}</button>`);
+      f.querySelector('.apeye').onclick=e=>{e.preventDefault();i.type=i.type==='password'?'text':'password'}}});
+}
+const _sheet=sheet;
+sheet=function(title,html){const s=_sheet.apply(this,arguments);try{if(title==='Create account'||title==='Log in')skin(s,title==='Create account')}catch(e){}return s};
+})();
+
 </script>
 </body></html>
