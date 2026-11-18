@@ -28,6 +28,7 @@ object Core {
     private var ready = false
     private lateinit var app: Context
     lateinit var prefs: SharedPreferences
+    fun ctx(): Context = app
 
     private val main = Handler(Looper.getMainLooper())
     val io = Executors.newCachedThreadPool()

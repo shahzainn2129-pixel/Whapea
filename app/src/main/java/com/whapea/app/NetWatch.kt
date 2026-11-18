@@ -56,7 +56,7 @@ object NetWatch {
         thread = Thread { loop() }.also { it.isDaemon = true; it.start() }
     }
 
-    private fun call(path: String, method: String = "GET", body: String? = null, token: String, prefer: String? = null): Pair<Int, String> {
+    internal fun call(path: String, method: String = "GET", body: String? = null, token: String, prefer: String? = null): Pair<Int, String> {
         val c = URL(SB + path).openConnection() as HttpURLConnection
         c.requestMethod = method; c.connectTimeout = 10000; c.readTimeout = 15000
         c.setRequestProperty("apikey", KEY)
@@ -68,6 +68,17 @@ object NetWatch {
         val txt = try { (if (code < 400) c.inputStream else c.errorStream)?.bufferedReader()?.readText() ?: "" } catch (e: Exception) { "" }
         c.disconnect()
         return code to txt
+    }
+
+    /** Puts one frame (already sealed) into someone's inbox. */
+    fun postFrame(receiver: String, payload: String): Boolean {
+        return try {
+            val s = session() ?: return false
+            val body = JSONObject().put("sender", s.optString("uid")).put("receiver", receiver).put("payload", payload).toString()
+            var r = call("/rest/v1/frames", "POST", body, s.optString("at"), "return=minimal")
+            if (r.first == 401 && refresh(s)) r = call("/rest/v1/frames", "POST", body, (session() ?: s).optString("at"), "return=minimal")
+            r.first in 200..299
+        } catch (e: Exception) { false }
     }
 
     private fun refresh(s: JSONObject): Boolean {
@@ -92,6 +103,12 @@ object NetWatch {
     }
 
     private var socTick = 0
+
+    private fun isFresh(createdAt: String): Boolean = try {
+        val df = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", java.util.Locale.US)
+        df.timeZone = java.util.TimeZone.getTimeZone("UTC")
+        System.currentTimeMillis() - (df.parse(createdAt.take(19))?.time ?: 0L) < 45000
+    } catch (e: Exception) { false }
 
     /** Likes, comments, follows and mentions while the screen is closed. */
     private fun social(s: JSONObject) {
@@ -123,7 +140,7 @@ object NetWatch {
         while (true) {
             try {
                 val s = session() ?: break
-                if (Core.uiAttached) { if (Core.prefs.getLong("soclast", -1L) != -1L) Core.prefs.edit().putLong("soclast", -1L).apply(); socTick = 0; Thread.sleep(4000); continue }
+                if (Core.uiAttached) { Notif.clearAll(); if (Core.prefs.getLong("soclast", -1L) != -1L) Core.prefs.edit().putLong("soclast", -1L).apply(); socTick = 0; Thread.sleep(4000); continue }
                 val last = Core.prefs.getLong("netlast", 0L)
                 var (code, txt) = call("/rest/v1/frames?select=id,sender,payload,created_at&id=gt.$last&order=id.asc&limit=20", token = s.optString("at"))
                 if (code == 401 && refresh(s)) {
@@ -136,15 +153,17 @@ object NetWatch {
                     for (i in 0 until arr.length()) {
                         val f = arr.getJSONObject(i)
                         max = maxOf(max, f.getLong("id"))
-                        val p = try { JSONObject(f.getString("payload")) } catch (e: Exception) { continue }
+                        var p = try { JSONObject(f.getString("payload")) } catch (e: Exception) { continue }
                         val who = nameOf(f.getString("sender"), s.optString("at"))
+                        if (p.has("e") && p.has("c") && E2e.ready()) {
+                            val pk = E2e.peerPub(f.getString("sender"), s.optString("at"))
+                            val t = if (pk != null) E2e.decrypt(f.getString("sender"), f.getString("payload"), pk) else null
+                            val o = try { if (t != null) JSONObject(t) else null } catch (e: Exception) { null }
+                            if (o != null) p = o
+                        }
                         if (p.has("e") && p.has("c")) {
                             // End-to-end encrypted: the phone cannot read it here, only the hint (m = message, c = call ring).
-                            val fresh = try {
-                                val df = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", java.util.Locale.US)
-                                df.timeZone = java.util.TimeZone.getTimeZone("UTC")
-                                System.currentTimeMillis() - (df.parse(f.optString("created_at").take(19))?.time ?: 0L) < 45000
-                            } catch (e: Exception) { false }
+                            val fresh = isFresh(f.optString("created_at"))
                             when (p.optString("h")) {
                                 "m" -> {
                                     Core.notifyMsg(f.getString("sender"), who, "New message")
@@ -162,8 +181,14 @@ object NetWatch {
                         }
                         when (p.optString("t")) {
                             "msg" -> {
-                                val body = when (p.optString("type")) { "img" -> "Photo"; "voice" -> "Voice message"; "contact" -> "Contact"; else -> p.optString("text").take(120) }
-                                Core.notifyMsg(f.getString("sender"), who, body)
+                                val body = when (p.optString("type")) {
+                                    "img" -> if (p.optInt("once") == 1) "Photo (view once)" else "Photo"
+                                    "video" -> if (p.optInt("once") == 1) "Video (view once)" else "Video"
+                                    "voice" -> "Voice message"; "audio" -> "Audio"; "file" -> "Document"; "contact" -> "Contact"
+                                    "loc" -> "Location"; "poll" -> "Poll"; else -> p.optString("text").take(300)
+                                }
+                                if (p.has("g")) Core.notifyMsg(f.getString("sender"), who, body)
+                                else Notif.push(f.getString("sender"), who, p.optString("id"), body)
                                 try {
                                     val mid = p.optString("id")
                                     if (mid.isNotBlank() && !p.has("g") && s.optString("uid").isNotBlank()) {
@@ -176,7 +201,7 @@ object NetWatch {
                                 Core.notifyCallFrom(who + " (group)"); Core.ringStart(); ringUntil = System.currentTimeMillis() + 40000
                             } else if (p.optString("op") == "leave" || p.optString("op") == "cancel") { Core.ringStop(); Core.clearCallNotice(); ringUntil = 0 }
                             "call" -> when (p.optString("op")) {
-                                "ring" -> { Core.notifyCallFrom(who); Core.ringStart(); ringUntil = System.currentTimeMillis() + 40000 }
+                                "ring" -> if (isFresh(f.optString("created_at"))) { Core.notifyCallFrom(who); Core.ringStart(); ringUntil = System.currentTimeMillis() + 40000 }
                                 "end", "rej", "busy" -> { Core.ringStop(); Core.clearCallNotice(); ringUntil = 0 }
                             }
                         }

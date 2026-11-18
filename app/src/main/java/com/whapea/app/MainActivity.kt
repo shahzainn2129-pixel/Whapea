@@ -464,6 +464,15 @@ class MainActivity : ComponentActivity() {
 
         /** The internet account's sign-in, so the background service can watch for messages. */
         @JavascriptInterface
+        fun e2eSync(s: String) { E2e.save(s) }
+
+        @JavascriptInterface
+        fun mutedSync(s: String) { Notif.setMuted(s) }
+
+        @JavascriptInterface
+        fun takeActions(): String = Notif.take()
+
+        @JavascriptInterface
         fun netSession(s: String) {
             NetWatch.setSession(s)
             if (s.isNotBlank()) {
