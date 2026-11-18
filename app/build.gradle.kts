@@ -14,7 +14,7 @@ android {
         targetSdk = 34
         val run = (System.getenv("GITHUB_RUN_NUMBER") ?: "0").toInt()
         versionCode = if (run > 0) run else 5
-        versionName = "8.1"
+        versionName = "8.2"
         buildConfigField("int", "BUILD_N", run.toString())
     }
     buildFeatures { buildConfig = true }
