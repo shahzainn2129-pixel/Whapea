@@ -128,7 +128,13 @@ html.vk .b.tx .meta{display:inline-flex;float:none;vertical-align:bottom;margin:
 .call .cslide .sr,.call .cslide .sa{width:50px!important;height:50px!important}.cslide .sa{background:#34c759!important}
 .call .cslide .knob{width:52px!important;height:52px!important;margin:-26px 0 0 -26px!important;background:#fff!important;border:0!important;opacity:.9}
 .call .cslide .arr{color:#777!important;font-weight:500!important}
-</style></head><body>
+</style><style id="adcss">.adc{margin:10px 16px;padding:14px;border:1px solid var(--line);border-radius:16px;background:var(--surface2)}.adh{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.adt{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border-radius:20px;border:1px solid var(--line);color:var(--muted)}.adx{color:var(--muted);width:28px;height:28px;display:grid;place-items:center}
+.adi{width:100%;max-height:170px;object-fit:cover;border-radius:12px;margin-bottom:8px}.adc b{font-size:15px}.adc p{font-size:13px;color:var(--muted);margin:4px 0 0;line-height:1.45}
+.adf{display:flex;justify-content:space-between;align-items:center;margin-top:12px;font-size:12px;color:var(--muted)}.adb{height:34px;padding:0 16px;border-radius:17px;background:var(--text);color:var(--bg);font-weight:600;font-size:13px}
+.adpr{display:flex;align-items:center;gap:12px;margin:12px 16px;padding:12px 14px;border:1px dashed var(--line);border-radius:14px;width:calc(100% - 32px);text-align:left}.adpr b{display:block;font-size:14px}.adpr small{color:var(--muted);font-size:12px}
+.adtab{display:flex;gap:8px;margin:8px 16px}.adtab button{flex:1;height:40px;border-radius:12px;border:1px solid var(--line);font-weight:600;font-size:13px}.adtab button.on{background:var(--text);color:var(--bg)}
+.adpick{display:flex;align-items:center;gap:10px;margin:8px 16px;padding:12px;border:1px dashed var(--line);border-radius:12px;width:calc(100% - 32px);font-size:13px;color:var(--muted)}</style></head><body>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><radialGradient id="igrad" cx=".3" cy="1.07" r="1.15"><stop offset="0" stop-color="#7DE3FF"/><stop offset=".22" stop-color="#00C2FF"/><stop offset=".5" stop-color="#2F6BFF"/><stop offset=".78" stop-color="#1E4FE0"/><stop offset="1" stop-color="#1E4FE0"/></radialGradient></defs></svg>
 <div class="stage"><div class="phone" id="phone" data-wp="dots">
@@ -340,6 +346,7 @@ function statusHTML(){
   return `<button class="li" data-a="${myStatus.length?'viewSt':'addStatus'}" data-v="me">${myStatus.length?`<span class="ring">${avMe('')}</span>`:avMe('')}<span class="mid"><span class="nm"><span>My status</span></span><span class="sub">${myStatus.length?myStatus.length+' update'+(myStatus.length>1?'s':'')+' · disappears in 24 hours':'Tap to add a status update'}</span></span></button>
   <div class="sec">Recent updates</div>${ids.map(row).join('')||'<div class="empty">No recent updates</div>'}
   ${mu.length?`<div class="sec">Muted</div>${mu.map(row).join('')}`:''}
+  ${adsHTML()}
   <div class="note2" style="padding-bottom:90px">Status updates expire after 24 hours.</div>`}
 
 
@@ -386,7 +393,7 @@ function setNative(row,sw){
   ${row('qualityPick','image','Photo quality',SET.quality[0].toUpperCase()+SET.quality.slice(1),'Smaller photos use less data')}
   ${row('bubPick','chat','Bubble colour',bubName())}
   ${o?`<div class="sec">Owner</div>${row('ownerOff','verified','Owner mode is on','','Tap to sign out')}
-  ${NET.s?row('ownerStats','db','Owner stats','','Users and activity')+row('ownerFb','info','Problem reports','','What users reported')+row('netOwner','verified','Internet users','','See accounts and block for 3 hours')+row('ownerPay','db','Plus payments','','Approve or reject payment requests')+row('ownerVer','verified','Verification requests','','Give the golden badge')+row('ownerUsr','ban','Reported users','','Block people who are reported'):''}`:''}
+  ${NET.s?row('ownerStats','db','Owner stats','','Users and activity')+row('ownerAds','info','Ads review','','Approve or remove promotions')+row('ownerFb','info','Problem reports','','What users reported')+row('netOwner','verified','Internet users','','See accounts and block for 3 hours')+row('ownerPay','db','Plus payments','','Approve or reject payment requests')+row('ownerVer','verified','Verification requests','','Give the golden badge')+row('ownerUsr','ban','Reported users','','Block people who are reported'):''}`:''}
   ${sec('help','Help')}
   ${row('invite','users','Invite friends','','Share Vynk with one tap')}
   ${row('reportProb','info','Report a problem','','Tell us what went wrong')}
@@ -1082,7 +1089,7 @@ function statusVk(){
   const ids=Object.keys(STAT).filter(k=>!mutedSt.has(k)&&P[k]&&vkOk(P[k].name));
   const mine=`<button class="vkme" data-a="${myStatus.length?'viewSt':'addStatus'}" data-v="me"><span class="vkring ${myStatus.length?'':'none'}">${avMe('')}</span><i class="vkplus" data-a="addStatus">${ic('plus',14)}</i></button>`;
   const row=k=>`<button class="li vkr" data-a="viewSt" data-v="${esc(k)}"><span class="vkring ${seenSt.has(k)?'seen':''}">${av(P[k].hue,P[k].name)}</span><span class="mid"><span class="nm"><span>${esc(P[k].name)}</span></span></span></button>`;
-  return `${mine}<div class="vksec reg">Others</div>${ids.length?ids.map(row).join(''):'<div class="empty">No recent updates</div>'}<div style="height:110px"></div>`}
+  return `${mine}<div class="vksec reg">Others</div>${ids.length?ids.map(row).join(''):'<div class="empty">No recent updates</div>'}${adsHTML()}<div style="height:110px"></div>`}
 document.addEventListener('input',e=>{if(e.target.id==='vq'){S.vq=e.target.value;const b=$('#body');if(b)b.innerHTML=S.tab==='calls'?callsVk():statusVk()}});
 function profVk(){const on=!!NET.s,name=ME.name||'You';
   const avh=okImg(ME.dp)?`<img src="${ME.dp}" alt="">`:PERSON;
@@ -2211,5 +2218,42 @@ const _sheet=sheet;
 sheet=function(title,html){const s=_sheet.apply(this,arguments);try{if(title==='Create account'||title==='Log in')skin(s,title==='Create account')}catch(e){}return s};
 })();
 
+
+/* ===== Ads / Promote ===== */
+if(!I.flag)I.flag='<path d="M5 21V4m0 0h12l-2 4 2 4H5"/>';
+let ADS=[],adT=0;const adSeen=new Set();
+async function adLoad(force){if(!NET.s||(!force&&Date.now()-adT<60000))return;adT=Date.now();try{const a=await rpc('ad_feed');ADS=Array.isArray(a)?a:[];if(S.tab==='status'&&!S.chat&&!document.querySelector('.scrim')){const b=$('#body');if(b)b.innerHTML=(document.documentElement.classList.contains('vk')?statusVk():statusHTML())}}catch(e){}}
+function adsHTML(){adLoad();const c=ADS.length?ADS.map(a=>{if(!adSeen.has(a.id)){adSeen.add(a.id);rpc('ad_event',{p_id:a.id,p_kind:'view'}).catch(()=>{})}
+  return `<div class="adc"><div class="adh"><span class="adt">Sponsored</span><button class="adx" data-a="adRep" data-v="${a.id}" aria-label="Report ad">${ic('flag',16)}</button></div>${okImg(a.img)?`<img class="adi" src="${a.img}" alt="">`:''}<b>${esc(a.title)}</b><p>${esc(a.body)}</p><div class="adf"><span>by @${esc(a.uname||'')}${bdg(a.plan==='gold'?'gold':a.plan==='plus'?'plus':'')}</span>${a.link?`<button class="adb" data-a="adGo" data-v="${a.id}">Learn more</button>`:''}</div></div>`}).join(''):'';
+  return `<div class="adsec">${c}${NET.s?`<button class="adpr" data-a="adNew">${ic('plus',16)}<span><b>Promote your business</b><small>Reach Vynk users here. Free once a week.</small></span></button>`:''}</div>`}
+Object.assign(ACT,{
+ adGo:v=>{const a=ADS.find(x=>String(x.id)===String(v));if(!a||!a.link)return;rpc('ad_event',{p_id:a.id,p_kind:'click'}).catch(()=>{});openUrl(a.link)},
+ adRep:async v=>{try{await rpc('ad_event',{p_id:+v,p_kind:'report'});ADS=ADS.filter(x=>String(x.id)!==String(v));toast('Thanks. We will review this ad');render()}catch(e){toast('Failed')}},
+ adNew:async()=>{if(!NET.s){ACT.netAcct();return}closeSheet();let price='PKR 100 per day',info='';try{const r=await sb('/rest/v1/app_config?select=key,value');(await r.json()).forEach(x=>{if(x.key==='ad_price')price=x.value;if(x.key==='pay_info')info=x.value})}catch(e){}
+  AD={img:'',free:true,days:1,price};
+  sheet('Promote',`<div class="adtab"><button class="on" data-a="adMode" data-v="free">Free · 1 day</button><button data-a="adMode" data-v="paid">Paid · more days</button></div>
+  <div class="field" style="margin:8px 16px"><input id="adt" maxlength="60" placeholder="Title (what are you promoting?)" autocomplete="off"></div>
+  <div class="field" style="margin:8px 16px"><input id="adb" maxlength="200" placeholder="Short description" autocomplete="off"></div>
+  <div class="field" style="margin:8px 16px"><input id="adl" maxlength="200" placeholder="Link, starts with https:// (optional)" autocomplete="off" autocapitalize="none"></div>
+  <button class="adpick" data-a="adImg">${ic('camera',18)}<span id="adis">Add a picture (optional)</span></button>
+  <div id="adpay" hidden><div class="field" style="margin:8px 16px"><select id="add" style="width:100%;padding:12px;border-radius:12px;background:var(--surface2);color:var(--text);border:1px solid var(--line)">${[1,3,7,14,30].map(n=>`<option value="${n}">${n} day${n>1?'s':''}</option>`).join('')}</select></div>
+   <div class="note2" style="text-align:left">Price: ${esc(price)}. Pay, then enter the transaction ID.</div><div class="plist">${esc(info||'Payment details will be added here soon.')}</div>
+   <div class="field" style="margin:8px 16px"><select id="adm" style="width:100%;padding:12px;border-radius:12px;background:var(--surface2);color:var(--text);border:1px solid var(--line)"><option>Easypaisa</option><option>JazzCash</option><option>Bank transfer</option></select></div>
+   <div class="field" style="margin:8px 16px"><input id="adx" maxlength="60" placeholder="Transaction ID" autocomplete="off"></div></div>
+  <button class="btn" data-a="adSend">Send for review</button>
+  <div class="note2">The owner reviews every ad, usually within a day. Scams, adult content and false claims are rejected.</div>
+  <button class="lklink" style="width:100%;margin-top:6px" data-a="adMine">My ads</button>`)},
+ adMode:(v,el)=>{AD.free=v==='free';document.querySelectorAll('.adtab button').forEach(b=>b.classList.toggle('on',b===el));const p=$('#adpay');if(p)p.hidden=AD.free},
+ adImg:()=>pickFile('image/*',f=>readImg(f,360,.6,u=>{AD.img=u.length<80000?u:'';const e=$('#adis');if(e)e.textContent=AD.img?'Picture added':'Picture too big, try another'})),
+ adSend:async()=>{const t=($('#adt').value||'').trim(),b=($('#adb').value||'').trim();if(t.length<3||b.length<5){toast('Add a title and a short description');return}
+  try{await rpc('ad_create',{p_title:t,p_body:b,p_link:($('#adl').value||'').trim(),p_img:AD.img,p_days:AD.free?1:+$('#add').value,p_free:AD.free,p_method:AD.free?null:$('#adm').value,p_txn:AD.free?null:($('#adx').value||'').trim()});closeSheet();toast('Sent. We will review it soon')}catch(e){toast(String(e.message||'Failed').slice(0,80))}},
+ adMine:async()=>{closeSheet();const el=sheet('My ads','<div class="note2">Loading…</div>');try{const a=await rpc('ad_mine');el.querySelector('.sheet').innerHTML='<div class="grab"></div><h3>My ads</h3>'+(a&&a.length?a.map(x=>`<div class="li"><span class="mid"><span class="nm"><span>${esc(x.title)}</span></span><span class="sub">${x.status==='approved'?x.views+' views · '+x.clicks+' clicks · until '+new Date(x.ends_at).toLocaleDateString():x.is_free?'Free':'Paid'}</span></span><span class="tag ${x.status==='approved'?'g':''}">${esc(x.status)}</span></div>`).join(''):'<div class="note2">No ads yet</div>')}catch(e){toast('Failed')}},
+ ownerAds:async()=>{closeSheet();const el=sheet('Ads review','<div class="note2">Loading…</div>');
+  try{if(S.okey){const c=await sb('/rest/v1/rpc/owner_claim',{m:'POST',b:{k:S.okey}});await c.text()}const a=await rpc('owner_ads_list');
+   el.querySelector('.sheet').innerHTML='<div class="grab"></div><h3>Ads review</h3>'+(a&&a.length?a.map(x=>`<div class="li" style="align-items:flex-start"><span class="mid"><span class="nm"><span>${esc(x.title)} · @${esc(x.username)}</span></span><span class="sub">${esc(x.body)}${x.link?' · '+esc(x.link):''}<br>${x.is_free?'Free':'Paid '+esc(x.method||'')+' '+esc(x.txn||'')} · ${x.days} day(s) · ${x.views} views · ${x.clicks} clicks${x.reports?' · '+x.reports+' reports':''}</span></span>${x.status==='pending'||x.status==='removed'?`<span class="reqb"><button class="tag g" data-a="adOk" data-v="${x.id}|1">Approve</button><button class="tag" data-a="adOk" data-v="${x.id}|0">Reject</button></span>`:x.status==='approved'?`<span class="reqb"><button class="tag" data-a="adOk" data-v="${x.id}|0">Remove</button></span>`:`<span class="tag">${esc(x.status)}</span>`}</div>`).join(''):'<div class="note2">No ads</div>')}
+  catch(e){el.querySelector('.sheet').innerHTML='<div class="grab"></div><div class="note2">Could not load. Unlock owner mode again, then retry.</div>'}},
+ adOk:async v=>{const[id,ok]=v.split('|');try{await rpc('owner_ad_decide',{p_id:+id,p_approve:ok==='1'});toast(ok==='1'?'Ad approved':'Ad rejected');ACT.ownerAds()}catch(e){toast('Failed')}}
+});
+let AD={};
 </script>
 </body></html>
