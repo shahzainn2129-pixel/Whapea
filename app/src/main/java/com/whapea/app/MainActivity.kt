@@ -207,6 +207,7 @@ class MainActivity : ComponentActivity() {
                 j.put("calls", (m.getNotificationChannel(Core.CH_CALL)?.importance ?: 4) >= 3)
                 j.put("msgs", (m.getNotificationChannel(Core.CH)?.importance ?: 4) >= 3)
                 j.put("fsi", if (Build.VERSION.SDK_INT >= 34) m.canUseFullScreenIntent() else true)
+                j.put("overlay", android.provider.Settings.canDrawOverlays(this@MainActivity))
                 val pm = getSystemService(Context.POWER_SERVICE) as android.os.PowerManager
                 j.put("battery", pm.isIgnoringBatteryOptimizations(packageName))
                 j.put("maker", Build.MANUFACTURER.lowercase())
@@ -222,6 +223,7 @@ class MainActivity : ComponentActivity() {
                         "fsi" -> if (Build.VERSION.SDK_INT >= 34)
                             Intent("android.settings.MANAGE_APP_USE_FULL_SCREEN_INTENT", Uri.parse("package:$packageName"))
                         else Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$packageName"))
+                        "overlay" -> Intent(android.provider.Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName"))
                         "battery" -> Intent(android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, Uri.parse("package:$packageName"))
                         "app" -> Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$packageName"))
                         else -> Intent(android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(android.provider.Settings.EXTRA_APP_PACKAGE, packageName)

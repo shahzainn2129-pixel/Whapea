@@ -116,6 +116,12 @@ object Core {
                 .setFullScreenIntent(pi, true).setContentIntent(pi)
                 .setOngoing(true).setTimeoutAfter(40000).build()
             NotificationManagerCompat.from(app).notify(CALL_ID, n)
+            // With "Display over other apps" allowed, Android lets us open the call screen directly,
+            // even when the phone is unlocked and Vynk is closed.
+            try {
+                if (android.provider.Settings.canDrawOverlays(app))
+                    app.startActivity(Intent(app, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP))
+            } catch (e: Exception) { }
         } catch (e: SecurityException) { }
     }
 
