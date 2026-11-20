@@ -163,7 +163,8 @@ object Core {
                 .setSmallIcon(android.R.drawable.stat_notify_chat)
                 .setContentTitle(who).setContentText(body)
                 .setAutoCancel(true).setContentIntent(pi)
-                .setPriority(NotificationCompat.PRIORITY_HIGH).build()
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .apply { NetWatch.avatarOf(addr)?.let { setLargeIcon(it) } }.build()
             NotificationManagerCompat.from(app).notify(addr.hashCode(), n)
         } catch (e: SecurityException) { }
     }
