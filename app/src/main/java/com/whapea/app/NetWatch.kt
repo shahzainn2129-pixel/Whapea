@@ -92,14 +92,41 @@ object NetWatch {
         } catch (e: Exception) { false }
     }
 
+    private val avaCache = HashMap<String, android.graphics.Bitmap?>()
+    private val nameAt = HashMap<String, Long>()
+
+    /** The sender's profile picture as a round bitmap, if they have one (filled in by nameOf). */
+    fun avatarOf(uid: String): android.graphics.Bitmap? = avaCache[uid]
+
+    private fun roundAvatar(src: String): android.graphics.Bitmap? = try {
+        val raw = android.util.Base64.decode(src.substringAfter("base64,"), android.util.Base64.DEFAULT)
+        val b = android.graphics.BitmapFactory.decodeByteArray(raw, 0, raw.size)
+        if (b == null) null else {
+            val sz = 128
+            val side = minOf(b.width, b.height)
+            val sq = android.graphics.Bitmap.createBitmap(b, (b.width - side) / 2, (b.height - side) / 2, side, side)
+            val sc = android.graphics.Bitmap.createScaledBitmap(sq, sz, sz, true)
+            val out = android.graphics.Bitmap.createBitmap(sz, sz, android.graphics.Bitmap.Config.ARGB_8888)
+            val cv = android.graphics.Canvas(out)
+            val pt = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG)
+            cv.drawCircle(sz / 2f, sz / 2f, sz / 2f, pt)
+            pt.xfermode = android.graphics.PorterDuffXfermode(android.graphics.PorterDuff.Mode.SRC_IN)
+            cv.drawBitmap(sc, 0f, 0f, pt)
+            out
+        }
+    } catch (e: Exception) { null }
+
     private fun nameOf(uid: String, token: String): String {
-        nameCache[uid]?.let { return it }
+        val old = nameCache[uid]
+        if (old != null && System.currentTimeMillis() - (nameAt[uid] ?: 0L) < 600000L) return old
         return try {
-            val (c, t) = call("/rest/v1/profiles?select=name,username&id=eq.$uid", token = token)
+            val (c, t) = call("/rest/v1/profiles?select=name,username,avatar&id=eq.$uid", token = token)
             val o = JSONArray(t).optJSONObject(0)
-            val n = (o?.optString("name") ?: "").ifBlank { o?.optString("username") ?: "" }.ifBlank { "New message" }
-            nameCache[uid] = n; n
-        } catch (e: Exception) { "New message" }
+            val n = (o?.optString("name") ?: "").trim().ifBlank { o?.optString("username") ?: "" }.ifBlank { "New message" }
+            val av = o?.optString("avatar") ?: ""
+            if (av.startsWith("data:image/")) avaCache[uid] = roundAvatar(av) else avaCache.remove(uid)
+            nameCache[uid] = n; nameAt[uid] = System.currentTimeMillis(); n
+        } catch (e: Exception) { old ?: "New message" }
     }
 
     private var socTick = 0

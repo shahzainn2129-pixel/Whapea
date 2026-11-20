@@ -68,7 +68,8 @@ object Notif {
         try {
             val c = Core.ctx()
             val me = Person.Builder().setName("You").build()
-            val sp = Person.Builder().setName(who).build()
+            val ava = NetWatch.avatarOf(uid)
+            val sp = Person.Builder().setName(who).apply { if (ava != null) setIcon(androidx.core.graphics.drawable.IconCompat.createWithBitmap(ava)) }.build()
             val st = NotificationCompat.MessagingStyle(me)
             var last = ""
             for (i in 0 until list.length()) {
@@ -86,7 +87,7 @@ object Notif {
             val ri = RemoteInput.Builder("r").setLabel("Reply").build()
             val n = NotificationCompat.Builder(c, Core.CH)
                 .setSmallIcon(android.R.drawable.stat_notify_chat)
-                .setContentTitle(who).setContentText(last).setStyle(st)
+                .setContentTitle(who).setContentText(last).setStyle(st).apply { if (ava != null) setLargeIcon(ava) }
                 .setAutoCancel(true).setContentIntent(open)
                 .setCategory(NotificationCompat.CATEGORY_MESSAGE)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
