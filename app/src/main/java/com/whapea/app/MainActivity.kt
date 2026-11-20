@@ -92,6 +92,7 @@ class MainActivity : ComponentActivity() {
         web.webViewClient = object : WebViewClient() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 pageReady = true
+                pendingAuth?.let { u -> pendingAuth = null; js("window.nativeAuth&&nativeAuth(${q(u)})") }
                 pushUi()
                 if (Core.uiAttached) web.postDelayed({ Core.drainInbox() }, 400)
             }
@@ -126,6 +127,22 @@ class MainActivity : ComponentActivity() {
         val ota = Ota.current(this)
         if (ota != null) web.loadUrl("file://" + ota.absolutePath) else web.loadUrl("file:///android_asset/index.html")
         Ota.check(this)
+        handleAuth(intent)
+    }
+
+    private var pendingAuth: String? = null
+
+    private fun handleAuth(i: Intent?) {
+        val d = i?.data ?: return
+        if (d.scheme != "vynk" || d.host != "auth") return
+        val u = d.toString()
+        if (pageReady) js("window.nativeAuth&&nativeAuth(${q(u)})") else pendingAuth = u
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleAuth(intent)
     }
 
     override fun onPause() {
