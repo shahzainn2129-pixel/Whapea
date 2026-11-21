@@ -90,6 +90,13 @@ class MainActivity : ComponentActivity() {
         web.settings.mediaPlaybackRequiresUserGesture = false
         web.addJavascriptInterface(Bridge(), "Android")
         web.webViewClient = object : WebViewClient() {
+            // If Android kills the page's renderer (low memory), reload instead of leaving a black screen.
+            override fun onRenderProcessGone(view: WebView?, detail: android.webkit.RenderProcessGoneDetail?): Boolean {
+                pageReady = false
+                runOnUiThread { try { recreate() } catch (e: Exception) { } }
+                return true
+            }
+
             override fun onPageFinished(view: WebView?, url: String?) {
                 pageReady = true
                 pendingAuth?.let { u -> pendingAuth = null; js("window.nativeAuth&&nativeAuth(${q(u)})") }
