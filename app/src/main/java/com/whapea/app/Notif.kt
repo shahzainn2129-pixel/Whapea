@@ -26,6 +26,25 @@ object Notif {
         return false
     }
 
+    /** Notification options chosen in Settings: hide message text, quiet hours. */
+    fun setPrefs(json: String) {
+        try { JSONObject(json); Core.prefs.edit().putString("npref", json).apply() } catch (e: Exception) { }
+    }
+
+    private fun pref(): JSONObject = try { JSONObject(Core.prefs.getString("npref", "{}") ?: "{}") } catch (e: Exception) { JSONObject() }
+
+    fun hideText(): Boolean = pref().optBoolean("hide", false)
+
+    /** True during the quiet hours window (may cross midnight). */
+    fun quietNow(): Boolean {
+        val p = pref()
+        if (!p.optBoolean("qh", false)) return false
+        val c = java.util.Calendar.getInstance()
+        val now = c.get(java.util.Calendar.HOUR_OF_DAY) * 60 + c.get(java.util.Calendar.MINUTE)
+        val f = p.optInt("qf", 23 * 60); val t = p.optInt("qt", 7 * 60)
+        return if (f <= t) now in f until t else (now >= f || now < t)
+    }
+
     fun setMuted(json: String) {
         try { JSONArray(json); Core.prefs.edit().putString("muted", json).apply() } catch (e: Exception) { }
     }
@@ -74,7 +93,7 @@ object Notif {
             var last = ""
             for (i in 0 until list.length()) {
                 val o = list.getJSONObject(i)
-                last = o.optString("text")
+                last = if (hideText()) "New message" else o.optString("text")
                 st.addMessage(last, o.optLong("t"), sp)
             }
             val h = uid.hashCode()
@@ -90,7 +109,8 @@ object Notif {
                 .setContentTitle(who).setContentText(last).setStyle(st).apply { if (ava != null) setLargeIcon(ava) }
                 .setAutoCancel(true).setContentIntent(open)
                 .setCategory(NotificationCompat.CATEGORY_MESSAGE)
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setPriority(if (quietNow()) NotificationCompat.PRIORITY_LOW else NotificationCompat.PRIORITY_HIGH)
+                .setSilent(quietNow())
                 .addAction(NotificationCompat.Action.Builder(android.R.drawable.ic_menu_send, "Reply", replyPi)
                     .addRemoteInput(ri).setSemanticAction(NotificationCompat.Action.SEMANTIC_ACTION_REPLY).setAllowGeneratedReplies(true).build())
                 .addAction(android.R.drawable.ic_menu_view, "Mark as read", readPi)

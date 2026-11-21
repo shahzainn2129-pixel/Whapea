@@ -167,9 +167,10 @@ object Core {
                 android.app.PendingIntent.FLAG_IMMUTABLE or android.app.PendingIntent.FLAG_UPDATE_CURRENT)
             val n = NotificationCompat.Builder(app, CH)
                 .setSmallIcon(android.R.drawable.stat_notify_chat)
-                .setContentTitle(who).setContentText(body)
+                .setContentTitle(who).setContentText(if (Notif.hideText()) "New message" else body)
                 .setAutoCancel(true).setContentIntent(pi)
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setPriority(if (Notif.quietNow()) NotificationCompat.PRIORITY_LOW else NotificationCompat.PRIORITY_HIGH)
+                .setSilent(Notif.quietNow())
                 .apply { NetWatch.avatarOf(addr)?.let { setLargeIcon(it) } }.build()
             NotificationManagerCompat.from(app).notify(addr.hashCode(), n)
         } catch (e: SecurityException) { }

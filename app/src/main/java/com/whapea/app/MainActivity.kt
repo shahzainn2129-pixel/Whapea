@@ -489,6 +489,9 @@ class MainActivity : ComponentActivity() {
         fun mutedSync(s: String) { Notif.setMuted(s) }
 
         @JavascriptInterface
+        fun notifPrefs(s: String) { Notif.setPrefs(s) }
+
+        @JavascriptInterface
         fun takeActions(): String = Notif.take()
 
         @JavascriptInterface
