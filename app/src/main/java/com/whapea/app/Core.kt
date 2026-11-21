@@ -163,7 +163,7 @@ object Core {
     fun notifyMsg(addr: String, who: String, body: String) {
         try {
             val pi = android.app.PendingIntent.getActivity(app, 0,
-                Intent(app, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP),
+                Intent(app, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP).putExtra("openUid", addr),
                 android.app.PendingIntent.FLAG_IMMUTABLE or android.app.PendingIntent.FLAG_UPDATE_CURRENT)
             val n = NotificationCompat.Builder(app, CH)
                 .setSmallIcon(android.R.drawable.stat_notify_chat)

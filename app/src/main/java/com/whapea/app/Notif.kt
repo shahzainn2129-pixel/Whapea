@@ -97,7 +97,7 @@ object Notif {
                 st.addMessage(last, o.optLong("t"), sp)
             }
             val h = uid.hashCode()
-            val open = PendingIntent.getActivity(c, h, Intent(c, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP),
+            val open = PendingIntent.getActivity(c, h, Intent(c, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP).putExtra("openUid", uid),
                 PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
             val mut = if (Build.VERSION.SDK_INT >= 31) PendingIntent.FLAG_MUTABLE else 0
             val replyPi = PendingIntent.getBroadcast(c, h + 1, act(c, A_REPLY, uid), PendingIntent.FLAG_UPDATE_CURRENT or mut)

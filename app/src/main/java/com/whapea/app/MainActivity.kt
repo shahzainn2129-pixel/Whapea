@@ -102,6 +102,7 @@ class MainActivity : ComponentActivity() {
                 pendingAuth?.let { u -> pendingAuth = null; js("window.nativeAuth&&nativeAuth(${q(u)})") }
                 pushUi()
                 if (Core.uiAttached) web.postDelayed({ Core.drainInbox() }, 400)
+                fireOpen()
             }
         }
         web.webChromeClient = object : WebChromeClient() {
@@ -134,7 +135,7 @@ class MainActivity : ComponentActivity() {
         val ota = Ota.current(this)
         if (ota != null) web.loadUrl("file://" + ota.absolutePath) else web.loadUrl("file:///android_asset/index.html")
         Ota.check(this)
-        handleAuth(intent)
+        handleAuth(intent); handleOpen(intent)
     }
 
     private var pendingAuth: String? = null
@@ -146,10 +147,26 @@ class MainActivity : ComponentActivity() {
         if (pageReady) js("window.nativeAuth&&nativeAuth(${q(u)})") else pendingAuth = u
     }
 
+    private var pendingOpen: String? = null
+
+    private fun handleOpen(i: Intent?) {
+        val u = i?.getStringExtra("openUid") ?: return
+        i?.removeExtra("openUid")
+        pendingOpen = if (u.startsWith("u:")) u else "u:$u"
+        if (pageReady) fireOpen()
+    }
+
+    private fun fireOpen() {
+        val a = pendingOpen ?: return
+        pendingOpen = null
+        web.postDelayed({ js("window.nativeOpenChat&&nativeOpenChat(${q(a)})") }, 900)
+    }
+
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
         handleAuth(intent)
+        handleOpen(intent)
     }
 
     override fun onPause() {
