@@ -192,8 +192,8 @@ object NetWatch {
                             // End-to-end encrypted: the phone cannot read it here, only the hint (m = message, c = call ring).
                             val fresh = isFresh(f.optString("created_at"))
                             when (p.optString("h")) {
-                                "m" -> {
-                                    Core.notifyMsg(f.getString("sender"), who, "New message")
+                                "m", "i" -> {
+                                    Core.notifyMsg(f.getString("sender"), who, if (p.optString("h") == "i") "invited you to chat" else "New message")
                                     try {
                                         val mid = p.optString("mid")
                                         if (mid.isNotBlank() && mid.length <= 40 && s.optString("uid").isNotBlank()) {

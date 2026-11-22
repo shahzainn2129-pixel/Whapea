@@ -25,7 +25,7 @@ class BtService : Service() {
             android.app.PendingIntent.FLAG_IMMUTABLE
         )
         val n = NotificationCompat.Builder(this, Core.CH_SVC)
-            .setSmallIcon(android.R.drawable.stat_notify_chat)
+            .setSmallIcon(R.drawable.ic_stat)
             .setContentTitle("Vynk")
             .setContentText("Waiting for messages")
             .setOngoing(true).setContentIntent(pi).build()

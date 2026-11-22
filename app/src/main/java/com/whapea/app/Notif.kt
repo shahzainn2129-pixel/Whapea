@@ -105,7 +105,7 @@ object Notif {
             val mutePi = PendingIntent.getBroadcast(c, h + 3, act(c, A_MUTE, uid), PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
             val ri = RemoteInput.Builder("r").setLabel("Reply").build()
             val n = NotificationCompat.Builder(c, Core.CH)
-                .setSmallIcon(android.R.drawable.stat_notify_chat)
+                .setSmallIcon(R.drawable.ic_stat)
                 .setContentTitle(who).setContentText(last).setStyle(st).apply { if (ava != null) setLargeIcon(ava) }
                 .setAutoCancel(true).setContentIntent(open)
                 .setCategory(NotificationCompat.CATEGORY_MESSAGE)

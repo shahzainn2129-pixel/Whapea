@@ -113,7 +113,7 @@ object Core {
         try {
             if (!on) { NotificationManagerCompat.from(app).cancel(LIVE_ID); return }
             val n = NotificationCompat.Builder(app, CH_LIVE)
-                .setSmallIcon(android.R.drawable.stat_sys_phone_call)
+                .setSmallIcon(R.drawable.ic_stat)
                 .setContentTitle(name).setContentText("Vynk call in progress")
                 .setCategory(NotificationCompat.CATEGORY_CALL)
                 .setOngoing(true).setOnlyAlertOnce(true).setUsesChronometer(true)
@@ -132,7 +132,7 @@ object Core {
                 Intent(app, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK),
                 android.app.PendingIntent.FLAG_IMMUTABLE or android.app.PendingIntent.FLAG_UPDATE_CURRENT)
             val n = NotificationCompat.Builder(app, CH_CALL)
-                .setSmallIcon(android.R.drawable.stat_sys_phone_call)
+                .setSmallIcon(R.drawable.ic_stat)
                 .setContentTitle("Vynk call").setContentText("$who is calling you")
                 .setCategory(NotificationCompat.CATEGORY_CALL)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
@@ -192,7 +192,7 @@ object Core {
                 Intent(app, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP).putExtra("openUid", addr),
                 android.app.PendingIntent.FLAG_IMMUTABLE or android.app.PendingIntent.FLAG_UPDATE_CURRENT)
             val n = NotificationCompat.Builder(app, CH)
-                .setSmallIcon(android.R.drawable.stat_notify_chat)
+                .setSmallIcon(R.drawable.ic_stat)
                 .setContentTitle(who).setContentText(if (Notif.hideText()) "New message" else body)
                 .setAutoCancel(true).setContentIntent(pi)
                 .setPriority(if (Notif.quietNow()) NotificationCompat.PRIORITY_LOW else NotificationCompat.PRIORITY_HIGH)
@@ -208,7 +208,7 @@ object Core {
                 Intent(app, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP),
                 android.app.PendingIntent.FLAG_IMMUTABLE or android.app.PendingIntent.FLAG_UPDATE_CURRENT)
             val n = NotificationCompat.Builder(app, CH)
-                .setSmallIcon(android.R.drawable.stat_notify_chat)
+                .setSmallIcon(R.drawable.ic_stat)
                 .setContentTitle(who).setContentText(body)
                 .setAutoCancel(true).setContentIntent(pi)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT).build()
