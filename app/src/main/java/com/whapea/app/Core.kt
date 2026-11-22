@@ -49,6 +49,8 @@ object Core {
     const val CH_SVC = "whapea_svc"
     const val CH_CALL = "whapea_calls"
     private const val CALL_ID = 99
+    private const val LIVE_ID = 98
+    const val CH_LIVE = "whapea_live_call"
     private var pendingRing: Triple<String, String, Long>? = null
     private var ringtone: android.media.Ringtone? = null
 
@@ -69,6 +71,7 @@ object Core {
             )
             cc.enableVibration(true)
             nm.createNotificationChannel(cc)
+            nm.createNotificationChannel(android.app.NotificationChannel(CH_LIVE, "Ongoing call", android.app.NotificationManager.IMPORTANCE_LOW))
             nm.createNotificationChannel(android.app.NotificationChannel(CH_SVC, "Vynk is running", android.app.NotificationManager.IMPORTANCE_LOW))
         }
     }
@@ -97,7 +100,28 @@ object Core {
 
     fun clearCallNotice() {
         pendingRing = null
+        ringStop()
         try { NotificationManagerCompat.from(app).cancel(CALL_ID) } catch (e: SecurityException) { }
+    }
+
+    private fun callPi(code: Int, act: String): android.app.PendingIntent =
+        android.app.PendingIntent.getActivity(app, code,
+            Intent(app, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK).putExtra("callAct", act),
+            android.app.PendingIntent.FLAG_IMMUTABLE or android.app.PendingIntent.FLAG_UPDATE_CURRENT)
+
+    fun liveCall(name: String, on: Boolean) {
+        try {
+            if (!on) { NotificationManagerCompat.from(app).cancel(LIVE_ID); return }
+            val n = NotificationCompat.Builder(app, CH_LIVE)
+                .setSmallIcon(android.R.drawable.stat_sys_phone_call)
+                .setContentTitle(name).setContentText("Vynk call in progress")
+                .setCategory(NotificationCompat.CATEGORY_CALL)
+                .setOngoing(true).setOnlyAlertOnce(true).setUsesChronometer(true)
+                .setContentIntent(callPi(10, "open"))
+                .addAction(android.R.drawable.ic_menu_close_clear_cancel, "Hang up", callPi(11, "hangup"))
+                .build()
+            NotificationManagerCompat.from(app).notify(LIVE_ID, n)
+        } catch (e: SecurityException) { }
     }
 
     private fun notifyCall(addr: String) = notifyCallFrom(names().optString(addr).ifBlank { "Someone nearby" })
@@ -114,6 +138,8 @@ object Core {
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setPriority(NotificationCompat.PRIORITY_MAX)
                 .setFullScreenIntent(pi, true).setContentIntent(pi)
+                .addAction(android.R.drawable.ic_menu_close_clear_cancel, "Decline", callPi(12, "decline"))
+                .addAction(android.R.drawable.ic_menu_call, "Answer", callPi(13, "answer"))
                 .setOngoing(true).setTimeoutAfter(40000).build()
             NotificationManagerCompat.from(app).notify(CALL_ID, n)
             // With "Display over other apps" allowed, Android lets us open the call screen directly,

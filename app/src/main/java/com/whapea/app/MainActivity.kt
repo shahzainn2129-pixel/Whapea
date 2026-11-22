@@ -135,7 +135,7 @@ class MainActivity : ComponentActivity() {
         val ota = Ota.current(this)
         if (ota != null) web.loadUrl("file://" + ota.absolutePath) else web.loadUrl("file:///android_asset/index.html")
         Ota.check(this)
-        handleAuth(intent); handleOpen(intent)
+        handleAuth(intent); handleOpen(intent); handleCallAct(intent)
     }
 
     private var pendingAuth: String? = null
@@ -148,6 +148,14 @@ class MainActivity : ComponentActivity() {
     }
 
     private var pendingOpen: String? = null
+
+    private fun handleCallAct(i: Intent?) {
+        val a = i?.getStringExtra("callAct") ?: return
+        i!!.removeExtra("callAct")
+        if (a == "answer" || a == "decline") { Core.ringStop(); Core.clearCallNotice() }
+        if (a == "open") return
+        web.postDelayed({ js("window.nativeCall&&nativeCall(${q(a)})") }, if (pageReady) 150L else 1200L)
+    }
 
     private fun handleOpen(i: Intent?) {
         val u = i?.getStringExtra("openUid") ?: return
@@ -167,6 +175,7 @@ class MainActivity : ComponentActivity() {
         setIntent(intent)
         handleAuth(intent)
         handleOpen(intent)
+        handleCallAct(intent)
     }
 
     override fun onPause() {
@@ -360,6 +369,9 @@ class MainActivity : ComponentActivity() {
             CallAudio.stop()
             runOnUiThread { volumeControlStream = android.media.AudioManager.USE_DEFAULT_STREAM_TYPE }
         }
+
+        @JavascriptInterface
+        fun callOngoing(name: String, on: Boolean) { Core.liveCall(name, on) }
 
         @JavascriptInterface
         fun callMute(on: Boolean) { CallAudio.muted = on }
