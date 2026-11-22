@@ -149,6 +149,25 @@ class MainActivity : ComponentActivity() {
 
     private var pendingOpen: String? = null
 
+    // Screen turns off near the ear during a call (like WhatsApp) and back on when the phone is moved away.
+    private var proxLock: android.os.PowerManager.WakeLock? = null
+
+    fun prox(on: Boolean) {
+        try {
+            val pm = getSystemService(Context.POWER_SERVICE) as android.os.PowerManager
+            if (!pm.isWakeLockLevelSupported(android.os.PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK)) return
+            if (proxLock == null) proxLock = pm.newWakeLock(android.os.PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK, "vynk:prox")
+            val l = proxLock ?: return
+            if (on && !l.isHeld) l.acquire(4 * 60 * 60 * 1000L)
+            else if (!on && l.isHeld) l.release()
+        } catch (e: Exception) { }
+    }
+
+    override fun onDestroy() {
+        prox(false)
+        super.onDestroy()
+    }
+
     private fun handleCallAct(i: Intent?) {
         val a = i?.getStringExtra("callAct") ?: return
         i!!.removeExtra("callAct")
@@ -367,6 +386,7 @@ class MainActivity : ComponentActivity() {
         @JavascriptInterface
         fun callStop() {
             CallAudio.stop()
+            prox(false)
             runOnUiThread { volumeControlStream = android.media.AudioManager.USE_DEFAULT_STREAM_TYPE }
         }
 
@@ -377,7 +397,7 @@ class MainActivity : ComponentActivity() {
         fun callMute(on: Boolean) { CallAudio.muted = on }
 
         @JavascriptInterface
-        fun callSpeaker(on: Boolean) { CallAudio.speaker(this@MainActivity, on) }
+        fun callSpeaker(on: Boolean) { CallAudio.speaker(this@MainActivity, on); prox(!on) }
 
         @JavascriptInterface
         fun saveImage(name: String, dataUrl: String): Boolean {
@@ -608,6 +628,7 @@ class MainActivity : ComponentActivity() {
         @JavascriptInterface
         fun rtcMode(on: Boolean) {
             CallAudio.mode(this@MainActivity, on)
+            prox(on)
             runOnUiThread {
                 volumeControlStream = if (on) android.media.AudioManager.STREAM_VOICE_CALL else android.media.AudioManager.USE_DEFAULT_STREAM_TYPE
             }
