@@ -84,7 +84,7 @@ html.vk .b.tx .meta{display:inline-flex;float:none;vertical-align:bottom;margin:
 .splash.vks2 .sfrom{bottom:36px;font:500 12px var(--font-body,Inter,Arial,sans-serif);letter-spacing:.18em;text-transform:uppercase;color:#6f6f6f}
 .splash.vks2 .sfrom b{font:600 15px var(--font-body,Inter,Arial,sans-serif);letter-spacing:.22em;text-decoration:none;color:#d8d8d8;margin-top:6px}
 #nb{position:absolute;left:0;right:0;top:0;z-index:70;text-align:center;font-size:12px;font-weight:600;padding:4px 8px;transform:translateY(-100%);transition:transform .25s;pointer-events:none;background:#3f3f46;color:#fff}#nb.show{transform:none}#nb.good{background:#16a34a}
-#ptr{position:absolute;left:50%;top:0;z-index:40;width:38px;height:38px;transform:translate(-50%,-44px);opacity:0;pointer-events:none;border-radius:50%;background:var(--surface);box-shadow:0 2px 10px rgba(0,0,0,.25);display:grid;place-items:center;transition:opacity .15s}#ptr.pull,#ptr.spin{opacity:1}#ptr .pl{display:block;width:24px;height:24px}#ptr .wlg{display:block;width:24px;height:24px;background-size:contain;background-repeat:no-repeat;background-position:center}#ptr.spin .pl{animation:ptrs .8s linear infinite}@keyframes ptrs{to{transform:rotate(360deg)}}
+#ptr{position:absolute;left:50%;top:0;z-index:40;width:38px;height:38px;transform:translate(-50%,var(--y,-48px)) scale(var(--s,.7));opacity:0;pointer-events:none;border-radius:50%;background:var(--surface2);border:1px solid var(--line);box-shadow:0 4px 14px rgba(0,0,0,.35);display:grid;place-items:center;transition:opacity .15s}#ptr.rel{transition:opacity .2s,transform .28s cubic-bezier(.2,.8,.2,1)}#ptr .pl{transform:rotate(var(--r,0deg))}#ptr.pull,#ptr.spin{opacity:1}#ptr .pl{display:block;width:24px;height:24px}#ptr .wlg{display:block;width:24px;height:24px;background-size:contain;background-repeat:no-repeat;background-position:center}#ptr.spin .pl{animation:ptrs .8s linear infinite}@keyframes ptrs{to{transform:rotate(360deg)}}
 .upr{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:50%;margin:4px 0 0 4px;vertical-align:middle;background:conic-gradient(var(--accent) calc(var(--p)*1%),rgba(128,128,128,.35) 0)}.upr b{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--surface);color:var(--ink);font-size:9px;font-weight:600}
 .onceb{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:12px;background:var(--surface2);color:var(--ink);font-weight:600;font-size:14px}.onceb{flex-wrap:wrap;white-space:nowrap}.onceb small{opacity:.6;font-weight:500;font-size:11px;flex-basis:100%;margin-left:28px}
 .reqbar{flex:1;display:flex;flex-direction:column;gap:6px;padding:10px 12px;transition:opacity .3s,transform .3s}.reqbar.out{opacity:0;transform:translateY(14px)}.reqbar b{font-size:14px}.reqbar>span{font-size:12px;color:var(--muted)}.reqbar>div{display:flex;gap:8px}.reqbar .btn{flex:1;margin:0;width:auto;padding:10px}.reqbar .btn.ghost{background:transparent!important;border:1px solid var(--muted);color:var(--ink)}
@@ -2570,15 +2570,15 @@ const _rse=ACT.recSend;ACT.recSend=function(){if(S.rec)clearInterval(S.rec.lw);r
 /* ---- pull to refresh ---- */
 (()=>{const ptr=document.createElement('div');ptr.id='ptr';ptr.innerHTML=`<span class="pl"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="var(--ink)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.6-5.9"/><path d="M20 4v5h-5"/></svg></span>`;phone.append(ptr);
   let y0=null,dy=0,busy=false,sc=null;
-  const reset=()=>{ptr.style.transform='';ptr.classList.remove('spin','pull')};
+  const reset=()=>{ptr.classList.add('rel');ptr.style.removeProperty('--y');ptr.style.removeProperty('--s');ptr.style.removeProperty('--r');ptr.classList.remove('spin','pull');setTimeout(()=>ptr.classList.remove('rel'),320)};
   phone.addEventListener('touchstart',e=>{y0=null;if(busy||S.chat||S.tab!=='chats'||document.querySelector('.sheet,.mv,.overlay'))return;
     sc=e.target.closest('.scroll,.body,.list,.pg,main,section,div');let n=e.target;sc=null;while(n&&n!==phone){if(n.scrollHeight>n.clientHeight+2&&getComputedStyle(n).overflowY.match(/auto|scroll/)){sc=n;break}n=n.parentElement}
     if(sc&&sc.scrollTop>0)return;y0=e.touches[0].clientY;dy=0},{passive:true});
   phone.addEventListener('touchmove',e=>{if(y0==null)return;dy=e.touches[0].clientY-y0;if(dy<=0){reset();return}if(sc&&sc.scrollTop>0){y0=null;reset();return}
-    const d=Math.min(90,dy*.5);ptr.classList.add('pull');ptr.style.transform='translate(-50%,'+(d-40)+'px) rotate('+(d*5)+'deg)'},{passive:true});
+    const d=Math.min(90,dy*.5),k=d/90;ptr.classList.remove('rel');ptr.classList.add('pull');ptr.style.setProperty('--y',(-48+k*180)+'px');ptr.style.setProperty('--s',(.7+k*.3).toFixed(2));ptr.style.setProperty('--r',(d*4)+'deg')},{passive:true});
   phone.addEventListener('touchend',async()=>{if(y0==null)return;const go=dy*.5>=55;y0=null;
     if(!go){reset();return}
-    busy=true;ptr.classList.add('spin');ptr.style.transform='translate(-50%,28px)';hap(12);
+    busy=true;ptr.classList.add('rel','spin');ptr.style.setProperty('--y','132px');ptr.style.setProperty('--s','1');hap(12);
     try{if(NET.s){NET.busy=false;await netPull();await Promise.race([peerSeenAll(),new Promise(r=>setTimeout(r,1500))])}}catch(e){}
     setTimeout(()=>{reset();busy=false;refresh()},700)});
   async function peerSeenAll(){try{await Promise.all(Object.keys(P).filter(isNet).slice(0,12).map(k=>peerSeen(k)))}catch(e){}}
