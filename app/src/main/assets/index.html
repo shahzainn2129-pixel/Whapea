@@ -402,6 +402,22 @@ html .mrow .b .filec b{color:inherit}
   <div id="main" style="display:flex;flex-direction:column;flex:1;min-height:0"></div>
 </div></div>
 
+<style id="v924wa">
+html.vk .msgs{padding:8px 10px 6px;gap:2px}
+html.vk .mrow{max-width:84%}
+html.vk .mrow .b{font-size:16px;line-height:1.28;padding:6px 9px 6px;border-radius:12px;max-width:100%;box-shadow:0 1px .5px rgba(0,0,0,.18)}
+html.vk .mrow.out .b{border-bottom-right-radius:12px}html.vk .mrow.in .b{border-bottom-left-radius:12px}
+html.vk .mrow.out:not(.grp) .b{border-top-right-radius:2px}
+html.vk .mrow.in:not(.grp) .b{border-top-left-radius:2px}
+html.vk .mrow:not(.grp){margin-top:7px}
+html.vk .mrow.grp{margin-top:0}
+html.vk .dlbl{padding:10px 0 6px;position:sticky;top:0;z-index:3}
+html.vk .dlbl span{background:color-mix(in srgb,var(--surface2) 92%,var(--ink));color:var(--ink);opacity:.92;font-size:12.5px;font-weight:500;letter-spacing:0;padding:5px 12px;border-radius:8px;box-shadow:0 1px 1px rgba(0,0,0,.2)}
+html.vk .mrow .meta{font-size:11px;opacity:.7;margin-left:10px}
+html.vk .b.tx .meta{margin-left:8px}
+html.vk .mrow .b .filec{gap:12px}
+html.vk .rx{margin-top:-8px}
+</style>
 <script>
 /* ---------- helpers ---------- */
 /* state used while the first screen is drawn: declared early so nothing is touched before it exists */
@@ -771,6 +787,7 @@ function drawMsgs(scroll){
   const nearBottom=el.scrollHeight-el.scrollTop-el.clientHeight<120;
   el.innerHTML=(NATIVE&&c.type==='dm'&&isNet(c.cid)?`<button class="note" data-a="cm_sec" data-v="${esc(c.id)}">${ic('lock',14)}<span>Messages and calls are end-to-end encrypted. Only you and ${esc(P[c.cid].name)} can read or hear them. Tap to learn more.</span></button>`:'')+(c.disap?`<div class="note">${ic('lock',14)}<span>Disappearing messages: ${({24:'24 hours',168:'7 days',2160:'90 days'})[c.disap]}.</span></div>`:'')+
    (c.pin&&c.msgs.find(x=>x.id===c.pin&&!x.deleted)?`<div class="pinb" data-a="goPin">${ic('star',15)}<span>${esc(pinTxt(c.msgs.find(x=>x.id===c.pin)))}</span></div>`:'')+(more?`<button class="earlier" data-a="earlier">Load earlier messages</button>`:'')+list.map((m,i)=>dayLbl(list[i-1],m)+msgHTML(c,m,i)).join('')+(c.typing?`<div class="typing"><i></i><i></i><i></i></div>`:'');
+  {let pv=null;[...el.children].forEach(n=>{if(n.classList.contains('mrow')){const o=n.classList.contains('out');n.classList.toggle('grp',!!(pv&&pv.o===o&&!(pv.n.querySelector('.who')&&!o&&n.querySelector('.who')&&pv.n.querySelector('.who').textContent!==n.querySelector('.who').textContent)));pv={n,o}}else pv=null})}
   if(scroll||nearBottom)el.scrollTop=el.scrollHeight;
 }
 function drawComp(){
