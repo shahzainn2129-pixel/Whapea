@@ -418,6 +418,13 @@ html.vk .b.tx .meta{margin-left:8px}
 html.vk .mrow .b .filec{gap:12px}
 html.vk .rx{margin-top:-8px}
 </style>
+<style id="v925">
+code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.9em;background:rgba(128,128,128,.22);border-radius:4px;padding:0 4px}
+code.mono{display:block;white-space:pre-wrap;padding:4px 6px;margin:2px 0}
+.qt{display:inline-block;border-left:3px solid currentColor;opacity:.85;padding-left:8px;margin:1px 0}
+.b b{font-weight:700}
+.b .tt{white-space:pre-wrap}
+</style>
 <script>
 /* ---------- helpers ---------- */
 /* state used while the first screen is drawn: declared early so nothing is touched before it exists */
@@ -667,6 +674,7 @@ function setNative(row,sw,nc){
   ${sw('receipts','eye','Read receipts','Blue ticks when someone reads your message')}
   ${sw('online','eye','Last seen and online','If off, others cannot see you and you cannot see them')}
   ${sw('typing','edit','Typing indicator','Show when you are typing, and see others typing')}
+  ${sw('silUnk','bell','Silence unknown callers','Calls from people you have not chatted with are declined')}
   ${NATIVE?row('cfOpen','users','Close friends','',Object.keys(SET.cf||{}).length+' people'):''}
   ${row('blocked','ban','Blocked',chats.filter(c=>c.blocked).length)}
   ${sec('bell','Notifications')}
@@ -756,7 +764,14 @@ function drawHead(){
   else sub='<small></small>';
   $('#chh').innerHTML=`<button class="ib" data-a="closeChat" aria-label="Back">${ic('back')}</button>${av(cHue(c),cName(c),'sm')}<button class="who" data-a="chatInfo"><b>${esc(cName(c))}${c.type==='dm'&&P[c.cid]?bdg(P[c.cid].plan):''}</b>${sub}</button>${c.type==='dm'?`${NATIVE&&isNet(c.cid)?`<button class="ib" data-a="startVideo" data-v="${c.cid}" aria-label="Video call">${ic('video',21)}</button>`:''}<button class="ib" data-a="startCall" data-v="${c.cid}" aria-label="Voice call">${ic('phone',21)}</button>`:(c.type==='group'&&NATIVE&&NET.s&&c.members.some(isNet)?`<button class="ib" data-a="gcStart" data-v="${esc(c.id)}|1" aria-label="Group video call">${ic('video',21)}</button><button class="ib" data-a="gcStart" data-v="${esc(c.id)}|0" aria-label="Group voice call">${ic('phone',21)}</button>`:'')}<button class="ib" data-a="chatMenu" aria-label="More">${ic('more')}</button>`;
 }
-const hl=t=>esc(t).replace(/@(\w+)/g,'<span class="mention">@$1</span>');
+setInterval(()=>{try{let ch=0;chats.forEach(c=>{if(c.muted&&c.muteUntil&&Date.now()>c.muteUntil){c.muted=false;c.muteUntil=0;ch=1}});if(ch){render();persistSoon()}}catch(e){}},30000);
+const hl=t=>{let h=esc(t);const keep=[];
+  h=h.replace(/```([\s\S]+?)```/g,(m,x)=>{keep.push('<code class="mono">'+x.replace(/^\n|\n$/g,'')+'</code>');return '\u0001'+(keep.length-1)+'\u0001'});
+  h=h.replace(/`([^`\n]+)`/g,(m,x)=>{keep.push('<code>'+x+'</code>');return '\u0001'+(keep.length-1)+'\u0001'});
+  h=h.replace(/(^|[\s(])\*([^*\n]+?)\*(?=$|[\s.,!?:;)])/g,'$1<b>$2</b>').replace(/(^|[\s(])_([^_\n]+?)_(?=$|[\s.,!?:;)])/g,'$1<i>$2</i>').replace(/(^|[\s(])~([^~\n]+?)~(?=$|[\s.,!?:;)])/g,'$1<s>$2</s>');
+  h=h.replace(/(^|\n)&gt; ?([^\n]*)/g,'$1<span class="qt">$2</span>').replace(/(^|\n)(?:[*-]) ([^\n]+)/g,'$1\u2022 $2');
+  h=h.replace(/@(\w+)/g,'<span class="mention">@$1</span>');
+  return h.replace(/\u0001(\d+)\u0001/g,(m,i)=>keep[+i])};
 function msgHTML(c,m,i){
   const own=m.from==='me',g=c.type==='group';
   let body='';
@@ -847,7 +862,7 @@ const ACT={
  closeChat,
  archived:()=>{const L=chats.filter(c=>c.archived);sheet('Archived chats',L.map(c=>A('unarch',c.id,null,cName(c),prev(last(c)))).join(''))},
  unarch:v=>{chatOf(v).archived=false;closeSheet();render();toast('Chat moved back to Chats')},
- chatsMenu:()=>sheet('',A('newGroup','', 'users','New group')+A('storeOpen','', 'store','Catalogue','Browse stores, manage your store')+A('prayer','', 'timer','Prayer times and Qibla','Times are approximate')+A('starred','', 'star','Starred messages')+(NATIVE?A('lblFilter','', 'tag','Chats by label',S.lblF||'All chats'):'')+A('archived','', 'archive','Archived chats')+A('linked','', 'globe','Linked devices','Needs the internet, not available')+A('broadcast','', 'send','Broadcast list','Needs a connection to each recipient')),
+ chatsMenu:()=>sheet('',A('newGroup','', 'users','New group')+A('storeOpen','', 'store','Catalogue','Browse stores, manage your store')+A('prayer','', 'timer','Prayer times and Qibla','Times are approximate')+A('starred','', 'star','Starred messages')+(NATIVE?A('lblFilter','', 'tag','Chats by label',S.lblF||'All chats'):'')+A('readAll','', 'check','Mark all as read')+A('archived','', 'archive','Archived chats')+A('linked','', 'globe','Linked devices','Needs the internet, not available')+A('broadcast','', 'send','Broadcast list','Needs a connection to each recipient')),
  linked:()=>toast('Linked devices need a server, so Vynk does not include them'),
  broadcast:()=>toast('Broadcast lists will be added in a later version'),
  starred:()=>{closeSheet();const all=chats.flatMap(c=>c.msgs.filter(m=>m.star).map(m=>[c,m]));sheet('Starred messages',all.length?all.map(([c,m])=>A('openCid',c.id,'star',cName(c),prev(m))).join(''):'<div class="empty"><b>No starred messages</b>Tap a message and choose Star.</div>')},
@@ -899,7 +914,14 @@ const ACT={
   if(v==='mic'||v==='cam'){closeSheet();setTimeout(()=>ACT.permSetup(),300)}},
  pmDone:()=>{SET.permDone=true;persistSoon();closeSheet()},
  alOpen:v=>{try{Android.openAlertSettings(v)}catch(e){}},
- cm_mute:v=>{const c=chatOf(v);c.muted=!c.muted;closeSheet();render();toast(c.muted?'Muted':'Unmuted')},
+ cm_mute:v=>{const c=chatOf(v);if(c.muted){c.muted=false;c.muteUntil=0;closeSheet();render();persistSoon();toast('Unmuted');return}
+  closeSheet();sheet('Mute notifications',A('muteFor',v+'|'+8*36e5,'timer','8 hours')+A('muteFor',v+'|'+7*864e5,'timer','1 week')+A('muteFor',v+'|0','mute','Always'))},
+ muteFor:v=>{const[id,ms]=v.split('|'),c=chatOf(id);if(!c)return;c.muted=true;c.muteUntil=+ms?Date.now()+(+ms):0;closeSheet();render();persistSoon();toast('Muted')},
+ readAll:()=>{let n=0;chats.forEach(c=>{if(c.unread||c.mk){c.unread=0;c.mk=false;n++}});closeSheet();render();persistSoon();toast(n?'All chats marked as read':'No unread chats')},
+ exportChat:v=>{const c=chatOf(v);if(!c)return;closeSheet();if(typeof Android==='undefined'||typeof Android.fileExport!=='function'){toast('Update the app to export chats');return}
+  const nm=c=>c.type==='dm'&&P[c.cid]?P[c.cid].name:(c.name||'Chat'),ln=c.msgs.filter(m=>!m.deleted).map(m=>{const d=new Date(m.t),w=m.from==='me'?ME.name:(P[m.from]?P[m.from].name:'?'),x=m.type==='text'?m.text:m.type==='call'?m.text:'<'+(m.type==='img'?'photo':m.type==='voice'?'voice message':m.type)+'>';return d.toLocaleDateString()+', '+d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})+' - '+w+': '+(x||'')}).join('\n');
+  const b=btoa(unescape(encodeURIComponent('Chat with '+nm(c)+'\n\n'+ln)));
+  toast(Android.fileExport('data:text/plain;base64,'+b,'Vynk chat with '+nm(c).replace(/[^\w ]/g,'')+'.txt','text/plain')?'Saved to Downloads/Vynk':'Could not save the file')},
  cm_arch:v=>{chatOf(v).archived=true;closeSheet();if(S.chat)closeChat();render();toast('Chat archived')},
  cm_unread:v=>{const c=chatOf(v);if(c.unread||c.mk){c.unread=0;c.mk=false}else c.mk=true;closeSheet();render()},
  cm_clear:v=>{chatOf(v).msgs=[];closeSheet();refresh();toast('Chat cleared')},
@@ -1889,7 +1911,7 @@ if(NATIVE){
       if(m){if(m.kind==='img')it.src=m.src;else{const p=Android.mediaSave(id,m.src);if(!p){toast('Could not save the video');return}it.src=p;it.dur=m.dur;Object.defineProperty(it,'_d',{value:m.src})}}
       myStatus.push(it);S.stm=null;closeSheet();render();toast('Status posted');stSyncAll()},
 
-    chatMenu:()=>{const c=chatOf(S.chat);sheet('',A('findIn','', 'search','Search in chat')+A('cm_wp',c.id,'image','Chat wallpaper',c.wp?'Custom for this chat':'Default')+A('cmFolder',c.id,'users','Folder',({family:'Family',work:'Work'})[c.folder]||'None')+A('cm_mute',c.id,'mute',c.muted?'Unmute':'Mute notifications')+A('media','', 'image','Media, links and documents')+A('cm_clear',c.id,'x','Clear chat')+A('cm_block',c.id,'ban','Block','','bad'))},
+    chatMenu:()=>{const c=chatOf(S.chat);sheet('',A('findIn','', 'search','Search in chat')+A('cm_wp',c.id,'image','Chat wallpaper',c.wp?'Custom for this chat':'Default')+A('cmFolder',c.id,'users','Folder',({family:'Family',work:'Work'})[c.folder]||'None')+A('cm_mute',c.id,'mute',c.muted?'Unmute':'Mute notifications')+A('media','', 'image','Media, links and documents')+A('exportChat',c.id,'file','Export chat','Save as a text file')+A('cm_clear',c.id,'x','Clear chat')+A('cm_block',c.id,'ban','Block','','bad'))},
     
     
     obStart:()=>{S.ob=1;render();setTimeout(()=>$('#obn')?.focus(),80)},
@@ -2104,6 +2126,7 @@ if(NATIVE){
     S.ci=setInterval(()=>{S.cs++;const e=$('#cst');if(e)e.textContent=dur(S.cs)},1000)}
   window.callRx=function(a,o){
     const op=o.op;
+    if(op==='ring'&&SET.silUnk){const kc=chats.find(x=>x.id===a&&x.type==='dm');if(!kc||!kc.msgs||!kc.msgs.length){csend(a,'rej');return}}
     if(op==='ring'){
       if(S.call||GC.on){csend(a,'busy');return}
       S.cvideo=!!o.video&&isNet(a);S.spk=!!S.cvideo;S.mute=false;
