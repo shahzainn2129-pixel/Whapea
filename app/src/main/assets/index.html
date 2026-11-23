@@ -289,6 +289,17 @@ html.cbar .phone{margin-top:calc(46px + env(safe-area-inset-top,0px))!important;
 #cdiag:empty{display:none}
 </style>
 <style id="v921">
+.stpd{margin:6px 20px;padding:12px;border-radius:14px;background:var(--surface2);font-weight:600;color:inherit;width:calc(100% - 40px)}
+.sdt2{display:flex;align-items:center;justify-content:space-between;padding:calc(8px + env(safe-area-inset-top,0px)) 8px 6px}.sdt2 b{font:600 17px var(--font-display,inherit)}.sdlk{color:#4da3ff;font-weight:600;font-size:15px;padding:8px 10px}
+.sdc{position:relative}.sdshare{position:absolute;top:10px;right:12px;padding:8px 20px;border-radius:12px;font-weight:700;font-size:14px;color:#fff;background:linear-gradient(90deg,#ff8a1f,#ff3d77 55%,#8f5bff);box-shadow:0 4px 14px rgba(255,61,119,.4)}
+.sdmini{position:absolute;bottom:10px;width:38px;height:38px;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;display:grid;place-items:center}.sdmini.l{left:12px}.sdmini.r{right:12px}
+.sdcapw{padding:2px 12px 6px}.sdcapw input{width:100%;box-sizing:border-box;background:#1c1c1e;color:#fff;border-radius:20px;padding:10px 16px;font-size:14px}
+.sdtl2{display:flex;justify-content:space-around;padding:8px 6px calc(12px + env(safe-area-inset-bottom,0px));background:#0d0d0f}.sdtl2 button{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11.5px;color:#cfd3da;font-weight:500}
+.sdtile{width:50px;height:50px;border-radius:14px;display:grid;place-items:center;color:#fff;box-shadow:0 4px 10px rgba(0,0,0,.4)}.sdtl2 button.on{color:#fff}.sdtl2 button.on .sdtile{outline:2px solid #4da3ff;outline-offset:2px}
+.sdfx{flex:none;display:flex;flex-direction:column;align-items:center;gap:5px;font-size:11px;color:#cfd3da}.sdfx img{width:62px;height:62px;border-radius:12px;object-fit:cover;border:2px solid transparent}.sdfx.on img{border-color:#4da3ff}.sdfx.on{color:#fff}
+.sdsub{background:#0d0d0f;border-top:1px solid #1d1d20}.fxr{padding:10px 12px}
+.newtag{display:inline-block;font-style:normal;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:10px;background:#00a88422;color:#00a884;letter-spacing:.02em}
+
 .ucard{padding:10px 20px}.ucn{padding:4px 20px 2px}
 html.vk .grid4,.grid4{grid-template-columns:repeat(4,1fr);gap:20px 6px;padding:16px 14px 8px}
 html.vk .grid4 button{font-size:12px;font-weight:600;color:var(--ink);gap:9px}
@@ -545,7 +556,7 @@ function rowHTML(c){
   const m=last(c),n=c.unread,r=chatReach(c),un=!!(n||c.mk);
   const sub=c.typing&&c.type==='dm'?'<span style="color:var(--accent)">typing…</span>':m?`${m.from==='me'&&!m.deleted?tick(m):''}<span class="pv">${c.type==='group'&&m.from!=='me'?esc(who(c,m))+': ':''}${m.type==='voice'?`<span class="pvi">${ic('mic',13)}</span> `:m.type==='img'?`<span class="pvi">${ic('image',13)}</span> `:''}${esc(prev(m))}</span><span class="ago">· ${agoS(m.t)}</span>`:'';
   return `<div class="srw"><button class="li${un?' unr':''}" data-a="open" data-v="${c.id}" data-lp="${c.id}">${c.type==='dm'&&STAT[c.cid]&&STAT[c.cid].length&&!mutedSt.has(c.cid)?`<span class="vkring lr ${seenSt.has(c.cid)?'seen':''}">${av(cHue(c),cName(c),'',dotOf(c.cid))}</span>`:av(cHue(c),cName(c),'',c.type==='dm'?dotOf(c.cid):'')}
-  <span class="mid"><span class="nm"><span>${esc(cName(c))}</span>${c.type==='dm'&&P[c.cid]?bdg(P[c.cid].plan):''}${c.fav?ic('star',13):''}</span><span class="sub">${sub}</span>${(c.labels||[]).length?`<span class="lbrow">${c.labels.map(l=>`<i class="lbt">${esc(l)}</i>`).join('')}</span>`:''}</span>
+  <span class="mid"><span class="nm"><span>${esc(cName(c))}</span>${c.type==='dm'&&P[c.cid]?bdg(P[c.cid].plan):''}${c.fav?ic('star',13):''}</span><span class="sub">${sub}</span>${c.type==='dm'&&P[c.cid]&&newTag(P[c.cid].joined)?`<span class="lbrow">${newTag(P[c.cid].joined)}</span>`:''}${(c.labels||[]).length?`<span class="lbrow">${c.labels.map(l=>`<i class="lbt">${esc(l)}</i>`).join('')}</span>`:''}</span>
   <span class="rt"><span style="display:flex;gap:8px;align-items:center">${c.muted?ic('mute',16):''}${c.pinned?ic('pin',15):''}${un?(n>0?`<i class="ucnt${c.muted?' mute':''}">${n>99?'99+':n}</i>`:`<i class="udot${c.muted?' mute':''}"></i>`):''}</span></span></button><span class="sacts"><button data-a="swMute" data-v="${c.id}" class="sm">${ic('mute',20)}<small>${c.muted?'Unmute':'Mute'}</small></button><button data-a="swArch" data-v="${c.id}" class="sa">${ic('archive',20)}<small>Archive</small></button><button data-a="swDel" data-v="${c.id}" class="sd">${ic('trash',20)}<small>Delete</small></button></span></div>`}
 
 function statusHTML(){
@@ -1094,8 +1105,8 @@ function netPushProfile(){if(!NET.s)return;sb('/rest/v1/profiles?id=eq.'+NET.s.u
 async function netPeer(uid){
   const key='u:'+uid;
   if(P[key]&&NET.prof[uid]&&Date.now()-NET.prof[uid]<120000)return P[key];
-  try{const r=await sb('/rest/v1/profiles?select=id,username,name,about,avatar,plan,plan_until&id=eq.'+uid);const a=await r.json();const q=a&&a[0];
-    if(q){const od=P[key]&&P[key].dp;const p=ensurePeer(key,q.name||q.username,q.about||('@'+q.username),okImg(q.avatar)?q.avatar:null);if(od!==p.dp){persistSoon();try{refresh()}catch(e){}}p.net=true;p.user=q.username;p.plan=planOf(q);p.range=NET.ok;NET.prof[uid]=Date.now();return p}}catch(e){}
+  try{const r=await sb('/rest/v1/profiles?select=id,username,name,about,avatar,plan,plan_until,created_at&id=eq.'+uid);const a=await r.json();const q=a&&a[0];
+    if(q){const od=P[key]&&P[key].dp;const p=ensurePeer(key,q.name||q.username,q.about||('@'+q.username),okImg(q.avatar)?q.avatar:null);if(od!==p.dp){persistSoon();try{refresh()}catch(e){}}p.net=true;p.user=q.username;p.plan=planOf(q);p.joined=q.created_at||p.joined;p.range=NET.ok;NET.prof[uid]=Date.now();return p}}catch(e){}
   return P[key]||null}
 
 /* ---------- end-to-end encryption (ECDH P-256 + AES-GCM, keys stay on the phone) ---------- */
@@ -2898,6 +2909,7 @@ ACT.callChat=()=>{const k=S.call;closeSheet();ACT.callMin();if(k)setTimeout(()=>
  document.addEventListener('click',e=>{const b=e.target.closest('[data-lpm]');if(b&&b._lp&&Date.now()-b._lp<700){e.stopPropagation();e.preventDefault()}},true);
 })();
 
+function newTag(j){if(!j)return'';const d=(Date.now()-new Date(j).getTime())/864e5;if(!(d>=-1))return'';return d<=3?'<i class="newtag">Just joined</i>':d<=14?'<i class="newtag">New</i>':''}
 /* ---- v9.21: Add status page, photo studio, layout, voice status ---- */
 (()=>{
 const _txt=ACT.addStatus;
@@ -2916,46 +2928,65 @@ function collage(ims){const W=1080,c=document.createElement('canvas');c.width=W;
 async function openFiles(files,forceCollage){try{const ims=await Promise.all(files.map(loadImg));
  if(ims.length>1||forceCollage&&ims.length>1)studio(collage(ims));else studio(ims[0])}catch(e){toast('Could not open this photo')}}
 
-function studio(src){
+function studio(src,cap0){
  const W0=src.naturalWidth||src.width,H0=src.naturalHeight||src.height,k0=Math.min(1,1080/Math.max(W0,H0));
  let base=document.createElement('canvas');base.width=Math.round(W0*k0);base.height=Math.round(H0*k0);base.getContext('2d').drawImage(src,0,0,base.width,base.height);
- const st={fi:0,br:100,tool:'',col:'#ffffff',items:[],drag:null};
+ const st={fi:0,br:100,fx:'',tool:'',col:'#ffffff',items:[],drag:null};
  const el=document.createElement('div');el.className='sted';phone.append(el);
- const COL=['#ffffff','#000000','#ff3b30','#ff9500','#ffcc00','#34c759','#0a84ff','#bf5af2'],EM=['😀','😂','😍','🔥','❤️','👍','🎉','😎','🙏','✨','💯','😢'];
- el.innerHTML=`<div class="sdt"><button class="sdb" data-k="x" aria-label="Close">${ic('x',24)}</button><span class="sdr"><button class="sdb" data-k="rot" aria-label="Rotate">${SVG.rot}</button><button class="sdb" data-k="undo" aria-label="Undo">${SVG.undo}</button></span></div>
- <div class="sdc"><canvas id="sdv"></canvas></div>
+ const COL=['#ffffff','#000000','#ff3b30','#ff9500','#ffcc00','#34c759','#0a84ff','#bf5af2'],EM=['😀','😂','😍','🔥','❤️','👍','🎉','😎','🙏','✨','💯','😢','🥳','😭','🤩','💪'];
+ const FX=[['','Original'],['neon','Neon Glow'],['glitch','Glitch'],['party','Party'],['confetti','Confetti']];
+ const TL=[['text','Text','linear-gradient(145deg,#4b5d8f,#2b3a67)','<b style="font:700 20px Inter,sans-serif">Aa</b>'],['emoji','Stickers','linear-gradient(145deg,#ffb347,#f07a2c)','<span style="font-size:24px">😊</span>'],['fx','Effects','linear-gradient(145deg,#6a5cff,#35288f)','<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M12 7a5 5 0 1 0 5 5"/><circle cx="12" cy="12" r="1.5" fill="#fff"/></svg>'],['filter','Filters','linear-gradient(145deg,#ff5f8f,#d12a63)','<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>'],['draw','Draw','linear-gradient(145deg,#2fbf8f,#16805e)',SVG.pen.replace('stroke="currentColor"','stroke="#fff"')]];
+ el.innerHTML=`<div class="sdt2"><button class="sdb" data-k="x" aria-label="Back">${ic('back',24)}</button><b>Status Canvas</b><button class="sdlk" data-k="draft">Save Draft</button></div>
+ <div class="sdc"><canvas id="sdv"></canvas><button class="sdshare" data-k="post">Share</button><button class="sdmini l" data-k="undo" aria-label="Undo">${SVG.undo}</button><button class="sdmini r" data-k="rot" aria-label="Rotate">${SVG.rot}</button></div>
+ <div class="sdcapw"><input id="sdcap" maxlength="140" placeholder="Add a caption" autocomplete="off" value="${esc(cap0||'')}"></div>
  <div class="sdsub" id="sdsub"></div>
- <div class="sdtl"><button class="sdp" data-t="filter">Filters</button><button class="sdp" data-t="draw">Draw</button><button class="sdp" data-t="text">Text</button><button class="sdp" data-t="emoji">Stickers</button></div>
- <div class="sdf"><input id="sdcap" maxlength="140" placeholder="Add a caption" autocomplete="off"><button class="sds" data-k="post" aria-label="Post status">${ic('send',22)}</button></div>`;
+ <div class="sdtl2">${TL.map(t=>`<button data-t="${t[0]}"><span class="sdtile" style="background:${t[2]}">${t[3]}</span>${t[1]}</button>`).join('')}</div>`;
  const cv=el.querySelector('#sdv'),sub=el.querySelector('#sdsub');
- function paint(c,w){const x=c.getContext('2d');c.width=w;c.height=Math.round(w*base.height/base.width);x.filter=(FILT[st.fi][1]||'none')+' brightness('+st.br+'%)';x.drawImage(base,0,0,c.width,c.height);x.filter='none';
-  st.items.forEach(it=>{if(it.k==='s'){x.strokeStyle=it.c;x.lineWidth=it.w*c.width;x.lineCap=x.lineJoin='round';x.beginPath();it.p.forEach((q,i)=>i?x.lineTo(q[0]*c.width,q[1]*c.height):x.moveTo(q[0]*c.width,q[1]*c.height));if(it.p.length===1)x.lineTo(it.p[0][0]*c.width+.1,it.p[0][1]*c.height);x.stroke()}
-   else{const fs=it.z*c.width;x.font=(it.k==='e'?'':'700 ')+fs+'px '+(it.k==='e'?'system-ui,sans-serif':'Inter,Arial,sans-serif');x.textAlign='center';x.textBaseline='middle';if(it.k==='t'){x.lineWidth=fs/7;x.strokeStyle='rgba(0,0,0,.55)';x.strokeText(it.t,it.x*c.width,it.y*c.height);x.fillStyle=it.c}x.fillText(it.t,it.x*c.width,it.y*c.height)}})}
+ const rng=seed=>()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
+ function fxOver(x,c,fx){const w=c.width,h=c.height,R=rng(fx.length*977+7);
+  if(fx==='neon'){const g=x.createLinearGradient(0,0,w,h);g.addColorStop(0,'rgba(255,0,200,.30)');g.addColorStop(1,'rgba(0,225,255,.30)');x.globalCompositeOperation='screen';x.fillStyle=g;x.fillRect(0,0,w,h);x.globalCompositeOperation='source-over'}
+  else if(fx==='glitch'){const t=document.createElement('canvas');t.width=w;t.height=h;t.getContext('2d').drawImage(c,0,0);
+   x.globalCompositeOperation='screen';x.globalAlpha=.35;x.filter='hue-rotate(110deg) saturate(2)';x.drawImage(t,w*.014,0);x.filter='hue-rotate(-110deg) saturate(2)';x.drawImage(t,-w*.014,0);x.filter='none';x.globalAlpha=1;x.globalCompositeOperation='source-over';
+   for(let i=0;i<9;i++){const sy=R()*h,sh=h*(.01+R()*.05),dx=(R()-.5)*w*.09;x.drawImage(t,0,sy,w,sh,dx,sy,w,sh)}}
+  else if(fx==='party'){const g=x.createLinearGradient(0,0,w,h);g.addColorStop(0,'rgba(255,60,150,.45)');g.addColorStop(.5,'rgba(255,210,60,.25)');g.addColorStop(1,'rgba(60,140,255,.45)');x.globalCompositeOperation='overlay';x.fillStyle=g;x.fillRect(0,0,w,h);x.globalCompositeOperation='source-over';
+   x.fillStyle='#fff';for(let i=0;i<34;i++){const px=R()*w,py=R()*h,r=w*(.008+R()*.016);x.globalAlpha=.55+R()*.45;x.beginPath();x.moveTo(px,py-r*2);x.quadraticCurveTo(px,py,px+r*2,py);x.quadraticCurveTo(px,py,px,py+r*2);x.quadraticCurveTo(px,py,px-r*2,py);x.quadraticCurveTo(px,py,px,py-r*2);x.fill()}x.globalAlpha=1}
+  else if(fx==='confetti'){const cs=['#ff3b6b','#ffd400','#2ee6a6','#3d9bff','#c15bff','#ff8a1f'];for(let i=0;i<80;i++){x.save();x.translate(R()*w,R()*h);x.rotate(R()*6.28);x.fillStyle=cs[(R()*cs.length)|0];const s=w*(.012+R()*.016);if(R()<.3){x.beginPath();x.arc(0,0,s*.6,0,6.28);x.fill()}else x.fillRect(-s,-s/2.5,s*2,s/1.25);x.restore()}}}
+ function paint(c,w,fx=st.fx,from=base){const x=c.getContext('2d');c.width=w;c.height=Math.round(w*from.height/from.width);
+  x.filter=(FILT[st.fi][1]||'none')+' brightness('+st.br+'%)'+(fx==='neon'?' contrast(1.15) saturate(1.5)':'');x.drawImage(from,0,0,c.width,c.height);x.filter='none';
+  if(fx)fxOver(x,c,fx);
+  st.items.forEach(it=>{x.shadowBlur=0;if(it.k==='s'){x.strokeStyle=it.c;x.lineWidth=it.w*c.width;x.lineCap=x.lineJoin='round';if(fx==='neon'){x.shadowColor=it.c;x.shadowBlur=c.width*.02}x.beginPath();it.p.forEach((q,i)=>i?x.lineTo(q[0]*c.width,q[1]*c.height):x.moveTo(q[0]*c.width,q[1]*c.height));if(it.p.length===1)x.lineTo(it.p[0][0]*c.width+.1,it.p[0][1]*c.height);x.stroke()}
+   else{const fs=it.z*c.width;x.font=(it.k==='e'?'':'700 ')+fs+'px '+(it.k==='e'?'system-ui,sans-serif':'Inter,Arial,sans-serif');x.textAlign='center';x.textBaseline='middle';
+    if(it.k==='t'){if(fx==='neon'){x.shadowColor=it.c;x.shadowBlur=fs*.5}else{x.lineWidth=fs/7;x.strokeStyle='rgba(0,0,0,.55)';x.strokeText(it.t,it.x*c.width,it.y*c.height)}x.fillStyle=it.c}x.fillText(it.t,it.x*c.width,it.y*c.height);x.shadowBlur=0}})}
+ function thumbs(){const sm=document.createElement('canvas');const k=80/Math.max(base.width,base.height);sm.width=Math.round(base.width*k)||80;sm.height=Math.round(base.height*k)||80;sm.getContext('2d').drawImage(base,0,0,sm.width,sm.height);
+  return FX.map(([f,l])=>{const c=document.createElement('canvas');const hold=st.items;st.items=[];paint(c,88,f,sm);st.items=hold;return `<button class="sdfx${f===st.fx?' on':''}" data-x="${f}"><img src="${c.toDataURL('image/jpeg',.7)}" alt="">${l}</button>`}).join('')}
  function draw(){const w=Math.min(720,base.width);paint(cv,w);
-  el.querySelectorAll('.sdp').forEach(b=>b.classList.toggle('on',b.dataset.t===st.tool));
-  const t=st.tool;sub.innerHTML=t==='filter'?`<div class="sdrow">${FILT.map((f,i)=>`<button class="edc${i===st.fi?' on':''}" data-f="${i}">${f[0]}</button>`).join('')}</div><div class="sdrow"><span class="sdl">Brightness</span><input type="range" min="60" max="140" value="${st.br}" id="sdbr"></div>`
+  el.querySelectorAll('.sdtl2 button').forEach(b=>b.classList.toggle('on',b.dataset.t===st.tool));
+  const t=st.tool;sub.innerHTML=t==='fx'?`<div class="sdrow fxr">${thumbs()}</div>`
+   :t==='filter'?`<div class="sdrow">${FILT.map((f,i)=>`<button class="edc${i===st.fi?' on':''}" data-f="${i}">${f[0]}</button>`).join('')}</div><div class="sdrow"><span class="sdl">Brightness</span><input type="range" min="60" max="140" value="${st.br}" id="sdbr"></div>`
    :t==='draw'?`<div class="sdrow">${COL.map(c=>`<button class="sdc${c===st.col?' on':''}" data-c="${c}" style="background:${c}" aria-label="Colour"></button>`).join('')}</div>`
    :t==='text'?`<div class="sdrow">${COL.map(c=>`<button class="sdc${c===st.col?' on':''}" data-c="${c}" style="background:${c}" aria-label="Colour"></button>`).join('')}</div><div class="sdrow"><input id="sdtx" maxlength="40" placeholder="Type text" autocomplete="off"><button class="edb pri" data-k="addt">Add</button></div>`
    :t==='emoji'?`<div class="sdrow">${EM.map(e=>`<button class="sde" data-e="${e}">${e}</button>`).join('')}</div>`:'';
   const br=sub.querySelector('#sdbr');if(br)br.oninput=()=>{st.br=+br.value;paint(cv,w)}}
  const pt=e=>{const r=cv.getBoundingClientRect();return[(e.clientX-r.left)/r.width,(e.clientY-r.top)/r.height]};
  cv.addEventListener('pointerdown',e=>{cv.setPointerCapture(e.pointerId);const p=pt(e);
-  if(st.tool==='draw'){st.cur={k:'s',c:st.col,w:.012,p:[p]};st.items.push(st.cur);draw()}
+  if(st.tool==='draw'){st.cur={k:'s',c:st.col,w:.012,p:[p]};st.items.push(st.cur);paint(cv,cv.width)}
   else{let best=null,bd=.12;st.items.forEach(it=>{if(it.k!=='s'){const d=Math.hypot(it.x-p[0],(it.y-p[1])*cv.height/cv.width);if(d<bd){bd=d;best=it}}});st.drag=best;if(best){st.items.splice(st.items.indexOf(best),1);st.items.push(best)}}});
  cv.addEventListener('pointermove',e=>{const p=pt(e);if(st.tool==='draw'&&st.cur){st.cur.p.push(p);paint(cv,cv.width)}else if(st.drag){st.drag.x=Math.max(0,Math.min(1,p[0]));st.drag.y=Math.max(0,Math.min(1,p[1]));paint(cv,cv.width)}});
  const up=()=>{st.cur=null;st.drag=null};cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
- function out(){let w=1080,q=.82,o;for(let i=0;i<6;i++){const c=document.createElement('canvas');paint(c,Math.min(w,base.width));o=c.toDataURL('image/jpeg',q);if(o.length<850000)return o;w=Math.round(w*.85);q-=.05}return null}
+ function out(q0=.82){let w=1080,q=q0,o;for(let i=0;i<6;i++){const c=document.createElement('canvas');paint(c,Math.min(w,base.width));o=c.toDataURL('image/jpeg',q);if(o.length<850000)return o;w=Math.round(w*.85);q-=.05}return null}
  el.onclick=e=>{const b=e.target.closest('button');if(!b)return;const d=b.dataset;
   if(d.k==='x'){el.remove();return}
   if(d.k==='rot'){const n=document.createElement('canvas');n.width=base.height;n.height=base.width;const x=n.getContext('2d');x.translate(n.width/2,n.height/2);x.rotate(Math.PI/2);x.drawImage(base,-base.width/2,-base.height/2);base=n;st.items=[];draw();return}
   if(d.k==='undo'){st.items.pop();draw();return}
+  if(d.k==='draft'){const o=out(.78);if(!o){toast('Photo is too large');return}try{localStorage.setItem('vk_stdraft',JSON.stringify({src:o,cap:(el.querySelector('#sdcap').value||'').trim(),t:Date.now()}));toast('Draft saved')}catch(x){toast('Could not save the draft')}return}
   if(d.t){st.tool=st.tool===d.t?'':d.t;draw();return}
+  if(d.x!=null){st.fx=d.x;draw();return}
   if(d.f!=null){st.fi=+d.f;draw();return}
   if(d.c){st.col=d.c;draw();return}
   if(d.e){st.items.push({k:'e',t:d.e,x:.5,y:.5,z:.16});paint(cv,cv.width);return}
   if(d.k==='addt'){const v=(sub.querySelector('#sdtx').value||'').trim();if(!v)return;st.items.push({k:'t',t:v,c:st.col,x:.5,y:.5,z:.07});st.tool='';draw();return}
   if(d.k==='post'){const o=out();if(!o){toast('Photo is too large');return}
-   const id=newId(),it={id,kind:'img',text:(el.querySelector('#sdcap').value||'').trim(),bg:BGS[0],t:Date.now(),to:{},ttl:isPlus()?48:24,src:o};myStatus.push(it);el.remove();document.querySelector('#stp')?.remove();render();toast('Status posted');stSyncAll()}};
+   const id=newId(),it={id,kind:'img',text:(el.querySelector('#sdcap').value||'').trim(),bg:BGS[0],t:Date.now(),to:{},ttl:isPlus()?48:24,src:o};myStatus.push(it);try{localStorage.removeItem('vk_stdraft')}catch(x){}el.remove();document.querySelector('#stp')?.remove();render();toast('Status posted');stSyncAll()}};
  draw()}
 
 function voiceStatus(){
@@ -2981,9 +3012,10 @@ Object.assign(ACT,{
   <div class="stpb"><button data-a="stpText"><span>${ic('edit',22)}</span>Text</button><button data-a="stpLayout"><span>${SVG.layout}</span>Layout</button><button data-a="stpVoice"><span>${ic('mic',22)}</span>Voice</button></div>
   <div class="stpr">Add a photo</div>
   <div class="stpg"><button data-a="stpCam"><span>${ic('camera',34)}</span>Camera</button><button data-a="stpGal"><span>${ic('image',34)}</span>Gallery</button><button data-a="stpVid"><span>${ic('video',34)}</span>Video</button></div>
-  <div class="stpn">Pick more than one photo in Gallery to make a collage.</div>`;
+  <div class="stpn">Pick more than one photo in Gallery to make a collage.</div>${(()=>{try{return localStorage.getItem('vk_stdraft')?'<button class="stpd" data-a="stpDraft">Continue your draft</button>':''}catch(e){return''}})()}`;
   phone.append(e)},
  stpClose:()=>document.querySelector('#stp')?.remove(),
+ stpDraft:()=>{try{const d=JSON.parse(localStorage.getItem('vk_stdraft'));const im=new Image();im.onload=()=>studio(im,d.cap);im.src=d.src}catch(e){toast('Draft not found')}},
  stpText:()=>{document.querySelector('#stp')?.remove();_txt()},
  stpVid:()=>{document.querySelector('#stp')?.remove();_txt();setTimeout(()=>ACT.stVideo&&ACT.stVideo(),50)},
  stpCam:()=>pickMany(true,a=>openFiles(a)),
@@ -3000,13 +3032,13 @@ let tok=0;
 const stOf=id=>{const c=chats.find(x=>x.id==='u:'+id);if(!c)return 'new';if(c.inv==='out')return 'sent';if(c.inv==='declined')return 'no';if(c.req)return 'got';return c.known||c.msgs.length?'chat':'new'};
 function card(x){const s=stOf(x.id),nm=x.name||x.username;
  const btn=s==='new'?`<button class="ucb" data-a="invAsk" data-v="${esc(x.id)}">Invite</button>`:s==='chat'?`<button class="ucb ghost" data-a="netOpen" data-v="${esc(x.id)}">Message</button>`:s==='sent'?`<button class="ucb ghost" data-a="netOpen" data-v="${esc(x.id)}">Invited</button>`:s==='got'?`<button class="ucb" data-a="netOpen" data-v="${esc(x.id)}">Respond</button>`:`<button class="ucb ghost" disabled>Declined</button>`;
- return `<div class="ucard">${av0(hueOf(x.username),nm,'sm')}<span class="ucm"><b>${esc(nm)}${bdg(planOf(x))}</b><small>@${esc(x.username)}</small></span>${btn}</div>`}
+ return `<div class="ucard">${av0(hueOf(x.username),nm,'sm')}<span class="ucm"><b>${esc(nm)}${bdg(planOf(x))}</b><small>@${esc(x.username)}</small>${newTag(x.created_at)}</span>${btn}</div>`}
 Object.assign(ACT,{
  netFind:()=>{if(!NET.s){ACT.netAcct();return}closeSheet();sheet('Find people',`<div class="field"><input id="nq" placeholder="Type a username, for example s" maxlength="20" autocapitalize="none" autocomplete="off"></div><div id="nres"><div class="note2">Type the first letters of a username. Everyone whose username starts with them will appear.</div></div>`);setTimeout(()=>{const i=$('#nq');if(i)i.focus()},250)},
  netSearch:async()=>{const i=$('#nq'),el=$('#nres');if(!i||!el)return;const q=(i.value||'').trim().toLowerCase().replace(/[^a-z0-9_]/g,'');
   if(!q){el.innerHTML='<div class="note2">Type the first letters of a username. Everyone whose username starts with them will appear.</div>';return}
   const my=++tok;el.innerHTML='<div class="note2">Searching…</div>';
-  try{const r=await sb('/rest/v1/profiles?select=id,username,name,plan,plan_until&username=ilike.'+q+'*&order=username.asc&limit=30');const a=(await r.json()).filter(x=>x.id!==NET.s.uid);if(my!==tok)return;
+  try{const r=await sb('/rest/v1/profiles?select=id,username,name,plan,plan_until,created_at&username=ilike.'+q+'*&order=username.asc&limit=30');const a=(await r.json()).filter(x=>x.id!==NET.s.uid);if(my!==tok)return;
    el.innerHTML=a.length?`<div class="ucn">${a.length} ${a.length===1?'person':'people'}</div>`+a.map(card).join(''):'<div class="note2">No one found with this username</div>'}
   catch(e){if(my===tok)el.innerHTML='<div class="note2">Could not search. Check internet</div>'}},
  invAsk:async v=>{const el=sheet('Send invitation',`<div class="note2" style="padding:0 4px 8px">They must accept before you can chat. You can write a short message with your invitation.</div><div class="field"><textarea id="invm" rows="3" maxlength="200" placeholder="Write a message (optional)">Hi! I would like to chat with you on Vynk.</textarea></div><button class="btn" data-a="invSend" data-v="${esc(v)}">Send invitation</button>`)},
