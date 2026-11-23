@@ -289,6 +289,17 @@ html.cbar .phone{margin-top:calc(46px + env(safe-area-inset-top,0px))!important;
 #cdiag:empty{display:none}
 </style>
 <style id="v921">
+.favav{width:62px;height:62px;border-radius:50%;display:grid;place-items:center;box-sizing:border-box}.favav .av{width:62px;height:62px;border:0!important}
+.favav.st{border:2.5px solid #00a884;padding:2px}.favav.st .av{width:52px;height:52px}.favav.st.seen{border-color:#7b8b93}
+.favp2{position:absolute;inset:0;z-index:9100;background:var(--bg);color:var(--ink);display:flex;flex-direction:column;animation:up .22s ease-out}
+.fvh{display:flex;align-items:center;gap:4px;padding:calc(10px + env(safe-area-inset-top,0px)) 8px 6px}.fvh h2{flex:1;margin:0;font:600 20px var(--font-display,inherit)}.fvh small{display:block;font:400 12.5px var(--font-body,inherit);color:var(--muted)}
+.fvdone{width:44px;height:44px;border-radius:50%;background:#00a884;color:#fff;display:grid;place-items:center;flex:none}
+.fvs{margin:4px 16px 8px;display:flex;align-items:center;gap:10px;background:var(--surface2);border-radius:24px;padding:0 14px}.fvs input{flex:1;min-width:0;background:transparent!important;border:0!important;outline:none!important;box-shadow:none!important;color:inherit;padding:12px 0;font-size:15px}
+.fvsel{display:flex;gap:10px;overflow-x:auto;padding:2px 16px 8px;scrollbar-width:none}.fvsel::-webkit-scrollbar{display:none}.fvsel button{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11.5px;flex:none;width:58px;color:inherit}.fvsel .av{width:50px;height:50px}
+.fvl{flex:1;overflow-y:auto;padding-bottom:20px}.fvr{display:flex;align-items:center;gap:14px;padding:10px 18px;width:100%;color:inherit;text-align:left}.fvr .av{width:48px;height:48px}.fvr .fn{flex:1;min-width:0;display:flex;flex-direction:column}.fvr .fn b{font-weight:600;font-size:15.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.fvr .fn small{color:var(--muted);font-size:12.5px}
+.fvck{width:26px;height:26px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;flex:none;color:#fff;transition:background .15s,border-color .15s}.fvck.on{background:#00a884;border-color:#00a884}
+.fvbot{padding:10px 16px calc(14px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line)}.fvbot button{width:100%;padding:14px;border-radius:26px;background:#00a884;color:#fff;font-weight:700;font-size:15.5px}
+
 .srw .sacts{visibility:hidden}.srw.sw .sacts{visibility:visible}.li:active{background:color-mix(in srgb,var(--ink) 9%,var(--bg))!important;transform:none!important}
 .stpd{margin:6px 20px;padding:12px;border-radius:14px;background:var(--surface2);font-weight:600;color:inherit;width:calc(100% - 40px)}
 .sdt2{display:flex;align-items:center;justify-content:space-between;padding:calc(8px + env(safe-area-inset-top,0px)) 8px 6px}.sdt2 b{font:600 17px var(--font-display,inherit)}.sdlk{color:#4da3ff;font-weight:600;font-size:15px;padding:8px 10px}
@@ -1323,7 +1334,7 @@ function callsVk(){
   const row=({c,n})=>{const p=P[c.cid],miss=!!c.missed,col=miss?'#ff453a':c.dir==='in'?'#30d158':'#30d158';
     return `<div class="li vkr" data-a="openCid" data-v="${esc(c.cid)}">${av(p.hue,p.name)}<span class="mid"><span class="nm" style="${miss?'color:#ff453a':''}"><span>${esc(p.name)}${n>1?' ('+n+')':''}</span></span><span class="sub"><b style="color:${col};display:inline-flex">${ic(c.dir==='in'||miss?'dl':'ur',15)}</b><span>${miss?'Missed calls, ':''}${when(c.t)}</span></span></span><button class="ib vkcall" data-a="${c.video?'startVideo':'startCall'}" data-v="${esc(c.cid)}" aria-label="Call">${ic(c.video?'vidOut':'phOut',22)}</button></div>`};
   const fv=chats.filter(c=>c.type==='dm'&&c.fav&&P[c.cid]&&vkOk(P[c.cid].name));
-  const favs=`<div class="vksec">Favorites</div><div class="favrow">${fv.map(c=>`<button class="favi" data-a="startCall" data-v="${esc(c.cid)}"><span class="vkring">${av(P[c.cid].hue,P[c.cid].name)}</span><small>${esc((P[c.cid].name||'').split(' ')[0])}</small></button>`).join('')}<button class="favi add" data-a="favPick" aria-label="Add favorites"><span class="favp">${ic('plus',26)}</span><small>${fv.length?'':'Add'}</small></button></div>`;
+  const favs=`<div class="vksec">Favorites</div><div class="favrow">${fv.map(c=>`<button class="favi" data-a="startCall" data-v="${esc(c.cid)}"><span class="favav${STAT[c.cid]&&STAT[c.cid].length&&!mutedSt.has(c.cid)?(seenSt.has(c.cid)?' st seen':' st'):''}">${av(P[c.cid].hue,P[c.cid].name)}</span><small>${esc((P[c.cid].name||'').split(' ')[0])}</small></button>`).join('')}<button class="favi add" data-a="favPick" aria-label="Add favorites"><span class="favp">${ic('plus',26)}</span><small>${fv.length?'':'Add'}</small></button></div>`;
   return `${favs}${adsHTML('calls')}<div class="vksec">Recents</div>${L.length?L.map(row).join(''):`<div class="empty"><b>No calls yet</b>Tap the call button to start one.</div>`}<div style="height:110px"></div>`}
 function statusVk(){
   pruneSt();
@@ -3059,6 +3070,23 @@ const _ra=ACT.reqAccept,_rd=ACT.reqDecline;
 ACT.reqAccept=function(){const c=chatOf(S.chat);const a=c&&c.req&&c.cid;_ra.apply(this,arguments);if(a)try{tx(a,JSON.stringify({t:'invr',ok:1}))}catch(e){}};
 ACT.reqDecline=function(){const c=chatOf(S.chat);const a=c&&c.cid;_rd.apply(this,arguments);if(a)try{tx(a,JSON.stringify({t:'invr',ok:0}))}catch(e){}};
 window.invRx=(c,a,o)=>{if(o.t!=='invr'||c.inv!=='out'&&c.inv!=='declined')return;if(o.ok){c.inv=null;c.known=true;toast(cName(c)+' accepted your invitation');stSyncTo(a)}else{c.inv='declined';toast(cName(c)+' did not accept your invitation')}persistSoon();if(S.chat===c.id)drawComp();else refresh()};
+})();
+
+/* ---- v9.23: Add favorites page ---- */
+(()=>{let sel=null;
+ const list=q=>chats.filter(c=>c.type==='dm'&&P[c.cid]&&(!q||(P[c.cid].name||'').toLowerCase().includes(q)||String(P[c.cid].user||'').toLowerCase().includes(q))).sort((a,b)=>(P[a.cid].name||'').localeCompare(P[b.cid].name||''));
+ const rows=q=>{const L=list(q);return L.length?L.map(c=>`<button class="fvr" data-a="fvTog" data-v="${esc(c.id)}">${av(P[c.cid].hue,P[c.cid].name)}<span class="fn"><b>${esc(P[c.cid].name)}</b>${P[c.cid].user?`<small>@${esc(P[c.cid].user)}</small>`:''}</span><span class="fvck${sel.has(c.id)?' on':''}">${sel.has(c.id)?ic('check',16):''}</span></button>`).join(''):`<div class="note2" style="padding:24px">${q?'No one found':'No contacts yet. Start a chat first.'}</div>`};
+ const chips=()=>[...sel].map(id=>chats.find(c=>c.id===id)).filter(Boolean).map(c=>`<button data-a="fvTog" data-v="${esc(c.id)}">${av(P[c.cid].hue,P[c.cid].name)}<span>${esc((P[c.cid].name||'').split(' ')[0])}</span></button>`).join('');
+ const redraw=()=>{const e=document.querySelector('#favp');if(!e)return;const q=(e.querySelector('#fvq').value||'').trim().toLowerCase();e.querySelector('.fvl').innerHTML=rows(q);e.querySelector('.fvsel').innerHTML=chips();e.querySelector('.fvsel').style.display=sel.size?'flex':'none';e.querySelector('.fvh small').textContent=sel.size?sel.size+' selected':'Choose people for quick calls';e.querySelector('.fvbot button').textContent=sel.size?'Save '+sel.size+(sel.size===1?' favorite':' favorites'):'Save'};
+ Object.assign(ACT,{
+  favPick:()=>{closeSheet();document.querySelector('#favp')?.remove();sel=new Set(chats.filter(c=>c.fav).map(c=>c.id));
+   const e=document.createElement('div');e.id='favp';e.className='favp2';
+   e.innerHTML=`<div class="fvh"><button class="sdb" data-a="fvClose" aria-label="Back">${ic('back',24)}</button><h2>Add favorites<small></small></h2><button class="fvdone" data-a="fvSave" aria-label="Done">${ic('check',24)}</button></div>
+   <div class="fvs">${ic('search',18)}<input id="fvq" placeholder="Search contacts" autocomplete="off"></div><div class="fvsel"></div><div class="fvl"></div><div class="fvbot"><button data-a="fvSave">Save</button></div>`;
+   phone.append(e);redraw();e.querySelector('#fvq').addEventListener('input',redraw)},
+  fvTog:v=>{if(!sel)return;sel.has(v)?sel.delete(v):sel.add(v);redraw()},
+  fvClose:()=>{document.querySelector('#favp')?.remove();sel=null},
+  fvSave:()=>{if(!sel)return;chats.forEach(c=>{if(c.type==='dm')c.fav=sel.has(c.id)});persistSoon();document.querySelector('#favp')?.remove();sel=null;const b=$('#body');if(b&&S.tab==='calls')b.innerHTML=callsVk();else render();toast('Favorites saved')}});
 })();
 </script>
 </body></html>
