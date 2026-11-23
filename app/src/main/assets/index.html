@@ -289,6 +289,9 @@ html.cbar .phone{margin-top:calc(46px + env(safe-area-inset-top,0px))!important;
 #cdiag:empty{display:none}
 </style>
 <style id="v921">
+.sdlock{font-style:normal;font-size:9px;font-weight:700;background:#2a80f5;color:#fff;border-radius:6px;padding:1px 5px;margin-left:3px;vertical-align:middle}
+.vbtbl i{font-size:13px}
+
 .vbpage{position:absolute;inset:0;z-index:9100;background:var(--bg);color:var(--ink);display:flex;flex-direction:column;animation:up .22s ease-out}.vbpage~.scrim{z-index:9300}
 .vbh{display:flex;align-items:center;gap:4px;padding:calc(10px + env(safe-area-inset-top,0px)) 8px 6px}.vbh h2{margin:0;font:600 20px var(--font-display,inherit)}
 .vbb{flex:1;overflow-y:auto;padding-bottom:24px}.vbf{padding:10px 16px calc(14px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);display:flex;flex-direction:column;gap:8px}
@@ -836,7 +839,7 @@ const ACT={
  mkGroup:()=>{const n=$('#gname').value.trim(),mem=[...document.querySelectorAll('.gm:checked')].map(x=>x.value);if(!n||mem.length<1){toast('Add a name and at least one person');return}
    const c={id:'g'+uid(),type:'group',name:n,hue:Math.floor(Math.random()*360),members:mem,unread:0,msgs:[M('me',`You created the group "${n}"`,0,{t:Date.now(),status:'read'})]};chats.push(c);closeSheet();openChat(c.id)},
  /* row context menu */
- cm_pin:v=>{const c=chatOf(v);if(!c.pinned&&chats.filter(x=>x.pinned).length>=3){toast('You can pin up to 3 chats');return}c.pinned=!c.pinned;closeSheet();render()},
+ cm_pin:v=>{const c=chatOf(v);if(!c.pinned&&chats.filter(x=>x.pinned).length>=(isPlus()?(ME.plan==='gold'?15:10):3)){if(isPlus())toast('You can pin up to '+(ME.plan==='gold'?15:10)+' chats');else{toast('Free accounts can pin 3 chats. Plus allows 10');ACT.plus()}return}c.pinned=!c.pinned;closeSheet();render()},
 
  bkOpen:async()=>{if(!NET.s){toast('Log in to your account first');return}if(!E2.sub){toast('Backup is not available on this phone');return}
   const t=await bkInfo();
@@ -1428,6 +1431,7 @@ function epDraw(){const v=$('#epv');if(!v)return;if(ED)epRead();else ED={name:ME
 /* ---------- Plus ---------- */
 
 const isPlus=()=>!!(ME.plan&&ME.plan_until&&new Date(ME.plan_until)>new Date());
+const stTtl=()=>isPlus()&&ME.plan==='gold'?72:isPlus()?48:24;
 const planOf=q=>q&&q.plan&&q.plan_until&&new Date(q.plan_until)>new Date()?q.plan:null;
 const vbSvg=(n,inv)=>`<svg class="vbs" viewBox="0 0 24 24" width="${n}" height="${n}" aria-hidden="true"><path d="M12.00 0.90 L12.29 0.93 L12.57 1.04 L12.85 1.20 L13.11 1.41 L13.36 1.66 L13.60 1.93 L13.82 2.20 L14.03 2.46 L14.23 2.70 L14.44 2.90 L14.65 3.05 L14.87 3.16 L15.11 3.20 L15.38 3.21 L15.66 3.16 L15.97 3.09 L16.29 3.00 L16.63 2.91 L16.98 2.83 L17.32 2.78 L17.66 2.76 L17.98 2.79 L18.27 2.88 L18.52 3.02 L18.74 3.22 L18.91 3.47 L19.04 3.76 L19.13 4.09 L19.18 4.43 L19.21 4.79 L19.23 5.14 L19.25 5.48 L19.27 5.79 L19.32 6.07 L19.40 6.32 L19.52 6.53 L19.69 6.72 L19.90 6.87 L20.15 7.00 L20.44 7.13 L20.76 7.24 L21.09 7.37 L21.42 7.51 L21.73 7.67 L22.01 7.85 L22.25 8.07 L22.43 8.30 L22.56 8.57 L22.61 8.86 L22.61 9.16 L22.54 9.47 L22.42 9.79 L22.26 10.10 L22.07 10.40 L21.88 10.70 L21.70 10.98 L21.53 11.25 L21.41 11.51 L21.33 11.76 L21.30 12.00 L21.33 12.24 L21.41 12.49 L21.53 12.75 L21.70 13.02 L21.88 13.30 L22.07 13.60 L22.26 13.90 L22.42 14.21 L22.54 14.53 L22.61 14.84 L22.61 15.14 L22.56 15.43 L22.43 15.70 L22.25 15.93 L22.01 16.15 L21.73 16.33 L21.42 16.49 L21.09 16.63 L20.76 16.76 L20.44 16.88 L20.15 17.00 L19.90 17.13 L19.69 17.28 L19.52 17.47 L19.40 17.68 L19.32 17.93 L19.27 18.21 L19.25 18.52 L19.23 18.86 L19.21 19.21 L19.18 19.57 L19.13 19.91 L19.04 20.24 L18.91 20.53 L18.74 20.78 L18.52 20.98 L18.27 21.12 L17.98 21.21 L17.66 21.24 L17.32 21.22 L16.98 21.17 L16.63 21.09 L16.29 21.00 L15.97 20.91 L15.66 20.84 L15.38 20.79 L15.11 20.80 L14.87 20.84 L14.65 20.95 L14.44 21.10 L14.23 21.30 L14.03 21.54 L13.82 21.80 L13.60 22.07 L13.36 22.34 L13.11 22.59 L12.85 22.80 L12.57 22.96 L12.29 23.07 L12.00 23.10 L11.71 23.07 L11.43 22.96 L11.15 22.80 L10.89 22.59 L10.64 22.34 L10.40 22.07 L10.18 21.80 L9.97 21.54 L9.77 21.30 L9.56 21.10 L9.35 20.95 L9.13 20.84 L8.89 20.80 L8.62 20.79 L8.34 20.84 L8.03 20.91 L7.71 21.00 L7.37 21.09 L7.02 21.17 L6.68 21.22 L6.34 21.24 L6.02 21.21 L5.73 21.12 L5.48 20.98 L5.26 20.78 L5.09 20.53 L4.96 20.24 L4.87 19.91 L4.82 19.57 L4.79 19.21 L4.77 18.86 L4.75 18.52 L4.73 18.21 L4.68 17.93 L4.60 17.68 L4.48 17.47 L4.31 17.28 L4.10 17.13 L3.85 17.00 L3.56 16.88 L3.24 16.76 L2.91 16.63 L2.58 16.49 L2.27 16.33 L1.99 16.15 L1.75 15.93 L1.57 15.70 L1.44 15.43 L1.39 15.14 L1.39 14.84 L1.46 14.53 L1.58 14.21 L1.74 13.90 L1.93 13.60 L2.12 13.30 L2.30 13.02 L2.47 12.75 L2.59 12.49 L2.67 12.24 L2.70 12.00 L2.67 11.76 L2.59 11.51 L2.47 11.25 L2.30 10.98 L2.12 10.70 L1.93 10.40 L1.74 10.10 L1.58 9.79 L1.46 9.47 L1.39 9.16 L1.39 8.86 L1.44 8.57 L1.57 8.30 L1.75 8.07 L1.99 7.85 L2.27 7.67 L2.58 7.51 L2.91 7.37 L3.24 7.24 L3.56 7.13 L3.85 7.00 L4.10 6.87 L4.31 6.72 L4.48 6.53 L4.60 6.32 L4.68 6.07 L4.73 5.79 L4.75 5.48 L4.77 5.14 L4.79 4.79 L4.82 4.43 L4.87 4.09 L4.96 3.76 L5.09 3.47 L5.26 3.22 L5.48 3.02 L5.73 2.88 L6.02 2.79 L6.34 2.76 L6.68 2.78 L7.02 2.83 L7.37 2.91 L7.71 3.00 L8.03 3.09 L8.34 3.16 L8.62 3.21 L8.89 3.20 L9.13 3.16 L9.35 3.05 L9.56 2.90 L9.77 2.70 L9.97 2.46 L10.18 2.20 L10.40 1.93 L10.64 1.66 L10.89 1.41 L11.15 1.20 L11.43 1.04 L11.71 0.93Z" fill="${inv?'#fff':'#2a80f5'}" stroke="none"/><path d="M7.2 12.4l3.2 3.2 6.4-6.8" fill="none" stroke="${inv?'#2a80f5':'#fff'}" stroke-width="2.4" stroke-linecap="square" stroke-linejoin="miter"/></svg>`;
 const bdg=p=>p?`<span class="vb ${p==='gold'?'gold':'plus'}" data-vb="${p==='gold'?'gold':'plus'}" role="button" aria-label="${p==='gold'?'Verified account':'Plus member'}" title="${p==='gold'?'Verified':'Plus'}">${vbSvg(15)}</span>`:'';
@@ -1498,7 +1502,7 @@ function stBody(s){const cap=s.text?`<div class="stc">${esc(s.text)}</div>`:'';
   return `<div class="txt2">${esc(s.text)}</div>`+stPollH(s)}
 function stSyncTo(k){if(!NATIVE||!P[k])return;if(!(P[k].range||(isNet(k)&&NET.ok)))return;
   myStatus.forEach(it=>{if(it.to&&it.to[k])return;if(it.cf&&!(SET.cf&&SET.cf[k]))return;
-    const o={t:'st',id:it.id,kind:it.kind||'text',text:it.text||'',bg:it.bg,x:it.ttl===48?48:24,cf:it.cf?1:0,poll:it.poll||null};
+    const o={t:'st',id:it.id,kind:it.kind||'text',text:it.text||'',bg:it.bg,x:it.ttl===72?72:it.ttl===48?48:24,cf:it.cf?1:0,poll:it.poll||null};
     if(it.kind==='img')o.src=it.src;if(it.kind==='voice'){o.src=it.src;o.dur=it.dur||0}if(it.kind==='video'){o.src=it._d||Android.mediaRead(it.src);o.dur=it.dur||0;if(!o.src)return}
     it.to=it.to||{};it.to[k]=1;tx(k,JSON.stringify(o))});persistSoon()}
 function stDelMine(i){const it=myStatus[i];if(!it)return;if(NATIVE){Object.keys(it.to||{}).forEach(k=>tx(k,JSON.stringify({t:'stdel',id:it.id})));if(it.kind==='video')Android.mediaDel(it.src)}myStatus.splice(i,1);persistSoon()}
@@ -1738,7 +1742,7 @@ window.nativeData=(a,raw)=>{
     if(typeof o.id!=='string'||o.id.length>40)return;
     const kind=['text','img','video','voice'].includes(o.kind)?o.kind:'text',L=STAT[a]=STAT[a]||[];
     if(!L.some(x=>x.id===o.id)){
-      const it={id:o.id,kind,text:cl(o.text,200),bg:/^#[0-9a-f]{6}$/i.test(o.bg)?o.bg:'#1f5eff',t:Date.now(),ttl:(o.x===48&&P[a].plan)?48:24,cf:o.cf?1:0,_o:a};if(o.poll&&Array.isArray(o.poll.o)&&o.poll.o.length===2&&typeof o.poll.q==='string')it.poll={q:cl(o.poll.q,60),o:[cl(String(o.poll.o[0]),30),cl(String(o.poll.o[1]),30)]};
+      const it={id:o.id,kind,text:cl(o.text,200),bg:/^#[0-9a-f]{6}$/i.test(o.bg)?o.bg:'#1f5eff',t:Date.now(),ttl:(o.x===72&&P[a].plan==='gold')?72:(o.x>=48&&P[a].plan)?48:24,cf:o.cf?1:0,_o:a};if(o.poll&&Array.isArray(o.poll.o)&&o.poll.o.length===2&&typeof o.poll.q==='string')it.poll={q:cl(o.poll.q,60),o:[cl(String(o.poll.o[0]),30),cl(String(o.poll.o[1]),30)]};
       if(kind==='img'){if(!okImg(o.src))return;it.src=o.src}
       if(kind==='voice'){if(!okAud(o.src))return;it.src=o.src;it.dur=Math.max(0,Math.min(61,+o.dur||0))}
       if(kind==='video'){if(!okVid(o.src))return;const p=Android.mediaSave('s'+Date.now()+Math.random().toString(36).slice(2,7),o.src);if(!p)return;it.src=p;it.dur=Math.max(0,Math.min(61,+o.dur||0))}
@@ -1862,7 +1866,7 @@ if(NATIVE){
     stPhoto:()=>pickFile('image/*',f=>readImg(f,720,.6,src=>{S.stm={kind:'img',src};ACT.stShow()})),
     stVideo:()=>pickFile('video/*',async f=>{try{vprog('Preparing video… 0%');const r=await prepVideo(f,p=>vprog('Preparing video… '+p+'%'));vprog(null);S.stm={kind:'video',src:r.src,dur:r.dur};ACT.stShow()}catch(e){vprog(null);vidErr(e)}}),
     postSt:()=>{const t=($('#stt').value||'').trim(),m=S.stm;if(!t&&!m){toast('Write something first');return}
-      const id=newId(),it={id,kind:m?m.kind:'text',text:t,bg:S.stc,t:Date.now(),to:{},ttl:isPlus()?48:24};if(S.stcf)it.cf=1;if(S.stpo){const q=($('#spq').value||'').trim(),a1=($('#spa1').value||'').trim(),a2=($('#spa2').value||'').trim();if(q&&a1&&a2){it.poll={q:q.slice(0,60),o:[a1.slice(0,30),a2.slice(0,30)]};it.votes={}}else{toast('Fill the poll question and both options');return}}
+      const id=newId(),it={id,kind:m?m.kind:'text',text:t,bg:S.stc,t:Date.now(),to:{},ttl:stTtl()};if(S.stcf)it.cf=1;if(S.stpo){const q=($('#spq').value||'').trim(),a1=($('#spa1').value||'').trim(),a2=($('#spa2').value||'').trim();if(q&&a1&&a2){it.poll={q:q.slice(0,60),o:[a1.slice(0,30),a2.slice(0,30)]};it.votes={}}else{toast('Fill the poll question and both options');return}}
       if(m){if(m.kind==='img')it.src=m.src;else{const p=Android.mediaSave(id,m.src);if(!p){toast('Could not save the video');return}it.src=p;it.dur=m.dur;Object.defineProperty(it,'_d',{value:m.src})}}
       myStatus.push(it);S.stm=null;closeSheet();render();toast('Status posted');stSyncAll()},
 
@@ -2862,7 +2866,7 @@ ACT.schedule=()=>{closeSheet();const c=chatOf(S.chat);if(!c)return;const keep=($
  ${mine.length?`<div class="sec" style="margin-top:12px">Waiting to send</div>`+mine.map(x=>`<div class="act"><span class="grow">${esc(x.text.slice(0,60))}<small>${fmtDT(x.at)}</small></span><button class="ib" data-a="schDel" data-v="${x.id}" aria-label="Cancel">${ic('x',18)}</button></div>`).join(''):''}</div>`)};
 const dtl=d=>{const z=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate())+'T'+z(d.getHours())+':'+z(d.getMinutes())};
 ACT.schQ=v=>{const d=new Date();if(v==='1')d.setHours(d.getHours()+1);else if(v==='tn'){d.setHours(21,0,0,0);if(d<new Date())d.setDate(d.getDate()+1)}else{d.setDate(d.getDate()+1);d.setHours(9,0,0,0)}const e=$('#scD');if(e)e.value=dtl(d)};
-ACT.schGo=()=>{const t=($('#scT')?.value||'').trim(),dv=$('#scD')?.value,c=chatOf(S.chat);if(!t){toast('Write a message first');return}if(!dv){toast('Pick a time');return}const at=new Date(dv).getTime();if(!(at>Date.now()+20000)){toast('Pick a time in the future');return}const a=schLoad();a.push({id:'s'+Date.now(),cid:c.id,text:t,at});schSave(a);const m=$('#msgIn');if(m&&m.value.trim()===t){m.value='';m.dispatchEvent(new Event('input'))}closeSheet();toast('Scheduled for '+fmtDT(at))};
+ACT.schGo=()=>{const t=($('#scT')?.value||'').trim(),dv=$('#scD')?.value,c=chatOf(S.chat);if(!t){toast('Write a message first');return}if(!dv){toast('Pick a time');return}const at=new Date(dv).getTime();if(!(at>Date.now()+20000)){toast('Pick a time in the future');return}const a=schLoad();if(a.length>=(isPlus()?30:5)){toast(isPlus()?'You can schedule up to 30 messages':'Free accounts can schedule 5 messages. Plus allows 30');if(!isPlus())ACT.plus();return}a.push({id:'s'+Date.now(),cid:c.id,text:t,at});schSave(a);const m=$('#msgIn');if(m&&m.value.trim()===t){m.value='';m.dispatchEvent(new Event('input'))}closeSheet();toast('Scheduled for '+fmtDT(at))};
 ACT.schDel=v=>{schSave(schLoad().filter(x=>x.id!==v));ACT.schedule()};
 const _att=ACT.attach;ACT.attach=()=>{_att();const g=document.querySelector('.grid4');if(g)g.insertAdjacentHTML('beforeend',[['toUrdu','edit','اردو',150],['schedule','timer','Schedule',40]].map(([a,i,l,h])=>`<button data-a="${a}"><span class="c" style="--h:${h}">${ic(i,24)}</span>${l}</button>`).join(''))};
 /* prayer times (calculation, Karachi method: Fajr and Isha 18 degrees, Hanafi Asr) */
@@ -3000,7 +3004,7 @@ function studio(src,cap0){
    else{const fs=it.z*c.width;x.font=(it.k==='e'?'':'700 ')+fs+'px '+(it.k==='e'?'system-ui,sans-serif':'Inter,Arial,sans-serif');x.textAlign='center';x.textBaseline='middle';
     if(it.k==='t'){if(fx==='neon'){x.shadowColor=it.c;x.shadowBlur=fs*.5}else{x.lineWidth=fs/7;x.strokeStyle='rgba(0,0,0,.55)';x.strokeText(it.t,it.x*c.width,it.y*c.height)}x.fillStyle=it.c}x.fillText(it.t,it.x*c.width,it.y*c.height);x.shadowBlur=0}})}
  function thumbs(){const sm=document.createElement('canvas');const k=80/Math.max(base.width,base.height);sm.width=Math.round(base.width*k)||80;sm.height=Math.round(base.height*k)||80;sm.getContext('2d').drawImage(base,0,0,sm.width,sm.height);
-  return FX.map(([f,l])=>{const c=document.createElement('canvas');const hold=st.items;st.items=[];paint(c,88,f,sm);st.items=hold;return `<button class="sdfx${f===st.fx?' on':''}" data-x="${f}"><img src="${c.toDataURL('image/jpeg',.7)}" alt="">${l}</button>`}).join('')}
+  return FX.map(([f,l])=>{const c=document.createElement('canvas');const hold=st.items;st.items=[];paint(c,88,f,sm);st.items=hold;return `<button class="sdfx${f===st.fx?' on':''}" data-x="${f}"><img src="${c.toDataURL('image/jpeg',.7)}" alt="">${l}${(f==='neon'||f==='glitch')&&!isPlus()?' <em class="sdlock">Plus</em>':''}</button>`}).join('')}
  function draw(){const w=Math.min(720,base.width);paint(cv,w);
   el.querySelectorAll('.sdtl2 button').forEach(b=>b.classList.toggle('on',b.dataset.t===st.tool));
   const t=st.tool;sub.innerHTML=t==='fx'?`<div class="sdrow fxr">${thumbs()}</div>`
@@ -3022,13 +3026,13 @@ function studio(src,cap0){
   if(d.k==='undo'){st.items.pop();draw();return}
   if(d.k==='draft'){const o=out(.78);if(!o){toast('Photo is too large');return}try{localStorage.setItem('vk_stdraft',JSON.stringify({src:o,cap:(el.querySelector('#sdcap').value||'').trim(),t:Date.now()}));toast('Draft saved')}catch(x){toast('Could not save the draft')}return}
   if(d.t){st.tool=st.tool===d.t?'':d.t;draw();return}
-  if(d.x!=null){st.fx=d.x;draw();return}
+  if(d.x!=null){if((d.x==='neon'||d.x==='glitch')&&!isPlus()){toast('Neon Glow and Glitch are for Plus members');ACT.plus();return}st.fx=d.x;draw();return}
   if(d.f!=null){st.fi=+d.f;draw();return}
   if(d.c){st.col=d.c;draw();return}
   if(d.e){st.items.push({k:'e',t:d.e,x:.5,y:.5,z:.16});paint(cv,cv.width);return}
   if(d.k==='addt'){const v=(sub.querySelector('#sdtx').value||'').trim();if(!v)return;st.items.push({k:'t',t:v,c:st.col,x:.5,y:.5,z:.07});st.tool='';draw();return}
   if(d.k==='post'){const o=out();if(!o){toast('Photo is too large');return}
-   const id=newId(),it={id,kind:'img',text:(el.querySelector('#sdcap').value||'').trim(),bg:BGS[0],t:Date.now(),to:{},ttl:isPlus()?48:24,src:o};myStatus.push(it);try{localStorage.removeItem('vk_stdraft')}catch(x){}el.remove();document.querySelector('#stp')?.remove();render();toast('Status posted');stSyncAll()}};
+   const id=newId(),it={id,kind:'img',text:(el.querySelector('#sdcap').value||'').trim(),bg:BGS[0],t:Date.now(),to:{},ttl:stTtl(),src:o};myStatus.push(it);try{localStorage.removeItem('vk_stdraft')}catch(x){}el.remove();document.querySelector('#stp')?.remove();render();toast('Status posted');stSyncAll()}};
  draw()}
 
 function voiceStatus(){
@@ -3036,16 +3040,16 @@ function voiceStatus(){
  document.querySelector('#stp')?.remove();
  const bg=BGS[(Math.random()*BGS.length)|0];let rec=false,sec=0,iv=0,data='';
  const el=document.createElement('div');el.className='stvo';el.style.background=bg;phone.append(el);
- const ui=()=>{el.innerHTML=`<div class="sdt"><button class="sdb" data-k="x" aria-label="Close">${ic('x',24)}</button></div><div class="svm"><button class="svbig${rec?' rec':''}" data-k="${data?'play':'tog'}" aria-label="Record">${ic(rec?'stop':data?'play':'mic',40)}</button><div class="svt">${dur(sec)}</div><div class="svh2">${rec?'Recording… tap to stop':data?'Tap to listen':'Tap to record (up to 60 s)'}</div></div>
+ const ui=()=>{el.innerHTML=`<div class="sdt"><button class="sdb" data-k="x" aria-label="Close">${ic('x',24)}</button></div><div class="svm"><button class="svbig${rec?' rec':''}" data-k="${data?'play':'tog'}" aria-label="Record">${ic(rec?'stop':data?'play':'mic',40)}</button><div class="svt">${dur(sec)}</div><div class="svh2">${rec?'Recording… tap to stop':data?'Tap to listen':'Tap to record (up to '+(isPlus()?60:30)+' s)'}</div></div>
   <div class="sdf">${data?`<button class="edb" data-k="again">Record again</button>`:''}<input id="sdcap" maxlength="140" placeholder="Add a caption" autocomplete="off" ${data?'':'hidden'}><button class="sds" data-k="post" ${data?'':'disabled'} aria-label="Post status">${ic('send',22)}</button></div>`};ui();
  const stop=()=>{clearInterval(iv);if(!rec)return;rec=false;const r=Android.recStop(false);if(!r){toast('Recording failed');sec=0}else data=r;ui()};
  el.onclick=e=>{const b=e.target.closest('button');if(!b)return;const k=b.dataset.k;
   if(k==='x'){if(rec)Android.recStop(true);clearInterval(iv);el.remove();return}
-  if(k==='tog'){if(rec){stop();return}if(!Android.micOk())return;if(!Android.recStart()){toast('Could not start recording');return}rec=true;sec=0;iv=setInterval(()=>{sec++;const t=el.querySelector('.svt');if(t)t.textContent=dur(sec);if(sec>=60)stop()},1000);ui();return}
+  if(k==='tog'){if(rec){stop();return}if(!Android.micOk())return;if(!Android.recStart()){toast('Could not start recording');return}rec=true;sec=0;iv=setInterval(()=>{sec++;const t=el.querySelector('.svt');if(t)t.textContent=dur(sec);if(sec>=(isPlus()?60:30))stop()},1000);ui();return}
   if(k==='play'){const a=new Audio(data);a.play().catch(()=>{});return}
   if(k==='again'){data='';sec=0;ui();return}
   if(k==='post'){if(!data)return;if(!okAud(data)){toast('Recording is too long');return}
-   const id=newId(),it={id,kind:'voice',text:(el.querySelector('#sdcap').value||'').trim(),bg,t:Date.now(),to:{},ttl:isPlus()?48:24,src:data,dur:sec};myStatus.push(it);el.remove();render();toast('Status posted');stSyncAll()}}}
+   const id=newId(),it={id,kind:'voice',text:(el.querySelector('#sdcap').value||'').trim(),bg,t:Date.now(),to:{},ttl:stTtl(),src:data,dur:sec};myStatus.push(it);el.remove();render();toast('Status posted');stSyncAll()}}}
 
 Object.assign(ACT,{
  addStatus:()=>{if(!NATIVE)return;document.querySelector('#stp')?.remove();closeSheet();
@@ -3080,7 +3084,7 @@ Object.assign(ACT,{
  netSearch:async()=>{const i=$('#nq'),el=$('#nres');if(!i||!el)return;const q=(i.value||'').trim().toLowerCase().replace(/[^a-z0-9_]/g,'');
   if(!q){el.innerHTML='<div class="note2">Type the first letters of a username. Everyone whose username starts with them will appear.</div>';return}
   const my=++tok;el.innerHTML='<div class="note2">Searching…</div>';
-  try{const r=await sb('/rest/v1/profiles?select=id,username,name,plan,plan_until,created_at&username=ilike.'+q+'*&order=username.asc&limit=30');const a=(await r.json()).filter(x=>x.id!==NET.s.uid);if(my!==tok)return;
+  try{const r=await sb('/rest/v1/profiles?select=id,username,name,plan,plan_until,created_at&username=ilike.'+q+'*&order=username.asc&limit=30');const a=(await r.json()).filter(x=>x.id!==NET.s.uid).sort((x,y)=>(planOf(y)==='gold')-(planOf(x)==='gold'));if(my!==tok)return;
    el.innerHTML=a.length?`<div class="ucn">${a.length} ${a.length===1?'person':'people'}</div>`+a.map(card).join(''):'<div class="note2">No one found with this username</div>'}
   catch(e){if(my===tok)el.innerHTML='<div class="note2">Could not search. Check internet</div>'}},
  invAsk:async v=>{const el=sheet('Send invitation',`<div class="note2" style="padding:0 4px 8px">They must accept before you can chat. You can write a short message with your invitation.</div><div class="field"><textarea id="invm" rows="3" maxlength="200" placeholder="Write a message (optional)">Hi! I would like to chat with you on Vynk.</textarea></div><button class="btn" data-a="invSend" data-v="${esc(v)}">Send invitation</button>`)},
@@ -3127,17 +3131,24 @@ const I={shield:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" str
  star:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg>',
  img:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="1.6"/><path d="M21 16l-5-5-8 8"/></svg>',
  hand:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.4-9-9a5 5 0 0 1 9-3 5 5 0 0 1 9 3c-2 4.6-9 9-9 9z"/></svg>'};
+let PERKS=null;const PERKS_=[[vbSvg(22),'Blue Plus badge','Shown next to your name on your profile and in chats.'],[I.clock,'Status for 48 hours','Free accounts keep a status for 24 hours.','#e0a800'],[I.img,'Exclusive wallpapers','Extra chat wallpapers that free accounts cannot use.','#7c3aed'],
+ ['<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="13" height="14" rx="3"/><path d="M16 10l5-3v10l-5-3"/></svg>','Videos up to 60 seconds','Send longer video clips with a bigger size limit. Free: 30 seconds.','#e5484d'],
+ ['<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4h6l-1 6 3 3v2H7v-2l3-3z"/><path d="M12 15v6"/></svg>','Pin up to 10 chats','Keep your most important chats on top. Free: 3 chats.','#16a34a'],
+ ['<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M12 7a5 5 0 1 0 5 5"/></svg>','Neon Glow and Glitch effects','Two extra effects in the Status Canvas editor.','#8b5cf6'],
+ [I.clock,'30 scheduled messages','Plan more messages ahead. Free: 5 at a time.','#0ea5e9'],
+ [I.star,'60-second voice status','Record a longer voice status. Free: 30 seconds.','#f59e0b']];
 const row=(ico,t,d,c)=>`<div class="vbr"><span class="vbi" style="--c:${c||'#2a80f5'}">${ico}</span><span><b>${t}</b><small>${d}</small></span></div>`;
 const page=(id,title,body,foot)=>{document.querySelector('#'+id)?.remove();const e=document.createElement('div');e.id=id;e.className='vbpage';
  e.innerHTML=`<div class="vbh"><button class="sdb" data-a="vbClose" data-v="${id}" aria-label="Back">${ic('back',24)}</button><h2>${title}</h2></div><div class="vbb">${body}</div>${foot?`<div class="vbf">${foot}</div>`:''}`;phone.append(e);return e};
+PERKS=PERKS_;
 Object.assign(ACT,{
  vbClose:v=>document.querySelector('#'+(v||'vbi'))?.remove(),
  vbInfo:p=>{const gold=p==='gold',mine=NET.s&&isPlus()&&(ME.plan==='gold')===gold;
   const body=`<div class="vbhero"><span class="vbbig">${vbSvg(104)}</span><h1>${gold?'Verified account':'Vynk Plus member'}</h1><p>${gold?'Vynk reviewed this account and confirmed it belongs to a real person, creator or brand.':'This person supports Vynk with a Plus plan. It is a supporter badge, not an identity check.'}</p></div>
-  <div class="vbsec">What this badge means</div><div class="vbcard">${gold?row(I.shield,'Reviewed by hand','The Vynk Community team checked the application before giving the badge.')+row(I.user,'Real person or brand','The name, reason and link sent with the application were looked at.','#16a34a')+row(I.clock,'Can be removed','A badge can be taken back at any time if the account breaks the rules.','#e0a800'):row(I.star,'Supports Vynk','Paid for a yearly Plus plan, so the app can stay free for everyone.')+row(I.img,'Extra features','Longer status (48 hours), exclusive wallpapers and the blue badge.','#7c3aed')+row(I.clock,'Active for a year','The badge goes away when the plan ends unless it is renewed.','#e0a800')}</div>
+  <div class="vbsec">What this badge means</div><div class="vbcard">${gold?row(I.shield,'Reviewed by hand','The Vynk Community team checked the application before giving the badge.')+row(I.user,'Real person or brand','The name, reason and link sent with the application were looked at.','#16a34a')+row(I.star,'Everything in Plus','Verified accounts get every Plus feature, such as 60-second videos and exclusive effects.','#7c3aed')+row(I.user,'Listed first in search','Verified accounts appear at the top of the Find people results.','#0ea5e9')+row(I.clock,'Status for 72 hours','Plus keeps a status for 48 hours. Verified accounts keep it for 72.','#f59e0b')+row(I.hand,'Pin up to 15 chats','Plus allows 10 pinned chats. Verified accounts can pin 15.','#16a34a')+row(I.clock,'Can be removed','A badge can be taken back at any time if the account breaks the rules.','#e0a800'):row(I.star,'Supports Vynk','Paid for a yearly Plus plan, so the app can stay free for everyone.')+PERKS.slice(1).map(p=>row(p[0],p[1],p[2],p[3])).join('')+row(I.clock,'Active for a year','The badge goes away when the plan ends unless it is renewed.','#e0a800')}</div>
   <div class="vbsec">What it does not mean</div><div class="vbcard">${row(I.hand,gold?'Not an endorsement':'Not identity verification',gold?'Vynk does not agree with or promise anything that a verified account says.':'Anyone can buy Plus. Only the golden Verified badge is reviewed.','#64748b')}</div>
-  <div class="vbsec">Plus and Verified</div><div class="vbtbl"><div></div><b>Plus</b><b>Verified</b><span>Blue badge</span><i>✓</i><i>✓</i><span>Longer status</span><i>✓</i><i>✓</i><span>Exclusive wallpapers</span><i>✓</i><i>✓</i><span>Reviewed by hand</span><i>–</i><i>✓</i><span>Paid</span><i>✓</i><i>–</i></div>`;
-  page('vbi','Verification',body,mine?`<div class="vbnote">${vbSvg(18)} Your badge is active until ${new Date(ME.plan_until).toLocaleDateString(undefined,{day:'numeric',month:'long',year:'numeric'})}</div>`:`<button class="vbcta" data-a="plus">${gold?'Get verified':'Get Vynk Plus'}</button>`)},
+  <div class="vbsec">Plus and Verified</div><div class="vbtbl"><div></div><b>Plus</b><b>Verified</b><span>Blue badge</span><i>✓</i><i>✓</i><span>Status length</span><i>48h</i><i>72h</i><span>60-second videos</span><i>✓</i><i>✓</i><span>Pinned chats</span><i>10</i><i>15</i><span>Exclusive wallpapers</span><i>✓</i><i>✓</i><span>Listed first in search</span><i>–</i><i>✓</i><span>Reviewed by hand</span><i>–</i><i>✓</i><span>Paid</span><i>✓</i><i>–</i></div>`;
+  page('vbi','Verification',body,mine?`<div class="vbnote">${vbSvg(18)} Your badge is active until ${new Date(ME.plan_until).toLocaleDateString(undefined,{day:'numeric',month:'long',year:'numeric'})}</div>`:`<button class="vbcta" data-a="${gold?'verifyReq':'plus'}">${gold?'Get verified':'Get Vynk Plus'}</button>`)},
  plus:async()=>{if(!NET.s){ACT.netAcct();return}closeSheet();document.querySelector('#vbi')?.remove();
   const e=page('plusp','Vynk Plus','<div class="note2" style="padding:30px;text-align:center">Loading…</div>');
   let cfg={},pay=[],vr=[];try{const r=await sb('/rest/v1/app_config?select=key,value');(await r.json()).forEach(x=>cfg[x.key]=x.value)}catch(x){}
@@ -3151,12 +3162,30 @@ Object.assign(ACT,{
   const hist=pay.length?'<div class="vbsec">Your payments</div><div class="vbcard">'+pay.map(x=>`<div class="vbr"><span><b>${esc(x.method)} · ${esc(x.txn)}</b><small>${new Date(x.created_at).toLocaleDateString()}</small></span><span class="vbtag ${x.status==='approved'?'ok':''}">${esc(x.status)}</span></div>`).join('')+'</div>':'';
   const vtxt=gold?'Your account is verified.':vs&&vs.status==='pending'?'Your verification request is being reviewed.':vs&&vs.status==='rejected'?'Your last request was not approved. You can apply again.':'Are you a creator, business or public figure? Apply and the Vynk Community team will review your account.';
   e.querySelector('.vbb').innerHTML=`${active}<div class="vbplh"><span>${vbSvg(56,1)}</span><b>${m[1]}</b><small>${esc(m[2]||'per year')} · one payment, 365 days</small></div>
-   <div class="vbsec">What you get</div><div class="vbcard">${row(vbSvg(22),'Blue Plus badge','Shown next to your name on your profile and in chats.')}${row(I.clock,'Status for 48 hours','Free accounts keep a status for 24 hours.','#e0a800')}${row(I.img,'Exclusive wallpapers','Extra chat wallpapers only for Plus.','#7c3aed')}</div>
+   <div class="vbsec">What you get</div><div class="vbcard">${PERKS.map(p=>row(p[0],p[1],p[2],p[3])).join('')}</div>
    ${renew}${hist}
    <div class="vbsec">Verified badge</div><div class="vbcard vbver"><div class="vbr"><span class="vbi" style="--c:#2a80f5">${I.shield}</span><span><b>Apply for review</b><small>${vtxt}</small></span></div></div>
    <div class="vbnote2">The Vynk Community team checks payments by hand, usually within a day. Plus is a supporter badge. Verified is given only after review.</div>`;
   const f=document.createElement('div');f.className='vbf';f.innerHTML=(isPlus()&&new Date(ME.plan_until)-Date.now()>30*864e5?'':'<button class="vbcta" data-a="plusSend">I have paid. Send request</button>')+(gold||(vs&&vs.status==='pending')?'':'<button class="vbcta alt" data-a="verifyReq">Apply for Verified badge</button>');
   e.querySelector('.vbf')?.remove();if(f.innerHTML)e.append(f)}});
+
+document.head.insertAdjacentHTML('beforeend','<style>.vgold{background:linear-gradient(160deg,#f6c453,#d98e04);color:#3b2600;border-radius:22px;padding:22px 18px;text-align:center;margin:4px 0 6px}.vgold h1{font-size:22px;margin:10px 0 4px}.vgold p{font-size:13.5px;opacity:.85;line-height:1.45;margin:0}.vgold .vgb{display:inline-flex;filter:drop-shadow(0 4px 10px rgba(0,0,0,.2))}.vgst{display:flex;align-items:center;gap:10px;padding:14px;border-radius:16px;background:var(--surface2);margin:8px 0;font-size:13.5px}.vgst b{display:block;font-size:14px}.vgst.pend{border:1.5px solid #f59e0b}.vgst.rej{border:1.5px solid #ef4444}.vgst.ok{border:1.5px solid #16a34a}.vgreq{margin:0;padding:0;list-style:none}.vgreq li{padding:8px 0;font-size:13.5px;display:flex;gap:8px;line-height:1.4}.vgreq li:before{content:"\\2713";color:#16a34a;font-weight:700}</style>');
+Object.assign(ACT,{
+ verifyReq:async()=>{if(!NET.s){ACT.netAcct();return}closeSheet();document.querySelector('#vbi')?.remove();
+  const e=page('vrfp','Get verified','<div class="vbsec">Loading...</div>');let vr=[];try{vr=await rpc('my_verify')||[]}catch(x){}loadMe();
+  const vs=vr[0],gold=isPlus()&&ME.plan==='gold',pend=vs&&vs.status==='pending',rej=vs&&vs.status==='rejected';
+  const st=gold?`<div class="vgst ok">${vbSvg(30)}<span><b>You are verified</b>Valid until ${new Date(ME.plan_until).toLocaleDateString(undefined,{day:'numeric',month:'long',year:'numeric'})}</span></div>`:pend?`<div class="vgst pend">${I.clock}<span><b>Under review</b>Sent ${new Date(vs.created_at).toLocaleDateString()}. The Vynk Community team replies within a few days.</span></div>`:rej?`<div class="vgst rej">${I.shield}<span><b>Not approved</b>${esc(vs.note||'Your last request was not approved.')} You can apply again.</span></div>`:'';
+  const perks=[[vbSvg(22),'Golden Verified badge','Shown next to your name everywhere in Vynk.'],[I.user,'Listed first in search','Your account appears at the top of Find people.','#0ea5e9'],[I.clock,'Status for 72 hours','Plus gets 48 hours. Free accounts get 24.','#f59e0b'],[I.hand,'Pin up to 15 chats','Plus gets 10. Free accounts get 3.','#16a34a'],[I.star,'Everything in Plus','Longer videos, exclusive effects and wallpapers, 30 scheduled messages and 60-second voice status.','#7c3aed'],[I.shield,'Protection against copies','Fake accounts that copy your name can be reported and removed.','#64748b']];
+  const form=gold||pend?'':`<div class="vbsec">Your application</div><div class="vbform"><input id="vfn" maxlength="60" placeholder="Full name or brand name" autocomplete="off"><input id="vfr" maxlength="300" placeholder="Why should this account be verified?" autocomplete="off"><input id="vfl" maxlength="150" placeholder="Website or social page (optional)" autocomplete="off" autocapitalize="none"></div>`;
+  e.querySelector('.vbb').innerHTML=`<div class="vgold"><span class="vgb">${vbSvg(84)}</span><h1>Get the golden badge</h1><p>A reviewed badge for real people, creators and brands.</p></div>${st}
+  <div class="vbsec">Who can apply</div><div class="vbcard" style="padding:6px 16px"><ul class="vgreq"><li>A real person, creator, business or public figure</li><li>A profile with your real name and photo</li><li>A link that proves who you are, such as a website or social page</li><li>An active Vynk account that follows the rules</li></ul></div>
+  <div class="vbsec">What you get</div><div class="vbcard">${perks.map(p=>row(p[0],p[1],p[2],p[3])).join('')}</div>
+  <div class="vbsec">How it works</div><div class="vbsteps"><div><i>1</i><b>Apply</b><small>Send the form</small></div><div><i>2</i><b>Review</b><small>Checked by hand</small></div><div><i>3</i><b>Badge</b><small>Gold turns on</small></div></div>${form}
+  <div class="vbnote2">Fake or copied accounts are rejected. The badge can be removed if the rules are broken.</div>`;
+  if(!gold&&!pend){const f=document.createElement('div');f.className='vbf';f.innerHTML='<button class="vbcta" data-a="verifySend">Submit application</button>';e.append(f)}},
+ verifySend:async()=>{const n=($('#vfn')?.value||'').trim(),r=($('#vfr')?.value||'').trim();if(n.length<2||r.length<5){toast('Fill your name and reason');return}
+  try{await rpc('verify_apply',{p_name:n,p_reason:r,p_link:($('#vfl')?.value||'').trim()});toast('Application sent');ACT.verifyReq()}catch(e){toast(rpcErr(e))}}
+});
 document.addEventListener('click',e=>{const b=e.target.closest('.vb[data-vb]');if(b){e.stopPropagation();e.preventDefault();ACT.vbInfo(b.dataset.vb)}},true);
 })();
 </script>
