@@ -289,6 +289,11 @@ html.cbar .phone{margin-top:calc(46px + env(safe-area-inset-top,0px))!important;
 #cdiag:empty{display:none}
 </style>
 <style id="v921">
+html.vk .comp,.comp{padding:6px 8px calc(8px + env(safe-area-inset-bottom,0px));gap:8px;align-items:flex-end}
+html.vk .comp .inp,.comp .inp{border:0!important;background:var(--surface2)!important;border-radius:28px!important;padding:0 8px 0 6px;min-height:48px;align-items:center}
+html.vk .comp textarea{font-size:16px;padding:12px 4px}
+html.vk .comp .ib.pri{width:48px;height:48px;flex:none}
+html.vk .comp .inp .ib{color:var(--muted)}
 .favav{width:62px;height:62px;border-radius:50%;display:grid;place-items:center;box-sizing:border-box}.favav .av{width:62px;height:62px;border:0!important}
 .favav.st{border:2.5px solid #00a884;padding:2px}.favav.st .av{width:52px;height:52px}.favav.st.seen{border-color:#7b8b93}
 .favp2{position:absolute;inset:0;z-index:9100;background:var(--bg);color:var(--ink);display:flex;flex-direction:column;animation:up .22s ease-out}
@@ -747,7 +752,7 @@ function drawComp(){
   if(c.blocked){comp.innerHTML=`<div class="rec" style="color:var(--muted);justify-content:center;font-weight:500">You blocked this contact. <button style="color:var(--accent);font-weight:600" data-a="unblock">Unblock</button></div>`;return}
   if(S.rec){comp.innerHTML=`<button class="ib" data-a="recCancel" aria-label="Cancel" style="color:var(--bad)">${ic('trash')}</button><div class="rec"><span>●</span><span id="rt">0:00</span><div class="wave" id="lw">${[...Array(24)].map(()=>`<i style="height:4px"></i>`).join('')}</div></div><button class="ib pri" data-a="recSend" aria-label="Send voice message">${ic('send',20)}</button>`;return}
   const keep=$('#msgIn')?.value||(S.edit?S.edit.text:'');
-  comp.innerHTML=`<button class="ib" data-a="attach" aria-label="Attach">${ic('clip')}</button><div class="inp"><button class="ib" data-a="emoTog" aria-label="Emoji" style="width:36px;height:40px">${ic('smile',22)}</button><textarea id="msgIn" rows="1" placeholder="Message" aria-label="Message"></textarea><button class="ib" id="camBtn" data-a="attCam" aria-label="Camera" style="width:36px;height:40px">${ic('camera',22)}</button></div><button class="ib pri" id="sendBtn" data-a="send" aria-label="Send">${ic('send',20)}</button><button class="ib pri" id="micBtn" data-a="recStart" aria-label="Record voice message">${ic('mic',20)}</button>`;
+  comp.innerHTML=`<div class="inp"><button class="ib" data-a="emoTog" aria-label="Emoji" style="width:40px;height:44px">${ic('smile',24)}</button><textarea id="msgIn" rows="1" placeholder="Message" aria-label="Message"></textarea><button class="ib" data-a="attach" aria-label="Attach" style="width:38px;height:44px">${ic('clip',22)}</button><button class="ib" id="camBtn" data-a="attCam" aria-label="Camera" style="width:36px;height:40px">${ic('camera',22)}</button></div><button class="ib pri" id="sendBtn" data-a="send" aria-label="Send">${ic('send',20)}</button><button class="ib pri" id="micBtn" data-a="recStart" aria-label="Record voice message">${ic('mic',20)}</button>`;
   const ta=$('#msgIn');ta.value=keep;syncSend();
   ta.addEventListener('input',()=>{ta.style.height='auto';ta.style.height=ta.scrollHeight+'px';syncSend();if(ta.value.trim())typSend();qrSuggest(ta)});
   ta.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&SET.enter){e.preventDefault();ACT.send()}});
