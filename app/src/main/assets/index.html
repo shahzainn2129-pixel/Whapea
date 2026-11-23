@@ -2222,7 +2222,7 @@ if(NATIVE){
       try{if(S.okey){const c=await sb('/rest/v1/rpc/owner_claim',{m:'POST',b:{k:S.okey}});await c.text()}
         const r=await sb('/rest/v1/rpc/owner_users',{m:'POST',b:{}});if(!r.ok)throw 0;const a=await r.json();
         el.querySelector('.sheet').innerHTML='<div class="grab"></div><h3>Internet users</h3>'+(a.length?a.map(u=>{const b=u.banned_until&&new Date(u.banned_until)>new Date();return `<div class="li"><span class="mid"><span class="nm"><span>${esc(u.name||u.username)} · @${esc(u.username)}</span></span><span class="sub">Joined ${new Date(u.created_at).toLocaleDateString()}${b?' · blocked until '+new Date(u.banned_until).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):''}</span></span><button class="tag" data-a="netPlan" data-v="${esc(u.id)}">Badge</button><button class="tag ${b?'g':''}" data-a="netBan" data-v="${esc(u.id)}|${b?0:3}">${b?'Unblock':'Block 3h'}</button></div>`}).join(''):'<div class="note2">No users yet</div>')}
-      catch(e){el.querySelector('.sheet').innerHTML='<div class="grab"></div><div class="note2">Could not load. Unlock owner mode again, then retry.</div>'}},
+      catch(e){el.querySelector('.sheet').innerHTML='<div class="grab"></div><div class="note2">Could not load.<br>'+(!NET.s?'Log in to your Vynk account first, then open this again.':esc(String(e&&e.message||e)).slice(0,120))+'</div>'}},
     netBan:async v=>{const[id,h]=v.split('|');try{const r=await sb('/rest/v1/rpc/owner_ban',{m:'POST',b:{uid:id,hours:+h}});if(!r.ok)throw 0;toast(+h?'Blocked for 3 hours':'Unblocked');closeSheet();ACT.netOwner()}catch(e){toast('Failed')}},
 
     lockMenu:()=>{closeSheet();if(!SET.lockOn){LK.mode='set1';LK.buf='';LK.err='';lockDraw();return}
@@ -2262,7 +2262,7 @@ if(NATIVE){
     ownerUsr:async()=>{closeSheet();const el=sheet('Reported users','<div class="note2">Loading…</div>');
       try{if(S.okey){const c=await sb('/rest/v1/rpc/owner_claim',{m:'POST',b:{k:S.okey}});await c.text()}const a=await rpc('owner_user_reports');
         el.querySelector('.sheet').innerHTML='<div class="grab"></div><h3>Reported users</h3>'+(a&&a.length?a.map(x=>`<div class="li" style="align-items:flex-start"><span class="mid"><span class="nm"><span>${esc(x.name||x.username)} · @${esc(x.username)}</span></span><span class="sub">${x.reports} report${x.reports>1?'s':''} · ${esc(x.reason||'')}</span></span><button class="tag" data-a="netBan" data-v="${esc(x.user_id)}|3">Block 3h</button><button class="tag g" data-a="repUClear" data-v="${esc(x.user_id)}">Clear</button></div>`).join(''):'<div class="note2">No reports</div>')}
-      catch(e){el.querySelector('.sheet').innerHTML='<div class="grab"></div><div class="note2">Could not load. Unlock owner mode again, then retry.</div>'}},
+      catch(e){el.querySelector('.sheet').innerHTML='<div class="grab"></div><div class="note2">Could not load.<br>'+(!NET.s?'Log in to your Vynk account first, then open this again.':esc(String(e&&e.message||e)).slice(0,120))+'</div>'}},
     repUClear:async v=>{try{await rpc('owner_clear_user_reports',{p_user:v});ACT.ownerUsr()}catch(e){toast('Failed')}},
 
     openProf:v=>openProf(v),
@@ -2330,7 +2330,7 @@ if(NATIVE){
     reportProb:()=>{if(!NET.s){toast('Log in first');ACT.netAcct();return}sheet('Report a problem',`<div class="note2" style="text-align:left">Tell us what went wrong. We read every report.</div><textarea id="rpt" class="pfield" rows="5" maxlength="1500" placeholder="What happened?"></textarea><button class="btn" style="margin:10px 16px;width:calc(100% - 32px)" data-a="reportSend">Send</button>`)},
     reportSend:async()=>{const m=($('#rpt').value||'').trim();if(m.length<3){toast('Write a few words first');return}try{await rpc('send_feedback',{p_msg:m,p_ver:'9.23'});closeSheet();toast('Thank you. We got your report')}catch(e){toast(/limit/.test(String(e&&e.message))?'Too many reports. Try later':'Could not send. Check internet')}},
     ownerFb:async()=>{closeSheet();const el=sheet('Problem reports','<div class="note2">Loading…</div>');try{if(S.okey){const c=await sb('/rest/v1/rpc/owner_claim',{m:'POST',b:{k:S.okey}});await c.text()}const a=await rpc('owner_feedback');
-      el.querySelector('.sheet').innerHTML='<div class="grab"></div><h3>Problem reports</h3>'+(a&&a.length?a.map(x=>`<div class="li" style="align-items:flex-start"><span class="mid"><span class="nm"><span>@${esc(x.username||'?')} · v${esc(x.ver||'')}</span></span><span class="sub" style="white-space:normal">${esc(x.msg)}</span></span><button class="tag" data-a="fbDel" data-v="${x.id}">Done</button></div>`).join(''):'<div class="note2">No reports</div>')}catch(e){el.querySelector('.sheet').innerHTML='<div class="grab"></div><div class="note2">Could not load. Unlock owner mode again, then retry.</div>'}},
+      el.querySelector('.sheet').innerHTML='<div class="grab"></div><h3>Problem reports</h3>'+(a&&a.length?a.map(x=>`<div class="li" style="align-items:flex-start"><span class="mid"><span class="nm"><span>@${esc(x.username||'?')} · v${esc(x.ver||'')}</span></span><span class="sub" style="white-space:normal">${esc(x.msg)}</span></span><button class="tag" data-a="fbDel" data-v="${x.id}">Done</button></div>`).join(''):'<div class="note2">No reports</div>')}catch(e){el.querySelector('.sheet').innerHTML='<div class="grab"></div><div class="note2">Could not load.<br>'+(!NET.s?'Log in to your Vynk account first, then open this again.':esc(String(e&&e.message||e)).slice(0,120))+'</div>'}},
     fbDel:async v=>{try{await rpc('owner_feedback_del',{p_id:+v});ACT.ownerFb()}catch(e){toast('Failed')}},
     
     
@@ -2368,7 +2368,7 @@ if(NATIVE){
     ownerVer:async()=>{closeSheet();const el=sheet('Verification requests','<div class="note2">Loading…</div>');
       try{if(S.okey){const c=await sb('/rest/v1/rpc/owner_claim',{m:'POST',b:{k:S.okey}});await c.text()}const a=await rpc('owner_verify_list');
         el.querySelector('.sheet').innerHTML='<div class="grab"></div><h3>Verification requests</h3>'+(a&&a.length?a.map(x=>`<div class="li" style="align-items:flex-start"><span class="mid"><span class="nm"><span>@${esc(x.username)} · ${esc(x.full_name)}</span></span><span class="sub">${esc(x.reason)}${x.link?' · '+esc(x.link):''}</span></span>${x.status==='pending'?`<span class="reqb"><button class="tag g" data-a="verOk" data-v="${x.id}|1">Approve</button><button class="tag" data-a="verOk" data-v="${x.id}|0">Reject</button></span>`:`<span class="tag">${esc(x.status)}</span>`}</div>`).join(''):'<div class="note2">No requests</div>')}
-      catch(e){el.querySelector('.sheet').innerHTML='<div class="grab"></div><div class="note2">Could not load. Unlock owner mode again, then retry.</div>'}},
+      catch(e){el.querySelector('.sheet').innerHTML='<div class="grab"></div><div class="note2">Could not load.<br>'+(!NET.s?'Log in to your Vynk account first, then open this again.':esc(String(e&&e.message||e)).slice(0,120))+'</div>'}},
     verOk:async v=>{const[id,ok]=v.split('|');try{await rpc('owner_verify_decide',{p_id:+id,p_approve:ok==='1'});toast(ok==='1'?'Verified badge given':'Rejected');ACT.ownerVer()}catch(e){toast('Failed')}},
     
     
@@ -2381,7 +2381,7 @@ if(NATIVE){
     ownerPay:async()=>{closeSheet();const el=sheet('Plus payments','<div class="note2">Loading…</div>');
       try{if(S.okey){const c=await sb('/rest/v1/rpc/owner_claim',{m:'POST',b:{k:S.okey}});await c.text()}const a=await rpc('owner_payments');
         el.querySelector('.sheet').innerHTML='<div class="grab"></div><h3>Plus payments</h3>'+(a&&a.length?a.map(x=>`<div class="li" style="align-items:flex-start"><span class="mid"><span class="nm"><span>@${esc(x.username)} · ${esc(x.method)}</span></span><span class="sub">TXN ${esc(x.txn)}${x.note?' · '+esc(x.note):''} · ${new Date(x.created_at).toLocaleDateString()}</span></span>${x.status==='pending'?`<button class="tag g" data-a="payOk" data-v="${x.id}|1">Approve</button><button class="tag" data-a="payOk" data-v="${x.id}|0">Reject</button>`:`<span class="tag">${esc(x.status)}</span>`}</div>`).join(''):'<div class="note2">No requests</div>')}
-      catch(e){el.querySelector('.sheet').innerHTML='<div class="grab"></div><div class="note2">Could not load. Unlock owner mode again, then retry.</div>'}},
+      catch(e){el.querySelector('.sheet').innerHTML='<div class="grab"></div><div class="note2">Could not load.<br>'+(!NET.s?'Log in to your Vynk account first, then open this again.':esc(String(e&&e.message||e)).slice(0,120))+'</div>'}},
     payOk:async v=>{const[id,ok]=v.split('|');try{await rpc('owner_payment_decide',{p_id:+id,p_approve:ok==='1',p_days:365});toast(ok==='1'?'Plus turned on for 1 year':'Rejected');ACT.ownerPay()}catch(e){toast('Failed')}},
     
     
@@ -2463,7 +2463,7 @@ const UR={
     const bars=(a,t)=>{const m=Math.max(1,...a.map(x=>x.n));return `<div class="sec" style="padding-left:0">${t}</div><div class="sbars">${a.map(x=>`<span title="${x.d}: ${x.n}"><i style="height:${Math.max(3,Math.round(x.n/m*64))}px"></i><small>${x.n}</small></span>`).join('')}</div>`};
     const k=(n,l)=>`<div class="skp"><b>${n}</b><small>${l}</small></div>`;
     el.querySelector('.sheet').innerHTML='<div class="grab"></div><h3>Owner stats</h3><div class="skg">'+k(d.users,'Users')+k(d.active24,'Active today')+k(d.active7,'Active this week')+'</div>'+bars(d.signups||[],'Signups, last 14 days')+'<div style="height:16px"></div>';i18nApply()}
-   catch(e){el.querySelector('.sheet').innerHTML='<div class="grab"></div><div class="note2">Could not load. Unlock owner mode again, then retry.</div>'}}
+   catch(e){el.querySelector('.sheet').innerHTML='<div class="grab"></div><div class="note2">Could not load.<br>'+(!NET.s?'Log in to your Vynk account first, then open this again.':esc(String(e&&e.message||e)).slice(0,120))+'</div>'}}
  });
  i18nApply();
 })();
