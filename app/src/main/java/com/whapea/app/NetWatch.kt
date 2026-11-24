@@ -243,7 +243,11 @@ object NetWatch {
                                         }
                                     } catch (e: Exception) { }
                                 }
-                                "end", "rej", "busy" -> { Core.ringStop(); Core.clearCallNotice(); ringUntil = 0 }
+                                "end", "rej", "busy" -> {
+                                    val wasRinging = ringUntil > System.currentTimeMillis()
+                                    Core.ringStop(); Core.clearCallNotice(); ringUntil = 0
+                                    if (wasRinging && p.optString("op") == "end") Core.notifyMissed(f.getString("sender"), who)
+                                }
                             }
                         }
                     }

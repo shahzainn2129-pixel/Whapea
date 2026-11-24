@@ -173,6 +173,12 @@ class MainActivity : ComponentActivity() {
         i!!.removeExtra("callAct")
         if (a == "answer" || a == "decline") { Core.ringStop(); Core.clearCallNotice() }
         if (a == "open") return
+        if (a == "callback") {
+            val u = i.getStringExtra("callUid") ?: return
+            i.removeExtra("callUid")
+            web.postDelayed({ js("window.nativeCall&&nativeCall(${q("callback:" + u)})") }, if (pageReady) 400L else 1800L)
+            return
+        }
         web.postDelayed({ js("window.nativeCall&&nativeCall(${q(a)})") }, if (pageReady) 150L else 1200L)
     }
 

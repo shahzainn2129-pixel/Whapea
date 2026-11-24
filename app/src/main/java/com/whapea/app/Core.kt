@@ -186,6 +186,27 @@ object Core {
         } catch (e: Exception) { }
     }
 
+    /** WhatsApp-style "Missed voice call" with Call back and Message buttons. */
+    fun notifyMissed(uid: String, who: String) {
+        try {
+            val id = ("missed:" + uid).hashCode()
+            fun pi(code: Int, call: Boolean) = android.app.PendingIntent.getActivity(app, code + (id and 0xffff),
+                Intent(app, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                    .apply { if (call) { putExtra("callAct", "callback"); putExtra("callUid", uid) } else putExtra("openUid", uid) },
+                android.app.PendingIntent.FLAG_IMMUTABLE or android.app.PendingIntent.FLAG_UPDATE_CURRENT)
+            val n = NotificationCompat.Builder(app, CH)
+                .setSmallIcon(R.drawable.ic_stat)
+                .setContentTitle(who).setContentText("Missed voice call")
+                .setCategory(NotificationCompat.CATEGORY_MISSED_CALL)
+                .setAutoCancel(true).setContentIntent(pi(1, false))
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .addAction(android.R.drawable.ic_menu_call, "Call back", pi(2, true))
+                .addAction(android.R.drawable.ic_menu_send, "Message", pi(3, false))
+                .apply { NetWatch.avatarOf(uid)?.let { setLargeIcon(it) } }.build()
+            NotificationManagerCompat.from(app).notify(id, n)
+        } catch (e: SecurityException) { }
+    }
+
     fun notifyMsg(addr: String, who: String, body: String) {
         try {
             val pi = android.app.PendingIntent.getActivity(app, 0,

@@ -2973,7 +2973,7 @@ ACT.prayer=v=>{closeSheet();let city=v||'';try{city=city||localStorage.getItem('
  <div class="act"><span class="grow">Qibla<small>${Math.round(q)}° from North (clockwise)</small></span><span style="display:grid;place-items:center;width:44px;height:44px;border-radius:50%;border:1.5px solid var(--line)"><svg width="26" height="26" viewBox="0 0 24 24" style="transform:rotate(${q}deg)" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M12 3l-4 5M12 3l4 5"/></svg></span></div>
  <div class="note2">Calculated for ${city} (Karachi method, Hanafi Asr). It can differ by a few minutes from your mosque timetable, so follow your local mosque if they differ. Qibla points the arrow from North, use a compass to face it.</div>`)};
 
-window.nativeCall=function(a){try{if(a==='answer')ACT.callAcc();else if(a==='decline')ACT.callRej();else if(a==='hangup')ACT.endCall()}catch(e){}};
+window.nativeCall=function(a){try{if(typeof a==='string'&&a.startsWith('callback:')){const u=a.slice(9),k=u.startsWith('u:')?u:'u:'+u;if(!P[k])ensurePeer(k,'User','',null);ACT.startCall(k);return}if(a==='answer')ACT.callAcc();else if(a==='decline')ACT.callRej();else if(a==='hangup')ACT.endCall()}catch(e){}};
 window.nativeOpenChat=a=>{try{const c=chatOf(a);if(!c)return;if(S.chat!==c.id){if(typeof openChat==='function')openChat(c.id)}else{drawMsgs(true)}}catch(e){}};
 
 /* automatic backup (uses the backup password kept on this phone) and restore offer after login */
@@ -3285,6 +3285,7 @@ document.head.insertAdjacentHTML('beforeend','<style>.dpv{position:absolute;inse
   dpV:v=>{const p=v==='me'?{dp:ME.dp,name:ME.name}:P[v];if(p&&okImg(p.dp))dpMake(p.dp,p.name);else toast('No profile photo')},
   ci:v=>{const[a,x]=v.split('|');document.querySelector('#cinfo')?.remove();if(typeof ACT[a]==='function')ACT[a](x)},
  });
+ document.addEventListener('click',e=>{const im=e.target.closest('.av img');if(!im||e.target.closest('.vkring,.favav,.nav,#comp,#dpv,.sheet,.stv,#pfv'))return;const t=im.closest('.li,.ch,.ci,.cihero,.vkr');const nm=((t&&t.querySelector('.nm span,b,h2'))||{}).textContent||'';e.stopPropagation();e.preventDefault();dpMake(im.src,nm)},true);
  document.addEventListener('click',e=>{const im=e.target.closest('#pfv .vkpav img');if(im){e.stopPropagation();dpMake(im.src,(document.querySelector('#pfv h2')||{}).textContent)}},true);
  const _ci0=ACT.chatInfo;
  ACT.chatInfo=function(){const c=chatOf(S.chat);if(!c||c.type!=='dm'||!P[c.cid])return _ci0.apply(this,arguments);
