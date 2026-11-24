@@ -84,7 +84,7 @@ html.vk .b.tx .meta{display:inline-flex;float:none;vertical-align:bottom;margin:
 .splash.vks2 .sfrom{bottom:36px;font:500 12px var(--font-body,Inter,Arial,sans-serif);letter-spacing:.18em;text-transform:uppercase;color:#6f6f6f}
 .splash.vks2 .sfrom b{font:600 15px var(--font-body,Inter,Arial,sans-serif);letter-spacing:.22em;text-decoration:none;color:#d8d8d8;margin-top:6px}
 #nb{position:absolute;left:0;right:0;top:0;z-index:70;text-align:center;font-size:12px;font-weight:600;padding:4px 8px;transform:translateY(-100%);transition:transform .25s;pointer-events:none;background:#3f3f46;color:#fff}#nb.show{transform:none}#nb.good{background:#16a34a}
-#ptr{position:absolute;left:50%;top:0;z-index:40;width:38px;height:38px;transform:translate(-50%,var(--y,-48px)) scale(var(--s,.7));opacity:0;pointer-events:none;border-radius:50%;background:var(--surface2);border:1px solid var(--line);box-shadow:0 4px 14px rgba(0,0,0,.35);display:grid;place-items:center;transition:opacity .15s}#ptr.rel{transition:opacity .2s,transform .28s cubic-bezier(.2,.8,.2,1)}#ptr .pl{transform:rotate(var(--r,0deg))}#ptr.pull,#ptr.spin{opacity:1}#ptr .pl{display:block;width:24px;height:24px}#ptr .wlg{display:block;width:24px;height:24px;background-size:contain;background-repeat:no-repeat;background-position:center}#ptr.spin .pl{animation:ptrs .8s linear infinite}@keyframes ptrs{to{transform:rotate(360deg)}}
+#ptr{position:absolute;left:50%;top:0;z-index:40;width:38px;height:38px;transform:translate(-50%,var(--y,-48px)) scale(var(--s,.7));opacity:0;pointer-events:none;border-radius:50%;background:var(--surface2);border:1px solid var(--line);box-shadow:0 4px 14px rgba(0,0,0,.35);display:grid;place-items:center;transition:opacity .15s}#ptr.rel{transition:opacity .2s,transform .28s cubic-bezier(.2,.8,.2,1)}#ptr .pl{transform:none}#ptr .pl svg{display:block;transform:rotate(-90deg)}#ptr .pl circle{stroke-dasharray:calc(var(--k,0)*56.5) 60}#ptr.spin .pl circle{stroke-dasharray:36 60}#ptr.pull,#ptr.spin{opacity:1}#ptr .pl{display:block;width:24px;height:24px}#ptr .wlg{display:block;width:24px;height:24px;background-size:contain;background-repeat:no-repeat;background-position:center}#ptr.spin .pl{animation:ptrs .8s linear infinite}@keyframes ptrs{to{transform:rotate(360deg)}}
 .upr{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:50%;margin:4px 0 0 4px;vertical-align:middle;background:conic-gradient(var(--accent) calc(var(--p)*1%),rgba(128,128,128,.35) 0)}.upr b{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--surface);color:var(--ink);font-size:9px;font-weight:600}
 .onceb{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:12px;background:var(--surface2);color:var(--ink);font-weight:600;font-size:14px}.onceb{flex-wrap:wrap;white-space:nowrap}.onceb small{opacity:.6;font-weight:500;font-size:11px;flex-basis:100%;margin-left:28px}
 .reqbar{flex:1;display:flex;flex-direction:column;gap:6px;padding:10px 12px;transition:opacity .3s,transform .3s}.reqbar.out{opacity:0;transform:translateY(14px)}.reqbar b{font-size:14px}.reqbar>span{font-size:12px;color:var(--muted)}.reqbar>div{display:flex;gap:8px}.reqbar .btn{flex:1;margin:0;width:auto;padding:10px}.reqbar .btn.ghost{background:transparent!important;border:1px solid var(--muted);color:var(--ink)}
@@ -2279,7 +2279,7 @@ if(NATIVE){
     netFind:()=>{if(!NET.s){ACT.netAcct();return}closeSheet();const s=sheet('Find by username',`<div class="field"><input id="nq" placeholder="Username" maxlength="20" autocapitalize="none" autocomplete="off"></div><button class="btn" data-a="netSearch">Search</button><div id="nres"></div>`);},
     netSearch:async()=>{const q=($('#nq').value||'').trim().toLowerCase().replace(/[^a-z0-9_]/g,'');if(!q)return;const el=$('#nres');el.innerHTML='<div class="note2">Searching…</div>';
       try{const r=await sb('/rest/v1/profiles?select=id,username,name,plan,plan_until&username=ilike.'+q+'*&limit=15');const a=(await r.json()).filter(x=>x.id!==NET.s.uid);
-        el.innerHTML=a.length?a.map(x=>`<button class="act" data-a="netOpen" data-v="${esc(x.id)}">${av0(hueOf(x.username),x.name||x.username,'sm')}<span class="grow">${esc(x.name||x.username)}${bdg(planOf(x))}<small>@${esc(x.username)}</small></span></button>`).join(''):'<div class="note2">No one found</div>'}
+        el.innerHTML=a.length?a.map(x=>`<button class="act" data-a="netOpen" data-v="${esc(x.id)}">${avX(x,x.name||x.username,'sm')}<span class="grow">${esc(x.name||x.username)}${bdg(planOf(x))}<small>@${esc(x.username)}</small></span></button>`).join(''):'<div class="note2">No one found</div>'}
       catch(e){el.innerHTML='<div class="note2">Could not search. Check internet</div>'}},
     netOpen:async v=>{const p=await netPeer(v);if(!p){toast('Could not open');return}p.range=NET.ok;ACT.openCid('u:'+v);{const kc=chats.find(x=>x.id==='u:'+v);if(kc)kc.known=true}persistSoon();stSyncTo('u:'+v)},
     netOwner:async()=>{if(!NET.s)return;const el=sheet('Internet users','<div class="note2">Loading…</div>');
@@ -2656,14 +2656,14 @@ Object.assign(ACT,{
  const _rs2=ACT.recSend;ACT.recSend=function(){if(S.rec&&S.rec.pv){const c=chatOf(S.chat),j=S.rec.pv;try{S.rec.au&&S.rec.au.pause()}catch(e){}S.rec=null;drawComp();if(!okAud(j.src)){toast('That voice message is too long');return}pushMsg(c,M('me','',0,{t:Date.now(),type:'voice',dur:j.dur,src:j.src}));return}return _rs2.apply(this,arguments)}}
 
 /* ---- pull to refresh ---- */
-(()=>{const ptr=document.createElement('div');ptr.id='ptr';ptr.innerHTML=`<span class="pl"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="var(--ink)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.6-5.9"/><path d="M20 4v5h-5"/></svg></span>`;phone.append(ptr);
+(()=>{const ptr=document.createElement('div');ptr.id='ptr';ptr.innerHTML=`<span class="pl"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="var(--ink)" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="9"/></svg></span>`;phone.append(ptr);
   let y0=null,dy=0,busy=false,sc=null;
-  const reset=()=>{ptr.classList.add('rel');ptr.style.removeProperty('--y');ptr.style.removeProperty('--s');ptr.style.removeProperty('--r');ptr.classList.remove('spin','pull');setTimeout(()=>ptr.classList.remove('rel'),320)};
+  const reset=()=>{ptr.classList.add('rel');ptr.style.removeProperty('--y');ptr.style.removeProperty('--s');ptr.style.removeProperty('--k');ptr.classList.remove('spin','pull');setTimeout(()=>ptr.classList.remove('rel'),320)};
   phone.addEventListener('touchstart',e=>{y0=null;if(busy||S.chat||S.tab!=='chats'||document.querySelector('.sheet,.mv,.overlay'))return;
     sc=e.target.closest('.scroll,.body,.list,.pg,main,section,div');let n=e.target;sc=null;while(n&&n!==phone){if(n.scrollHeight>n.clientHeight+2&&getComputedStyle(n).overflowY.match(/auto|scroll/)){sc=n;break}n=n.parentElement}
     if(sc&&sc.scrollTop>0)return;y0=e.touches[0].clientY;dy=0},{passive:true});
   phone.addEventListener('touchmove',e=>{if(y0==null)return;dy=e.touches[0].clientY-y0;if(dy<=0){reset();return}if(sc&&sc.scrollTop>0){y0=null;reset();return}
-    const d=Math.min(90,dy*.5),k=d/90;ptr.classList.remove('rel');ptr.classList.add('pull');ptr.style.setProperty('--y',(-48+k*180)+'px');ptr.style.setProperty('--s',(.7+k*.3).toFixed(2));ptr.style.setProperty('--r',(d*4)+'deg')},{passive:true});
+    const d=Math.min(90,dy*.5),k=d/90;ptr.classList.remove('rel');ptr.classList.add('pull');ptr.style.setProperty('--y',(-48+k*180)+'px');ptr.style.setProperty('--s',(.7+k*.3).toFixed(2));ptr.style.setProperty('--k',k.toFixed(3))},{passive:true});
   phone.addEventListener('touchend',async()=>{if(y0==null)return;const go=dy*.5>=55;y0=null;
     if(!go){reset();return}
     busy=true;ptr.classList.add('rel','spin');ptr.style.setProperty('--y','132px');ptr.style.setProperty('--s','1');hap(12);
@@ -3045,7 +3045,7 @@ ACT.callChat=()=>{const k=S.call;closeSheet();ACT.callMin();if(k)setTimeout(()=>
  document.addEventListener('click',e=>{const b=e.target.closest('[data-lpm]');if(b&&b._lp&&Date.now()-b._lp<700){e.stopPropagation();e.preventDefault()}},true);
 })();
 
-function newTag(j){if(!j)return'';const d=(Date.now()-new Date(j).getTime())/864e5;if(!(d>=-1))return'';return d<=3?'<i class="newtag">Just joined</i>':d<=14?'<i class="newtag">New</i>':''}
+function newTag(j){if(!j)return'';const d=(Date.now()-new Date(j).getTime())/864e5;if(!(d>=-1))return'';return d<=1?'<i class="newtag">Just joined</i>':''}
 /* ---- v9.21: Add status page, photo studio, layout, voice status ---- */
 (()=>{
 const _txt=ACT.addStatus;
@@ -3168,7 +3168,7 @@ let tok=0;
 const stOf=id=>{const c=chats.find(x=>x.id==='u:'+id);if(!c)return 'new';if(c.inv==='out')return 'sent';if(c.inv==='declined')return 'no';if(c.req)return 'got';return c.known||c.msgs.length?'chat':'new'};
 function card(x){const s=stOf(x.id),nm=x.name||x.username;
  const btn=s==='new'?`<button class="ucb" data-a="invAsk" data-v="${esc(x.id)}">Invite</button>`:s==='chat'?`<button class="ucb ghost" data-a="netOpen" data-v="${esc(x.id)}">Message</button>`:s==='sent'?`<button class="ucb ghost" data-a="netOpen" data-v="${esc(x.id)}">Invited</button>`:s==='got'?`<button class="ucb" data-a="netOpen" data-v="${esc(x.id)}">Respond</button>`:`<button class="ucb ghost" disabled>Declined</button>`;
- return `<div class="ucard">${av0(hueOf(x.username),nm,'sm')}<span class="ucm"><b>${esc(nm)}${bdg(planOf(x))}</b><small>@${esc(x.username)}</small>${newTag(x.created_at)}</span>${btn}</div>`}
+ return `<div class="ucard">${avX(x,nm,'sm')}<span class="ucm"><b>${esc(nm)}${bdg(planOf(x))}</b><small>@${esc(x.username)}</small>${newTag(x.created_at)}</span>${btn}</div>`}
 Object.assign(ACT,{
  netFind:()=>{if(!NET.s){ACT.netAcct();return}closeSheet();sheet('Find people',`<div class="field"><input id="nq" placeholder="Type a username, for example s" maxlength="20" autocapitalize="none" autocomplete="off"></div><div id="nres"><div class="note2">Type the first letters of a username. Everyone whose username starts with them will appear.</div></div>`);setTimeout(()=>{const i=$('#nq');if(i)i.focus()},250)},
  netSearch:async()=>{const i=$('#nq'),el=$('#nres');if(!i||!el)return;const q=(i.value||'').trim().toLowerCase().replace(/[^a-z0-9_]/g,'');
@@ -3276,6 +3276,28 @@ Object.assign(ACT,{
  verifySend:async()=>{const n=($('#vfn')?.value||'').trim(),r=($('#vfr')?.value||'').trim();if(n.length<2||r.length<5){toast('Fill your name and reason');return}
   try{await rpc('verify_apply',{p_name:n,p_reason:r,p_link:($('#vfl')?.value||'').trim()});toast('Application sent');ACT.verifyReq()}catch(e){toast(rpcErr(e))}}
 });
+
+window.avX=(x,txt,cls)=>okImg(x.avatar)?`<span class="av ${cls||''}" style="--h:${hueOf(x.username)}"><img src="${x.avatar}" alt=""></span>`:av0(hueOf(x.username),txt,cls);
+document.head.insertAdjacentHTML('beforeend','<style>.dpv{position:absolute;inset:0;z-index:9300;background:#000;display:flex;flex-direction:column;animation:up .2s ease-out}.dpv .dph{display:flex;align-items:center;gap:8px;padding:calc(10px + env(safe-area-inset-top,0px)) 8px 10px;color:#fff;background:linear-gradient(#000a,transparent);position:absolute;left:0;right:0;top:0;z-index:2}.dpv .dph b{font-size:18px}.dpv .dph .sdb{color:#fff}.dpv img{flex:1;min-height:0;width:100%;object-fit:contain}.ci{padding-bottom:30px}.cihero{display:grid;place-items:center;gap:6px;padding:14px 20px 8px;text-align:center}.cihero .cidp{width:132px;height:132px;border-radius:50%;overflow:hidden;background:var(--surface2);display:grid;place-items:center;border:0;padding:0}.cihero .cidp img{width:100%;height:100%;object-fit:cover}.cihero .cidp svg{width:60%;height:60%;opacity:.6}.cihero h3{margin:8px 0 0;font-size:24px;display:flex;align-items:center;gap:6px;justify-content:center;flex-wrap:wrap}.cihero .cis{color:var(--muted);font-size:14px}.ciact{display:flex;gap:10px;padding:10px 16px 6px}.ciact button{flex:1;display:grid;justify-items:center;gap:6px;padding:12px 4px;border-radius:16px;border:1px solid var(--line);background:var(--surface2);font-size:12.5px;font-weight:600}.cirow{display:flex;align-items:center;gap:14px;width:100%;padding:14px 16px;text-align:left;border-bottom:1px solid var(--line)}.cirow:last-child{border-bottom:0}.cirow .grow{flex:1;min-width:0;font-size:15.5px}.cirow small{display:block;color:var(--muted);font-size:13px;margin-top:2px}.cirow .val{color:var(--muted);font-size:13.5px}.cirow.bad{color:var(--bad,#e5484d)}.ciabout{padding:14px 16px;font-size:15.5px;line-height:1.45}</style>');
+{const dpMake=(src,name)=>{document.querySelector('#dpv')?.remove();const e=document.createElement('div');e.id='dpv';e.className='dpv';e.innerHTML=`<div class="dph"><button class="sdb" data-a="dpClose" aria-label="Back">${ic('back',24)}</button><b>${esc(name||'')}</b></div><img src="${src}" alt="">`;phone.append(e)};
+ Object.assign(ACT,{
+  dpClose:()=>document.querySelector('#dpv')?.remove(),
+  dpV:v=>{const p=v==='me'?{dp:ME.dp,name:ME.name}:P[v];if(p&&okImg(p.dp))dpMake(p.dp,p.name);else toast('No profile photo')},
+  ci:v=>{const[a,x]=v.split('|');document.querySelector('#cinfo')?.remove();if(typeof ACT[a]==='function')ACT[a](x)},
+ });
+ document.addEventListener('click',e=>{const im=e.target.closest('#pfv .vkpav img');if(im){e.stopPropagation();dpMake(im.src,(document.querySelector('#pfv h2')||{}).textContent)}},true);
+ const _ci0=ACT.chatInfo;
+ ACT.chatInfo=function(){const c=chatOf(S.chat);if(!c||c.type!=='dm'||!P[c.cid])return _ci0.apply(this,arguments);
+  const p=P[c.cid],id=c.id,net=NATIVE&&isNet(c.cid),R=(a,i,t,sub,val,cls)=>`<button class="cirow ${cls||''}" data-a="ci" data-v="${a}|${esc(id)}">${ic(i,22)}<span class="grow">${t}${sub?`<small>${sub}</small>`:''}</span>${val?`<span class="val">${val}</span>`:''}</button>`;
+  const media=c.msgs.filter(m=>['img','video','file','audio'].includes(m.type)&&!m.deleted).length,starred=c.msgs.filter(m=>m.star&&!m.deleted).length;
+  const g=net?chats.filter(x=>x.type==='group'&&Array.isArray(x.members)&&x.members.includes(c.cid)):[];
+  const muteL=c.muted?(c.muteUntil?'Until '+new Date(c.muteUntil).toLocaleString([], {day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'Always'):'Off';
+  const e=page('cinfo','Contact info',`<div class="ci"><div class="cihero"><button class="cidp" data-a="dpV" data-v="${esc(c.cid)}" aria-label="View photo">${okImg(p.dp)?`<img src="${p.dp}" alt="">`:PERSON}</button><h3>${esc(p.name)}${bdg(p.plan)}</h3><div class="cis">${esc(p.about||'')}</div></div>
+   <div class="ciact"><button data-a="ci" data-v="startCall|${esc(c.cid)}">${ic('phone',22)}Audio</button><button data-a="ci" data-v="startVideo|${esc(c.cid)}">${ic('video',22)}Video</button><button data-a="ci" data-v="findIn|">${ic('search',22)}Search</button></div>
+   <div class="vbsec">Media</div><div class="vbcard">${R('media','image','Media, links and documents','',String(media))}${R('starred','star','Starred messages','',String(starred))}</div>
+   <div class="vbsec">Settings</div><div class="vbcard">${R('cm_mute','mute','Mute notifications','',muteL)}${R('disapPickChat','timer','Disappearing messages','',({0:'Off',24:'24 hours',168:'7 days',2160:'90 days'})[c.disap||0])}${R('cm_wp','image','Chat wallpaper','',c.wp?'Custom':'Default')}${R('cm_fav','star',c.fav?'Remove from favourites':'Add to favourites')}${net?R('cm_sec','lock','Encryption','Verify security code'):''}</div>
+   ${g.length?`<div class="vbsec">${g.length} group${g.length>1?'s':''} in common</div><div class="vbcard">${g.map(x=>`<button class="cirow" data-a="ci" data-v="open|${esc(x.id)}">${ic('users',22)}<span class="grow">${esc(x.name)}<small>${x.members.length+1} members</small></span></button>`).join('')}</div>`:''}
+   <div class="vbsec"> </div><div class="vbcard">${R('exportChat','file','Export chat')}${R('cm_clear','x','Clear chat')}${R('cm_block','ban',c.blocked?'Unblock '+esc(p.name):'Block '+esc(p.name),'','','bad')}${net?R('cm_report','ban','Report '+esc(p.name),'','','bad'):''}</div></div>`)}}
 document.addEventListener('click',e=>{const b=e.target.closest('.vb[data-vb]');if(b){e.stopPropagation();e.preventDefault();ACT.vbInfo(b.dataset.vb)}},true);
 })();
 </script>
