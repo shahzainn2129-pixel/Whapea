@@ -438,6 +438,23 @@ code.mono{display:block;white-space:pre-wrap;padding:4px 6px;margin:2px 0}
 #selbar{position:fixed;left:0;right:0;top:0;z-index:60;display:flex;align-items:center;gap:2px;padding:calc(env(safe-area-inset-top,0px) + 10px) 8px 10px;background:var(--bg);border-bottom:1px solid var(--line)}#selbar b{margin-left:8px;font-size:17px;white-space:nowrap}#selbar .sp{flex:1}
 .li.selm{position:relative}.selk{position:absolute;left:52px;top:50%;margin-top:6px;width:20px;height:20px;border-radius:50%;border:2px solid var(--bg);background:var(--muted);display:grid;place-items:center;z-index:2;color:#fff}.li.seld .selk{background:#2a80f5}.li.seld{background:color-mix(in srgb,var(--ink) 8%,transparent)}
 </style>
+<style id="v926calls">
+.vksec{font-size:13px!important;font-weight:700!important;letter-spacing:.7px;text-transform:uppercase;color:var(--muted)!important;padding:18px 20px 6px!important;font-family:inherit!important}
+.favrow{padding:2px 14px 6px;gap:6px}
+.favi{width:76px;gap:7px}.favi small{font-size:12.5px;font-weight:500;color:var(--ink)}
+.favi .favav,.favi .favp{width:62px!important;height:62px!important}
+.favi .favav .av{width:62px!important;height:62px!important}
+.favi.add .favp{background:transparent!important;border:1.8px dashed var(--muted);color:var(--muted)}
+.vkr{padding:9px 16px 9px 16px!important;gap:14px;align-items:center;border-bottom:0!important}
+.vkr .av{width:52px!important;height:52px!important}
+.vkr .nm{font-size:16.5px!important;font-weight:600!important;letter-spacing:-.1px}
+.vkr .sub{font-size:13.5px;color:var(--muted);gap:5px;align-items:center;margin-top:3px}
+.vkr .sub b{transform:scale(.85)}
+.vkr .mid{border-bottom:1px solid var(--line);padding-bottom:11px;margin-bottom:-9px;min-height:52px;justify-content:center}
+.vkr:last-of-type .mid{border-bottom:0}
+.vkcall{width:42px;height:42px;border-radius:50%;background:var(--surface2);display:grid;place-items:center;flex:none;color:var(--ink)}
+.vkcall svg{width:20px;height:20px}
+</style>
 <script>
 /* ---------- helpers ---------- */
 /* state used while the first screen is drawn: declared early so nothing is touched before it exists */
@@ -1426,7 +1443,7 @@ function callsVk(){
   raw.forEach(c=>{const l=L[L.length-1];if(l&&l.c.cid===c.cid&&!!l.c.missed===!!c.missed&&l.c.dir===c.dir){l.n++}else L.push({c,n:1})});
   const when=t=>{const d=new Date(t),n=new Date();return d.toDateString()===n.toDateString()?fmt(t):dayLabel(t)+', '+fmt(t)};
   const row=({c,n})=>{const p=P[c.cid],miss=!!c.missed,col=miss?'#ff453a':c.dir==='in'?'#30d158':'#30d158';
-    return `<div class="li vkr" data-a="openCid" data-v="${esc(c.cid)}">${av(p.hue,p.name)}<span class="mid"><span class="nm" style="${miss?'color:#ff453a':''}"><span>${esc(p.name)}${n>1?' ('+n+')':''}</span></span><span class="sub"><b style="color:${col};display:inline-flex">${ic(c.dir==='in'||miss?'dl':'ur',15)}</b><span>${miss?'Missed calls, ':''}${when(c.t)}</span></span></span><button class="ib vkcall" data-a="${c.video?'startVideo':'startCall'}" data-v="${esc(c.cid)}" aria-label="Call">${ic(c.video?'vidOut':'phOut',22)}</button></div>`};
+    return `<div class="li vkr" data-a="openCid" data-v="${esc(c.cid)}">${av(p.hue,p.name)}<span class="mid"><span class="nm" style="${miss?'color:#ff453a':''}"><span>${esc(p.name)}${n>1?' ('+n+')':''}</span></span><span class="sub"><b style="color:${col};display:inline-flex">${ic(c.dir==='in'||miss?'dl':'ur',15)}</b><span>${miss?'Missed · ':''}${when(c.t)}</span></span></span><button class="ib vkcall" data-a="${c.video?'startVideo':'startCall'}" data-v="${esc(c.cid)}" aria-label="Call">${ic(c.video?'vidOut':'phOut',22)}</button></div>`};
   const fv=chats.filter(c=>c.type==='dm'&&c.fav&&P[c.cid]&&vkOk(P[c.cid].name));
   const favs=`<div class="vksec">Favorites</div><div class="favrow">${fv.map(c=>`<button class="favi" data-a="startCall" data-v="${esc(c.cid)}"><span class="favav${STAT[c.cid]&&STAT[c.cid].length&&!mutedSt.has(c.cid)?(seenSt.has(c.cid)?' st seen':' st'):''}">${av(P[c.cid].hue,P[c.cid].name)}</span><small>${esc((P[c.cid].name||'').split(' ')[0])}</small></button>`).join('')}<button class="favi add" data-a="favPick" aria-label="Add favorites"><span class="favp">${ic('plus',26)}</span><small>${fv.length?'':'Add'}</small></button></div>`;
   return `${favs}${adsHTML('calls')}<div class="vksec">Recents</div>${L.length?L.map(row).join(''):`<div class="empty"><b>No calls yet</b>Tap the call button to start one.</div>`}<div style="height:110px"></div>`}
