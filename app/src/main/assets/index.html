@@ -455,6 +455,30 @@ code.mono{display:block;white-space:pre-wrap;padding:4px 6px;margin:2px 0}
 .vkcall{width:42px;height:42px;border-radius:50%;background:var(--surface2);display:grid;place-items:center;flex:none;color:var(--ink)}
 .vkcall svg{width:20px;height:20px}
 </style>
+<style id="v926st">
+.vkmw{margin:6px 16px 4px;padding:14px;border-radius:20px;background:var(--surface2);gap:14px}
+.vkmn b{font-size:16.5px;font-weight:600;display:block}.vkmn small{display:block;font-size:13.5px;color:var(--muted);margin-top:3px}
+.vkme{width:62px!important;height:62px!important}.vkme .vkring .av{width:50px!important;height:50px!important}
+.vkplus{position:absolute;right:-2px;bottom:-2px;width:22px;height:22px;border-radius:50%;background:#2a80f5!important;color:#fff!important;border:2px solid var(--surface2);display:grid;place-items:center}
+.vkplus svg{width:13px;height:13px}
+.vksec.reg{font-size:13px!important;font-weight:700!important;letter-spacing:.7px;text-transform:uppercase;color:var(--muted)!important;padding:20px 20px 6px!important}
+.adsec .vksec.reg{padding-top:18px!important}
+.adc{margin:6px 16px 0!important;background:var(--surface2)!important;border-color:var(--line)!important;color:var(--ink)!important}
+.stempty{display:grid;justify-items:center;gap:6px;padding:34px 30px;text-align:center;color:var(--muted)}.stempty b{color:var(--ink);font-size:15.5px}.stempty small{font-size:13px;line-height:1.45}
+/* app lock follows the theme */
+.lockv{background:var(--bg)!important;color:var(--ink)!important}
+.lockv .lkl .wlg{background:var(--ink)!important}
+.lkd i{border-color:var(--muted)!important}.lkd i.on{background:var(--ink)!important;border-color:var(--ink)!important}
+.lke{color:var(--muted)!important}.lke:not(:empty){color:var(--bad)!important}
+.lkp button{background:var(--surface2)!important;border:1px solid var(--line)!important;color:var(--ink)!important}
+.lkp button.ghost{background:none!important;border-color:transparent!important;color:var(--muted)!important}
+.lklink{color:var(--ink)!important;border-bottom-color:var(--muted)!important}
+.lkbk{border-color:var(--line)!important;color:var(--ink)!important}
+.lkbadge{border-color:var(--line)!important;background:var(--surface2)!important;color:var(--ink)!important}
+.lkopt{border-color:var(--line)!important;background:var(--surface2)!important;color:var(--ink)!important}
+.lkoi{background:var(--bg)!important}.lkot small{color:var(--muted)!important}.lkopt>svg{stroke:var(--muted)!important}
+.lk2 .lks{color:var(--muted)!important}
+</style>
 <script>
 /* ---------- helpers ---------- */
 /* state used while the first screen is drawn: declared early so nothing is touched before it exists */
@@ -1451,9 +1475,9 @@ function statusVk(){
   pruneSt();
   const ids=Object.keys(STAT).filter(k=>!mutedSt.has(k)&&P[k]&&vkOk(P[k].name));
   const mine=`<div class="vkmw"><button class="vkme" data-a="${myStatus.length?'viewSt':'addStatus'}" data-v="me"><span class="vkring ${myStatus.length?'':'none'}">${avMe('')}</span><i class="vkplus" data-a="addStatus">${ic('plus',14)}</i></button><span class="vkmn"><b>${esc(ME.name||'You')}</b><small>${myStatus.length?'Tap to view your status':'Tap to add status update'}</small></span></div>`;
-  const row=k=>`<button class="li vkr" data-a="viewSt" data-v="${esc(k)}"><span class="vkring ${seenSt.has(k)?'seen':''}">${av(P[k].hue,P[k].name)}</span><span class="mid"><span class="nm"><span>${esc(P[k].name)}</span></span></span></button>`;
+  const row=k=>`<button class="li vkr" data-a="viewSt" data-v="${esc(k)}"><span class="vkring ${seenSt.has(k)?'seen':''}">${av(P[k].hue,P[k].name)}</span><span class="mid"><span class="nm"><span>${esc(P[k].name)}</span></span><span class="sub"><span>${(()=>{const L=STAT[k]||[],t=L.length&&L[L.length-1].t;return t?(agoS(t)==='now'?'Just now':agoS(t)+' ago'):'Status'})()}</span></span></span></button>`;
   const nw=ids.filter(k=>!seenSt.has(k)),sn=ids.filter(k=>seenSt.has(k));
-  return `${mine}${adsHTML('status')}<div class="vksec reg">Recent updates</div>${nw.length?nw.map(row).join(''):'<div class="empty">No recent updates</div>'}${sn.length?`<div class="vksec reg">Viewed updates</div>${sn.map(row).join('')}`:''}<div style="height:110px"></div>`}
+  return `${mine}${adsHTML('status')}<div class="vksec reg">Recent updates</div>${nw.length?nw.map(row).join(''):'<div class="stempty">'+ic('status',30)+'<b>No recent updates</b><small>Statuses your contacts share stay here for 24 hours.</small></div>'}${sn.length?`<div class="vksec reg">Viewed updates</div>${sn.map(row).join('')}`:''}<div style="height:110px"></div>`}
 document.addEventListener('input',e=>{if(e.target.id==='vq'){S.vq=e.target.value;const b=$('#body');if(b)b.innerHTML=S.tab==='calls'?callsVk():statusVk()}});
 function profVk(){const on=!!NET.s,name=ME.name||'You';
   const avh=okImg(ME.dp)?`<img src="${ME.dp}" alt="">`:PERSON;
