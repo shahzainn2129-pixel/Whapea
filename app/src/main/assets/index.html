@@ -425,6 +425,11 @@ code.mono{display:block;white-space:pre-wrap;padding:4px 6px;margin:2px 0}
 .b b{font-weight:700}
 .b .tt{white-space:pre-wrap}
 </style>
+<style id="v925b">
+.evc{min-width:190px;padding:2px 2px 0}.evh{display:flex;align-items:center;gap:6px;font-size:12px;opacity:.7;margin-bottom:4px}.evn{font-weight:700;font-size:16px}.evd{font-size:13px;opacity:.8;margin-top:3px;display:flex;align-items:center;gap:5px}.evx{font-size:13.5px;margin-top:6px;white-space:pre-wrap}
+.fchips{display:flex;gap:6px;padding:6px 10px;overflow-x:auto}.fchips button{flex:none;padding:5px 12px;border-radius:99px;border:1px solid var(--line);font-size:12.5px;font-weight:600}.fchips button.on{background:var(--ink);color:var(--bg)}
+.fwdl{display:flex;align-items:center;gap:5px;font-size:12px;font-style:italic;opacity:.7;margin-bottom:2px}
+</style>
 <script>
 /* ---------- helpers ---------- */
 /* state used while the first screen is drawn: declared early so nothing is touched before it exists */
@@ -567,7 +572,7 @@ const avMe=cls=>ME.dp?`<span class="av ${cls}" style="--h:${ME.hue}"><img src="$
 const dotOf=cid=>({direct:'',relay:'relay',none:'off'})[reach(cid)];
 const tick=m=>m.status==='queued'?ic('clock',15).replace('class="ic"','class="ic tk"'):m.status==='sent'?`<span class="tk">${ic('check',16)}</span>`:`<span class="tk ${m.status==='read'&&SET.receipts?'read':''}">${ic('dcheck',16)}</span>`;
 const prev=m=>{if(!m)return 'No messages yet';if(m.deleted)return 'This message was deleted';
-  return {text:m.text,voice:'Voice message '+dur(m.dur||0),img:'Photo',video:'Video',file:m.name,audio:m.name,poll:'Poll: '+m.q,contact:'Contact: '+m.name,loc:'Location',call:m.text}[m.type]||String(m.text||'');};
+  return {text:m.text,voice:'Voice message '+dur(m.dur||0),img:'Photo',video:'Video',file:m.name,audio:m.name,poll:'Poll: '+m.q,contact:'Contact: '+m.name,loc:'Location',event:'Event: '+m.name,call:m.text}[m.type]||String(m.text||'');};
 const who=(c,m)=>m.from==='me'?'You':P[m.from].name.split(' ')[0];
 
 /* ---------- toast, sheets ---------- */
@@ -785,20 +790,22 @@ function msgHTML(c,m,i){
     if(m.once&&(m.type==='img'||m.type==='video'))body=onceHTML(m);
     else if(m.type==='img'&&m.from==='me'&&window.upRing)body+=upRing(m);
     if(m.type==='call')body=`<div class="filec"><span class="fi callfi${m.call&&m.call.miss?' miss':''}">${ic('phone',20)}</span><span><b style="font-weight:600">${esc(m.text)}</b><small style="${m.call&&m.call.miss?'color:var(--scr,#e5484d)':''}">${esc((m.call&&m.call.sub)||'')}</small></span></div>`;
+    if(m.type==='event')body=`<div class="evc"><div class="evh">${ic('timer',16)}<b>Event</b></div><div class="evn">${esc(m.name)}</div><div class="evd">${esc(new Date(m.start).toLocaleString([], {weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}))}</div>${m.place?`<div class="evd">${ic('loc',14)} ${esc(m.place)}</div>`:''}${m.desc?`<div class="evx">${esc(m.desc)}</div>`:''}</div>`;
     if(m.type==='contact')body=`<div class="filec"><span class="fi">${ic('user',20)}</span><span><b style="font-weight:600">${esc(m.name)}</b><small>Shared contact</small></span></div>`;
     if(m.type==='loc')body=isFinite(m.lat)?`<div class="filec"><span class="fi">${ic('loc',20)}</span><span style="min-width:0"><b style="font-weight:600">Location</b><small>${m.lat.toFixed(4)}, ${m.lng.toFixed(4)}</small></span></div><button class="locb" data-a="openLoc" data-v="${m.id}">Open in Maps</button>`:`<div class="loc">${ic('loc',34)}</div>${esc(m.text)}`;
     if(m.type==='poll'){const tot=m.opts.reduce((a,o)=>a+o.v.length,0);body=`<div class="poll"><b>${ic('poll',16)} ${esc(m.q)}</b>${m.opts.map((o,k)=>`<button class="opt ${o.v.includes('me')?'me':''}" data-a="vote" data-v="${m.id}:${k}"><i style="width:${tot?o.v.length/tot*100:0}%"></i><span><span>${esc(o.t)}</span><span>${o.v.length}</span></span></button>`).join('')}</div>`}
   }
   const q=m.reply?`<div class="quote"><b>${esc(m.reply.who)}</b>${esc(m.reply.text)}</div>`:'';
   const rx=Object.entries(m.rx||{}).map(([e,n])=>`<span>${e}${n>1?' '+n:''}</span>`).join('');
-  return `<div class="mrow ${own?'out':'in'}${(Date.now()-m.t<800&&!POPD.has(m.id)&&POPD.add(m.id))?' pop':''}" style="--h:${own?0:P[m.from].hue}"><div class="b${m.type==='text'&&!m.deleted?' tx'+((m.text||'').length<=26&&!/\n/.test(m.text||'')?' ts':''):''}" style="--mw:${(own?80:62)+(m.edited?44:0)+(m.star?14:0)+(c.disap?14:0)}px" role="button" tabindex="0" data-lpm="${m.id}">${g&&!own?`<div class="who">${esc(P[m.from].name)}</div>`:''}${m.fwd?`<div class="fwd">${ic('fwd',13)} Forwarded</div>`:''}${q}${body}<span class="meta">${m.star?ic('star',12):''}${m.edited&&!m.deleted?'edited':''}${c.disap?ic('timer',12):''}${fmt(m.t)}${own&&m.type!=='call'?tick(m):''}</span></div>${rx?`<div class="rx">${rx}</div>`:''}</div>`}
+  return `<div class="mrow ${own?'out':'in'}${(Date.now()-m.t<800&&!POPD.has(m.id)&&POPD.add(m.id))?' pop':''}" style="--h:${own?0:P[m.from].hue}"><div class="b${m.type==='text'&&!m.deleted?' tx'+((m.text||'').length<=26&&!/\n/.test(m.text||'')?' ts':''):''}" style="--mw:${(own?80:62)+(m.edited?44:0)+(m.star?14:0)+(c.disap?14:0)}px" role="button" tabindex="0" data-lpm="${m.id}">${g&&!own?`<div class="who">${esc(P[m.from].name)}</div>`:''}${m.fwd?`<div class="fwd">${ic('fwd',13)} ${m.fwdN>=5?'Forwarded many times':'Forwarded'}</div>`:''}${q}${body}<span class="meta">${m.star?ic('star',12):''}${m.edited&&!m.deleted?'edited':''}${c.disap?ic('timer',12):''}${fmt(m.t)}${own&&m.type!=='call'?tick(m):''}</span></div>${rx?`<div class="rx">${rx}</div>`:''}</div>`}
 const pinTxt=m=>m.type==='text'?m.text:({voice:'Voice message',img:'Photo',video:'Video',file:'File',loc:'Location',poll:'Poll'})[m.type]||'Message';
 function dayLbl(a,m){const d=new Date(m.t),k=x=>new Date(x).toDateString();if(a&&k(a.t)===k(m.t))return '';const t=new Date(),y=new Date(Date.now()-864e5);const l=k(m.t)===k(t)?'Today':k(m.t)===k(y)?'Yesterday':d.toLocaleDateString(undefined,{day:'numeric',month:'short',year:d.getFullYear()===t.getFullYear()?undefined:'numeric'});return `<div class="dlbl"><span>${l}</span></div>`}
 const POPD=new Set();
 function drawMsgs(scroll){
   const c=chatOf(S.chat);if(!c)return;const el=$('#msgs');if(!el)return;
   const q=c.find?c.find.toLowerCase():'';
-  let list=c.msgs.filter(m=>!q||(m.text||'').toLowerCase().includes(q));const lim=c._lim||120,more=list.length>lim;if(more)list=list.slice(-lim);
+  const fk=c.find!=null&&c.findK?c.findK:'',KO=m=>!fk||(fk==='img'?m.type==='img':fk==='video'?m.type==='video':fk==='link'?/https?:\/\/|www\./i.test(m.text||''):fk==='doc'?(m.type==='file'):fk==='audio'?(m.type==='audio'||m.type==='voice'):fk==='poll'?m.type==='poll':true);
+  let list=c.msgs.filter(m=>(!q||(m.text||'').toLowerCase().includes(q))&&KO(m));const lim=c._lim||120,more=list.length>lim;if(more)list=list.slice(-lim);
   const nearBottom=el.scrollHeight-el.scrollTop-el.clientHeight<120;
   el.innerHTML=(NATIVE&&c.type==='dm'&&isNet(c.cid)?`<button class="note" data-a="cm_sec" data-v="${esc(c.id)}">${ic('lock',14)}<span>Messages and calls are end-to-end encrypted. Only you and ${esc(P[c.cid].name)} can read or hear them. Tap to learn more.</span></button>`:'')+(c.disap?`<div class="note">${ic('lock',14)}<span>Disappearing messages: ${({24:'24 hours',168:'7 days',2160:'90 days'})[c.disap]}.</span></div>`:'')+
    (c.pin&&c.msgs.find(x=>x.id===c.pin&&!x.deleted)?`<div class="pinb" data-a="goPin">${ic('star',15)}<span>${esc(pinTxt(c.msgs.find(x=>x.id===c.pin)))}</span></div>`:'')+(more?`<button class="earlier" data-a="earlier">Load earlier messages</button>`:'')+list.map((m,i)=>dayLbl(list[i-1],m)+msgHTML(c,m,i)).join('')+(c.typing?`<div class="typing"><i></i><i></i><i></i></div>`:'');
@@ -820,7 +827,7 @@ function syncSend(){const v=($('#msgIn')?.value||'').trim();const s=$('#sendBtn'
 
 /* ---------- sending and simulated delivery ---------- */
 function appendMsg(c,m){const el=$('#msgs');
-  if(!el||!S.chat||S.chat!==c.id||c.find){drawMsgs(true);if(!S.chat)render();return}
+  if(!el||!S.chat||S.chat!==c.id||c.find||c.findK){drawMsgs(true);if(!S.chat)render();return}
   el.querySelector('.typing')?.remove();
   el.insertAdjacentHTML('beforeend',msgHTML(c,m,c.msgs.length-1)+(c.typing?'<div class="typing"><i></i><i></i><i></i></div>':''));el.scrollTop=el.scrollHeight}
 function pushMsg(c,m){
@@ -866,7 +873,7 @@ const ACT={
  linked:()=>toast('Linked devices need a server, so Vynk does not include them'),
  broadcast:()=>toast('Broadcast lists will be added in a later version'),
  starred:()=>{closeSheet();const all=chats.flatMap(c=>c.msgs.filter(m=>m.star).map(m=>[c,m]));sheet('Starred messages',all.length?all.map(([c,m])=>A('openCid',c.id,'star',cName(c),prev(m))).join(''):'<div class="empty"><b>No starred messages</b>Tap a message and choose Star.</div>')},
- newChat:()=>sheet('New chat',(NATIVE?A('netFind','','search','Find by username','Chat over the internet')+A('scanQR','','qr','Scan QR code','Add someone with their code')+A('myQR','','qr','My QR code','Show your code to a friend'):'')+A('newGroup','', 'users','New group','Chat with several people')+Object.keys(P).map(k=>`<button class="act" data-a="openCid" data-v="${k}">${av(P[k].hue,P[k].name,'sm',dotOf(k))}<span class="grow">${esc(P[k].name)}<small>${esc(P[k].about)}</small></span></button>`).join('')),
+ newChat:()=>sheet('New chat',A('selfChat','', 'user','Message yourself','Notes, links and files for you')+(NATIVE?A('netFind','','search','Find by username','Chat over the internet')+A('scanQR','','qr','Scan QR code','Add someone with their code')+A('myQR','','qr','My QR code','Show your code to a friend'):'')+A('newGroup','', 'users','New group','Chat with several people')+Object.keys(P).map(k=>`<button class="act" data-a="openCid" data-v="${k}">${av(P[k].hue,P[k].name,'sm',dotOf(k))}<span class="grow">${esc(P[k].name)}<small>${esc(P[k].about)}</small></span></button>`).join('')),
  newGroup:()=>{closeSheet();const s=sheet('New group',`<div class="field"><input id="gname" placeholder="Group name" maxlength="30" autocomplete="off"></div>${Object.keys(P).map(k=>`<label class="act"><input type="checkbox" class="gm" value="${k}" id="gm_${k}">${av(P[k].hue,P[k].name,'sm')}<span class="grow">${esc(P[k].name)}</span></label>`).join('')}<button class="btn" data-a="mkGroup">Create group</button><div class="note2">Groups work best with 20 to 30 people close together.</div>`)},
  mkGroup:()=>{const n=$('#gname').value.trim(),mem=[...document.querySelectorAll('.gm:checked')].map(x=>x.value);if(!n||mem.length<1){toast('Add a name and at least one person');return}
    const c={id:'g'+uid(),type:'group',name:n,hue:Math.floor(Math.random()*360),members:mem,unread:0,msgs:[M('me',`You created the group "${n}"`,0,{t:Date.now(),status:'read'})]};chats.push(c);closeSheet();openChat(c.id)},
@@ -933,8 +940,10 @@ const ACT={
  exit:()=>{const c=chatOf(S.chat);closeSheet();c.archived=true;closeChat();toast('You left the group')},
  lockChat:()=>{closeSheet();toast('This chat is now locked with your app lock')},
  findIn:()=>{closeSheet();const c=chatOf(S.chat);$('#aux').innerHTML=`<div class="banner">${ic('search',18)}<input class="txt" id="fin" placeholder="Search in this chat" style="padding:7px 10px" autocomplete="off"><button class="ib" data-a="cancelFind" aria-label="Close">${ic('x',18)}</button></div>`;
+   $('#aux').innerHTML+=`<div class="fchips">${[['','All'],['img','Photos'],['video','Videos'],['link','Links'],['doc','Docs'],['audio','Audio'],['poll','Polls']].map(([k,l])=>`<button data-a="findK" data-v="${k}" class="${(c.findK||'')===k?'on':''}">${l}</button>`).join('')}</div>`;
    const f=$('#fin');f.focus();f.oninput=()=>{c.find=f.value;drawMsgs(false)}},
- cancelFind:()=>{const c=chatOf(S.chat);c.find='';drawComp();drawMsgs(true)},
+ findK:v=>{const c=chatOf(S.chat);c.findK=v;c.find=c.find||'';document.querySelectorAll('.fchips button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));drawMsgs(false)},
+ cancelFind:()=>{const c=chatOf(S.chat);c.find='';c.findK='';drawComp();drawMsgs(true)},
  disapPickChat:()=>{closeSheet();sheet('Disappearing messages',[[0,'Off'],[24,'24 hours'],[168,'7 days'],[2160,'90 days']].map(([v,l])=>A('setDisap',v,null,l)).join(''))},
  setDisap:v=>{const c=chatOf(S.chat);c.disap=+v;closeSheet();drawMsgs(false);toast(+v?'Messages will disappear':'Disappearing messages off')},
  media:()=>{closeSheet();const c=chatOf(S.chat),L=c.msgs.filter(m=>['img','file','audio'].includes(m.type));sheet('Media, links and documents',L.length?L.map(m=>A('nop','',m.type==='img'?'image':'file',m.name||'Photo',fmt(m.t))).join(''):'<div class="empty"><b>Nothing shared yet</b>Photos, documents and audio appear here.</div>')},
@@ -962,7 +971,7 @@ const ACT={
  delAll:v=>{const [c,m]=msgById(v);netSend(c,{t:'del',id:v});Object.assign(m,{deleted:true,text:'',type:'text',rx:{},star:false});closeSheet();drawMsgs(false);render();toast(m.status==='queued'?'Deleted. It will not be delivered':'Deleted for everyone')},
  info:v=>{const [c,m]=msgById(v);closeSheet();sheet('Message info',`<div class="act">${ic('check')}<span class="grow">Sent<small>${fmt(m.t)}</small></span></div><div class="act">${ic('dcheck')}<span class="grow">Delivered<small>${m.status==='queued'?'Waiting for the other phone to come in range':m.status==='sent'?'Pending':fmt(m.tD||m.t)}</small></span></div><div class="act">${ic('eye')}<span class="grow">Read<small>${m.status==='read'?fmt(m.tR||m.t):'Not yet'}</small></span></div>`)},
  fwdPick:v=>{closeSheet();sheet('Forward to',chats.filter(c=>!c.blocked).map(c=>A('fwdTo',v+'|'+c.id,null,cName(c))).join(''))},
- fwdTo:v=>{const [id,cid]=v.split('|'),[c0,m]=msgById(id),c=chatOf(cid);closeSheet();const n={...m,id:newId(),from:'me',t:Date.now(),fwd:true,rx:{},star:false,reply:null};pushMsg(c,n);toast('Forwarded to '+cName(c))},
+ fwdTo:v=>{const [id,cid]=v.split('|'),[c0,m]=msgById(id),c=chatOf(cid);closeSheet();const n={...m,id:newId(),from:'me',t:Date.now(),fwd:true,fwdN:(m.fwdN||0)+1,rx:{},star:false,reply:null};pushMsg(c,n);toast('Forwarded to '+cName(c))},
  vote:v=>{const [id,k]=v.split(':'),[c,m]=msgById(id);const o=m.opts[+k],had=o.v.includes('me');m.opts.forEach(x=>x.v=x.v.filter(y=>y!=='me'));if(!had)o.v.push('me');drawMsgs(false)},
  play:v=>{const [c,m]=msgById(v);if(S.playing===v){clearInterval(S.pi);S.playing=null;drawMsgs(false);return}clearInterval(S.pi);S.playing=v;S.pp=0;
    S.pi=setInterval(()=>{S.pp++;if(S.pp>26){clearInterval(S.pi);S.playing=null}drawMsgs(false)},Math.max(120,m.dur*1000/26));drawMsgs(false)},
@@ -975,7 +984,7 @@ const ACT={
  recStart:()=>{S.rec={s:0};S.rec.iv=setInterval(()=>{S.rec.s++;const e=$('#rt');if(e)e.textContent=dur(S.rec.s)},1000);drawComp()},
  recCancel:()=>{clearInterval(S.rec.iv);S.rec=null;drawComp()},
  recSend:()=>{const c=chatOf(S.chat),d=Math.max(2,S.rec.s);clearInterval(S.rec.iv);S.rec=null;drawComp();pushMsg(c,M('me','',0,{t:Date.now(),type:'voice',dur:d}));toast('Voice note sent (prototype: audio is simulated)')},
- attach:()=>{const c=chatOf(S.chat);sheet('',`<div class="grid4">${[['attPhoto','image','Photo',215],['attDoc','file','Document',28],['attAudio','music','Audio',330],['attContact','user','Contact',150],['attLoc','loc','Location',182],...(c.type==='group'?[['attPoll','poll','Poll',268]]:[])].map(([a,i,l,h])=>`<button data-a="${a}"><span class="c" style="--h:${h}">${ic(i,24)}</span>${l}</button>`).join('')}</div><div class="note2">Documents and audio can be up to 700 KB.</div>`)},
+ attach:()=>{const c=chatOf(S.chat);sheet('',`<div class="grid4">${[['attPhoto','image','Photo',215],['attDoc','file','Document',28],['attAudio','music','Audio',330],['attContact','user','Contact',150],['attLoc','loc','Location',182],['attEvent','timer','Event',40],...(c.type==='group'?[['attPoll','poll','Poll',268]]:[])].map(([a,i,l,h])=>`<button data-a="${a}"><span class="c" style="--h:${h}">${ic(i,24)}</span>${l}</button>`).join('')}</div><div class="note2">Documents and audio can be up to 700 KB.</div>`)},
  attCam:()=>{window.__cap=true;ACT.attPhoto()},
  attPhoto:()=>{closeSheet();pickFile('image/*',f=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,(SET.quality==='high'?900:SET.quality==='standard'?640:420)/Math.max(im.width,im.height)),cv=document.createElement('canvas');cv.width=im.width*k;cv.height=im.height*k;cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);
      const src=cv.toDataURL('image/jpeg',.6);pushMsg(chatOf(S.chat),M('me','',0,{t:Date.now(),type:'img',src}));toast('Photo compressed to '+size(src.length*.75)+' before sending')};im.src=r.result};r.readAsDataURL(f)})},
@@ -984,6 +993,9 @@ const ACT={
  attContact:()=>{closeSheet();sheet('Share a contact',Object.keys(P).map(k=>A('shareC',k,null,P[k].name)).join(''))},
  shareC:v=>{closeSheet();pushMsg(chatOf(S.chat),M('me','',0,{t:Date.now(),type:'contact',name:P[v].name}))},
  attLoc:()=>{closeSheet();ACT._sendLoc()},
+ attEvent:()=>{closeSheet();const d=new Date(Date.now()+36e5);d.setMinutes(0,0,0);const v=new Date(d-d.getTimezoneOffset()*6e4).toISOString().slice(0,16);sheet('New event',`<div class="field"><input id="evn" maxlength="80" placeholder="Event name" autocomplete="off"></div><div class="field"><input id="evt" type="datetime-local" value="${v}"></div><div class="field"><input id="evp" maxlength="100" placeholder="Location (optional)" autocomplete="off"></div><div class="field"><input id="evx" maxlength="300" placeholder="Description (optional)" autocomplete="off"></div><button class="btn" data-a="mkEvent">Send event</button>`)},
+ mkEvent:()=>{const n=($('#evn').value||'').trim(),t=new Date($('#evt').value).getTime();if(!n||!isFinite(t)){toast('Add a name and a time');return}closeSheet();pushMsg(chatOf(S.chat),M('me','Event: '+n,0,{t:Date.now(),type:'event',name:n,start:t,place:($('#evp').value||'').trim(),desc:($('#evx').value||'').trim()}))},
+ selfChat:()=>{closeSheet();if(!P.self)P.self={name:'You',hue:210,about:'Message yourself',range:false};if(!chats.some(c=>c.id==='self'))chats.unshift({id:'self',type:'dm',cid:'self',name:'You',known:true,msgs:[]});S.tab='chats';openChat('self')},
  attPoll:()=>{closeSheet();sheet('New poll',`<div class="field"><input id="pq" placeholder="Question" autocomplete="off"></div><div class="field"><input id="po1" placeholder="Option 1" autocomplete="off"></div><div class="field"><input id="po2" placeholder="Option 2" autocomplete="off"></div><div class="field"><input id="po3" placeholder="Option 3 (optional)" autocomplete="off"></div><button class="btn" data-a="mkPoll">Send poll</button>`)},
  mkPoll:()=>{const q=$('#pq').value.trim(),o=['po1','po2','po3'].map(i=>$('#'+i).value.trim()).filter(Boolean);if(!q||o.length<2){toast('Add a question and two options');return}closeSheet();pushMsg(chatOf(S.chat),M('me','',0,{t:Date.now(),type:'poll',q,opts:o.map(t=>({t,v:[]}))}))},
  /* calls */
@@ -1527,7 +1539,7 @@ function wire(m){
   if(m.type==='img')o.src=m.src;if(m.type==='voice'){o.src=m.src;o.dur=m.dur}if(m.type==='contact')o.name=m.name;
   if(m.type==='poll'){o.q=m.q;o.opts=m.opts.map(x=>x.t)}
   if(m.type==='file'||m.type==='audio'){o.name=m.name;o.size=m.size;o.mime=m.mime;o.src=m._d||(()=>{const b=typeof Android.fileRead==='function'?Android.fileRead(m.src):'';return b?'data:'+(m.mime||'application/octet-stream')+';base64,'+b:''})();if(!o.src)return null}
-  if(m.type==='loc'){o.lat=m.lat;o.lng=m.lng;o.acc=m.acc||0}
+  if(m.type==='loc'){o.lat=m.lat;o.lng=m.lng;o.acc=m.acc||0}if(m.type==='event'){o.name=m.name;o.desc=m.desc||'';o.start=m.start;o.place=m.place||''}if(m.fwdN)o.fwdN=m.fwdN;
   if(m.type==='video'){o.src=m._d||Android.mediaRead(m.src);o.dur=m.dur||0;if(!o.src)return null}
   return o}
 function ghead(c){const net=c.members.filter(isNet);return{id:c.id,name:c.name,mem:[NET.s.uid,...net.map(k=>k.slice(2))]}}
@@ -1800,7 +1812,7 @@ window.nativeData=(a,raw)=>{
     if(c.type==='dm'&&isNet(a)&&SET.msgFrom==='contacts'&&!o.inv&&!c.known&&!c.msgs.some(x=>x.from==='me')){if(!c.msgs.length){const i=chats.indexOf(c);if(i>=0)chats.splice(i,1)}return}
     if(c.type==='dm'&&isNet(a)&&!c.known&&!c.msgs.length)c.req=true;
     if(!c.msgs.some(m=>m.id===o.id)){
-      const type=['text','img','contact','voice','video','poll','file','audio','loc'].includes(o.type)?o.type:'text';
+      const type=['text','img','contact','voice','video','poll','file','audio','loc','event'].includes(o.type)?o.type:'text';
       const m={id:o.id,from:a,type,text:cl(o.text,4000),t:Date.now(),status:'read'};if(o.once&&(type==='img'||type==='video'))m.once=true;
       if(type==='img'){if(!okImg(o.src))return;m.src=o.src}
       if(type==='voice'){if(!okAud(o.src))return;m.src=o.src;m.dur=Math.max(1,Math.min(600,Math.round(+o.dur)||1))}
@@ -1810,7 +1822,8 @@ window.nativeData=(a,raw)=>{
         const p=Android.fileSave('d'+Date.now()+Math.random().toString(36).slice(2,7),o.src,ext);if(!p)return;m.src=p;m.name=nm;m.size=cl(o.size,20);m.mime=o.src.slice(5,o.src.indexOf(';'))}
       if(type==='loc'){if(!isFinite(o.lat)||!isFinite(o.lng)||Math.abs(o.lat)>90||Math.abs(o.lng)>180)return;m.lat=+o.lat;m.lng=+o.lng;m.acc=Math.max(0,Math.min(99999,Math.round(+o.acc)||0));m.text='Location'}
       if(type==='poll'){if(typeof o.q!=='string'||!Array.isArray(o.opts)||o.opts.length<2||o.opts.length>6)return;m.q=cl(o.q,120);m.opts=o.opts.map(t=>({t:cl(String(t),60),v:[]}))}
-      if(o.fwd)m.fwd=true;if(o.inv)m.inv=1;
+      if(type==='event'){if(typeof o.name!=='string'||!o.name.trim()||!isFinite(+o.start))return;m.name=cl(o.name,80);m.desc=cl(o.desc||'',300);m.place=cl(o.place||'',100);m.start=+o.start;m.text='Event: '+m.name}
+      if(o.fwd)m.fwd=true;if(o.fwdN)m.fwdN=Math.max(1,Math.min(99,Math.round(+o.fwdN)||1));if(o.inv)m.inv=1;
       if(o.reply&&typeof o.reply==='object')m.reply={who:cl(o.reply.who,30),text:cl(o.reply.text,200)};
       c.msgs.push(m);c.typing=null;clearTimeout(TY[a]);awayCheck(c,type);if(m.inv&&c.req)toast(P[a].name+' invited you to chat');
       if(S.chat===c.id){sendReads(c)}else{c.unread=(c.unread||0)+1;toast(P[a].name+': '+prev(m))}
@@ -1864,7 +1877,7 @@ if(NATIVE){
     m.status=P[c.cid]&&P[c.cid].range?'sent':'queued';c.msgs.push(m);appendMsg(c,m);
     if(m.status==='sent')sendMsg(c,m)};
   Object.assign(ACT,{
-    attach:()=>sheet('',`<div class="grid4">${[['attPhoto','image','Photo',215],['attVideo','play','Video',330],['attDoc','file','Document',28],['attAudio','music','Audio',330],['attLoc','loc','Location',182],['attContact','user','Contact',150],['attPoll','poll','Poll',268],['attOnce','eye','View once',90]].map(([a,i,l,h])=>`<button data-a="${a}"><span class="c" style="--h:${h}">${ic(i,24)}</span>${l}</button>`).join('')}</div><div class="note2">Videos up to 30 seconds. Documents and audio up to 700 KB.</div>`),
+    attach:()=>sheet('',`<div class="grid4">${[['attPhoto','image','Photo',215],['attVideo','play','Video',330],['attDoc','file','Document',28],['attAudio','music','Audio',330],['attLoc','loc','Location',182],['attEvent','timer','Event',40],['attContact','user','Contact',150],['attPoll','poll','Poll',268],['attOnce','eye','View once',90]].map(([a,i,l,h])=>`<button data-a="${a}"><span class="c" style="--h:${h}">${ic(i,24)}</span>${l}</button>`).join('')}</div><div class="note2">Videos up to 30 seconds. Documents and audio up to 700 KB.</div>`),
     attVideo:()=>{const cid=S.chat;closeSheet();pickFile('video/*',async f=>{
       try{vprog('Preparing video… 0%');const r=await prepVideo(f,p=>vprog('Preparing video… '+p+'%'));
         const id=newId(),path=Android.mediaSave(id,r.src);if(!path){vprog(null);toast('Could not save the video');return}
