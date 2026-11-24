@@ -479,6 +479,26 @@ code.mono{display:block;white-space:pre-wrap;padding:4px 6px;margin:2px 0}
 .lkoi{background:var(--bg)!important}.lkot small{color:var(--muted)!important}.lkopt>svg{stroke:var(--muted)!important}
 .lk2 .lks{color:var(--muted)!important}
 </style>
+<style id="v926pf">
+.vkp{padding:14px 20px 4px}
+.vkpav{width:108px;height:108px;border-width:1.5px;padding:4px}
+.vkp h2{font-size:22px;font-weight:700;margin:14px 0 2px;letter-spacing:-.2px}
+.vkp .un{font-size:14px}
+.vkp p{font-size:14.5px;line-height:1.4;color:var(--ink);opacity:.85;margin-top:8px}
+.pfchip{display:flex;align-items:center;gap:10px;margin-top:14px;padding:9px 14px;border-radius:99px;background:var(--surface2);text-align:left;color:var(--ink)}
+.pfchip span{display:flex;flex-direction:column}.pfchip b{font-size:13.5px;font-weight:600}.pfchip small{font-size:12px;color:var(--muted)}
+.pfchip>svg{color:var(--muted)}
+.vkpa{max-width:360px;margin-top:16px;gap:10px}
+.vkpa .vkbtn{height:44px;border-radius:14px;font-size:14.5px;font-weight:600}
+.pfset{padding:0 16px}
+.pfsr{border-radius:14px!important}
+.setm{display:flex;flex-direction:column;background:var(--surface2);border-radius:20px;overflow:hidden;margin:14px 0}
+.setm .setr{padding:13px 16px;gap:14px}
+.setm .setr+.setr{border-top:1px solid var(--line);margin-top:0}
+.setm .setic{width:38px;height:38px;border-radius:11px;background:var(--bg);display:grid;place-items:center;flex:none}
+.setm .setr .grow{font-size:16px;font-weight:500}
+.setm .setr small{font-size:13px;color:var(--muted);font-weight:400;display:block;margin-top:2px}
+</style>
 <script>
 /* ---------- helpers ---------- */
 /* state used while the first screen is drawn: declared early so nothing is touched before it exists */
@@ -1481,7 +1501,7 @@ function statusVk(){
 document.addEventListener('input',e=>{if(e.target.id==='vq'){S.vq=e.target.value;const b=$('#body');if(b)b.innerHTML=S.tab==='calls'?callsVk():statusVk()}});
 function profVk(){const on=!!NET.s,name=ME.name||'You';
   const avh=okImg(ME.dp)?`<img src="${ME.dp}" alt="">`:PERSON;
-  return `<div class="vkp"><span class="vkpav">${avh}</span><h2>${esc(name)}${on?bdg(planOf({plan:ME.plan,plan_until:ME.plan_until})):''}</h2>${on?`<div class="un">@${esc(NET.s.user)}</div>`:''}${ME.about?`<p>${rich(ME.about)}</p>`:''}<div class="vkpa"><button class="vkbtn pri" data-a="editProfile">Edit profile</button>${on?`<button class="vkbtn" data-a="shareProf" data-v="${esc(NET.s.user)}">Share profile</button>`:''}</div></div>
+  return `<div class="vkp"><span class="vkpav">${avh}</span><h2>${esc(name)}${on?bdg(planOf({plan:ME.plan,plan_until:ME.plan_until})):''}</h2>${on?`<div class="un">@${esc(NET.s.user)}</div>`:''}${ME.about?`<p>${rich(ME.about)}</p>`:''}${on&&ME.plan&&ME.plan_until?`<button class="pfchip" data-a="plus">${bdg(planOf({plan:ME.plan,plan_until:ME.plan_until}))}<span><b>${ME.plan==='gold'?'Verified':'Vynk Plus'}</b><small>Active until ${new Date(ME.plan_until).toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'})}</small></span>${ic('chev',16)}</button>`:''}<div class="vkpa"><button class="vkbtn pri" data-a="editProfile">Edit profile</button>${on?`<button class="vkbtn" data-a="shareProf" data-v="${esc(NET.s.user)}">Share profile</button>`:''}</div></div>
   ${on?'':`<div class="vkjoin"><b>Join Vynk online</b><span>Create a free account to chat with friends online.</span><button class="vkbtn pri" data-a="netAcct">Create internet account</button><button class="vkbtn" data-a="netAcct" data-v="in">Log in</button></div>`}
   <div class="pfset"><div class="field pfsr">${ic('search',18)}<input id="pfq" placeholder="Search options" autocomplete="off"></div><div id="pfl">${(()=>{const row=(a,i,l,v,sub)=>`<button class="act" data-a="${a}" data-v="">${ic(i)}<span class="grow">${l}${sub?`<small>${sub}</small>`:''}</span>${v!==undefined?`<span class="val">${v}</span>`:ic('chev',18)}</button>`;const sw=(k,i,l,sub)=>`<button class="act" data-a="sw" data-v="${k}">${ic(i)}<span class="grow">${l}${sub?`<small>${sub}</small>`:''}</span>${tg(SET[k])}</button>`;return setNative(row,sw,true)})()}</div></div>`}
 document.addEventListener('input',e=>{if(e.target.id!=='pfq')return;const q=e.target.value.trim().toLowerCase(),L=$('#pfl');if(!L)return;let secVis=null;[...L.children].forEach(el=>{if(el.classList.contains('sech')){if(secVis)secVis.hidden=!secVis._any;secVis=el;el._any=false;el.hidden=!!q;return}const ok=!q||el.textContent.toLowerCase().includes(q);el.hidden=!ok;if(ok&&secVis)secVis._any=true});if(secVis&&q)secVis.hidden=!secVis._any});
