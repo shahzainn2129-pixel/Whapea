@@ -395,6 +395,7 @@ html .mrow .b .filec b{color:inherit}
 .rxrow button{font-size:26px;line-height:1;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;transition:transform .12s}.rxrow button:active{transform:scale(1.35)}
 .mrow .b[data-lpm]{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}.mrow.lpsel .b{box-shadow:0 0 0 2px var(--accent)}
 </style>
+<style id="v926cm">.sheet.cmx{padding-top:6px}.cmhd{display:flex;align-items:center;gap:14px;padding:6px 20px 12px;border-bottom:1px solid var(--line)}.cmhd .av{width:42px;height:42px;flex:none}.cmhd b{display:block;font-size:17px}.cmhd span{display:block;font-size:12.5px;color:var(--muted);margin-top:1px}.cmx .act{padding-block:13px}.cmx .act svg{stroke:var(--muted)}.cmx .act.bad svg{stroke:#d93a49}.cmx .act.bad{color:#d93a49}.cmsep{height:8px;background:var(--line);opacity:.5;margin:6px 0}</style>
 </head><body>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><radialGradient id="igrad" cx=".3" cy="1.07" r="1.15"><stop offset="0" stop-color="#7DE3FF"/><stop offset=".22" stop-color="#00C2FF"/><stop offset=".5" stop-color="#2F6BFF"/><stop offset=".78" stop-color="#1E4FE0"/><stop offset="1" stop-color="#1E4FE0"/></radialGradient></defs></svg>
@@ -574,6 +575,7 @@ I.nvMe='<circle class="f" cx="12" cy="7.8" r="3.9"/><path class="f" d="M4.5 20.5
 I.palette='<circle cx="12" cy="12" r="9.2"/><circle cx="8.2" cy="10.4" r="1.1"/><circle cx="12" cy="7.6" r="1.1"/><circle cx="15.8" cy="10.4" r="1.1"/><path d="M8 15.2c1.2 1.6 2.700 2.200 4 2.200"/>';
 I.pollc='<path d="M5 20V10M12 20V4M19 20v-7"/>';
 I.refresh='<polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>';
+I.tag=I.tag||'<path d="M3 12l9-9h8v8l-9 9z"/><path d="M15 8h.01"/>';I.warn=I.warn||'<path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18h.01"/>';
 const ic=(n,s=22)=>`<svg class="ic" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${I[n]||''}</svg>`;
 const fmt=t=>new Date(t).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
 const dayLabel=t=>{const d=new Date(t),n=new Date();if(d.toDateString()===n.toDateString())return fmt(t);const y=new Date(n-864e5);return d.toDateString()===y.toDateString()?'Yesterday':d.toLocaleDateString([], {day:'numeric',month:'short'})};
@@ -925,10 +927,14 @@ function msgById(id){const c=chatOf(S.chat);return [c,c.msgs.find(m=>m.id===id)]
 function pickFile(accept,cb){const f=document.createElement('input');f.type='file';f.accept=accept;if(window.__cap){f.setAttribute('capture','environment');window.__cap=false}f.style.display='none';document.body.append(f);f.onchange=()=>{if(f.files[0])cb(f.files[0]);f.remove()};f.click()}
 const size=b=>b>1048576?(b/1048576).toFixed(1)+' MB':Math.max(1,Math.round(b/1024))+' KB';
 function ctxMenu(id){
-  const c=chatOf(id);sheet(cName(c),
+  const c=chatOf(id);const dm=c.type==='dm';
+  const hd=`<div class="cmhd">${av((P[c.cid]||c).hue??0,cName(c))}<div><b>${esc(cName(c))}</b><span>Chat options</span></div></div>`;
+  sheet('',hd+
    A('selStart',id,'check','Select chats','Pin, mute, archive or delete several')+A('cm_pin',id,'pin',c.pinned?'Unpin chat':'Pin chat')+A('cm_fav',id,'star',c.fav?'Remove from favourites':'Add to favourites')+A('cm_mute',id,'mute',c.muted?'Unmute notifications':'Mute notifications')+
-   A('cm_arch',id,'archive','Archive chat')+(NATIVE?A('cmLabel',id,'tag','Labels',(c.labels||[]).join(', ')||'Mark customers: New, Pending, Paid'):'')+A('cm_unread',id,'chat',c.unread||c.mk?'Mark as read':'Mark as unread')+A('cm_clear',id,'x','Clear chat')+
-   (c.type==='dm'?A('cm_block',id,'ban',c.blocked?'Unblock':'Block','','bad')+(NATIVE&&isNet(c.cid)?A('cm_report',id,'ban','Report user','Spam, abuse or fake account','bad'):''):'')+A('cm_del',id,'trash','Delete chat','','bad'))}
+   A('cm_arch',id,'archive','Archive chat')+(NATIVE?A('cmLabel',id,'tag','Labels',(c.labels||[]).join(', ')||'Mark customers: New, Pending, Paid'):'')+A('cm_unread',id,'chat',c.unread||c.mk?'Mark as read':'Mark as unread')+
+   '<div class="cmsep"></div>'+A('cm_clear',id,'trash','Clear chat')+
+   (dm?A('cm_block',id,'ban',c.blocked?'Unblock':'Block','','bad')+(NATIVE&&isNet(c.cid)?A('cm_report',id,'warn','Report user','Spam, abuse or fake account','bad'):''):'')+A('cm_del',id,'trash','Delete chat','','bad'));
+  const sh=document.querySelector('.scrim .sheet');if(sh)sh.classList.add('cmx')}
 
 const ACT={
  tab:v=>{S.tab=v;render()},
