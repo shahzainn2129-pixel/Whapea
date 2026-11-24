@@ -430,6 +430,14 @@ code.mono{display:block;white-space:pre-wrap;padding:4px 6px;margin:2px 0}
 .fchips{display:flex;gap:6px;padding:6px 10px;overflow-x:auto}.fchips button{flex:none;padding:5px 12px;border-radius:99px;border:1px solid var(--line);font-size:12.5px;font-weight:600}.fchips button.on{background:var(--ink);color:var(--bg)}
 .fwdl{display:flex;align-items:center;gap:5px;font-size:12px;font-style:italic;opacity:.7;margin-bottom:2px}
 </style>
+<style id="v925c">
+.stopsq{width:16px;height:16px;border-radius:4px;background:var(--bad,#e5484d);display:block;margin:auto}
+.rec.pvw{display:flex;align-items:center;gap:8px;flex:1}.pvb{flex:1;height:4px;border-radius:2px;background:rgba(128,128,128,.35);overflow:hidden}.pvb i{display:block;height:100%;width:0;background:var(--ink)}
+</style>
+<style id="v925d">
+#selbar{position:fixed;left:0;right:0;top:0;z-index:60;display:flex;align-items:center;gap:2px;padding:calc(env(safe-area-inset-top,0px) + 10px) 8px 10px;background:var(--bg);border-bottom:1px solid var(--line)}#selbar b{margin-left:8px;font-size:17px;white-space:nowrap}#selbar .sp{flex:1}
+.li.selm{position:relative}.selk{position:absolute;left:52px;top:50%;margin-top:6px;width:20px;height:20px;border-radius:50%;border:2px solid var(--bg);background:var(--muted);display:grid;place-items:center;z-index:2;color:#fff}.li.seld .selk{background:#2a80f5}.li.seld{background:color-mix(in srgb,var(--ink) 8%,transparent)}
+</style>
 <script>
 /* ---------- helpers ---------- */
 /* state used while the first screen is drawn: declared early so nothing is touched before it exists */
@@ -816,7 +824,8 @@ function drawComp(){
   const c=chatOf(S.chat);if(!c)return;const comp=$('#comp'),aux=$('#aux');
   aux.innerHTML=(S.reply?`<div class="banner">${ic('reply',18)}<div><b>Replying to ${esc(S.reply.who)}</b>${esc(S.reply.text)}</div><button class="ib" data-a="cancelAux" aria-label="Cancel">${ic('x',18)}</button></div>`:'')+(S.edit?`<div class="banner">${ic('edit',18)}<div><b>Editing message</b>${esc(S.edit.text)}</div><button class="ib" data-a="cancelAux" aria-label="Cancel">${ic('x',18)}</button></div>`:'')+(S.emo?`<div class="emo">${EMO.map(e=>`<button data-a="emoji" data-v="${e}">${e}</button>`).join('')}</div>`:'');
   if(c.blocked){comp.innerHTML=`<div class="rec" style="color:var(--muted);justify-content:center;font-weight:500">You blocked this contact. <button style="color:var(--accent);font-weight:600" data-a="unblock">Unblock</button></div>`;return}
-  if(S.rec){comp.innerHTML=`<button class="ib" data-a="recCancel" aria-label="Cancel" style="color:var(--bad)">${ic('trash')}</button><div class="rec"><span>●</span><span id="rt">0:00</span><div class="wave" id="lw">${[...Array(24)].map(()=>`<i style="height:4px"></i>`).join('')}</div></div><button class="ib pri" data-a="recSend" aria-label="Send voice message">${ic('send',20)}</button>`;return}
+  if(S.rec&&S.rec.pv){comp.innerHTML=`<button class="ib" data-a="recCancel" aria-label="Delete" style="color:var(--bad)">${ic('trash')}</button><div class="rec pvw"><button class="ib" data-a="recPlay" aria-label="Play">${ic(S.rec.playing?'pause':'play',20)}</button><div class="pvb"><i id="pvf"></i></div><span id="rt">${dur(S.rec.pv.dur||0)}</span></div><button class="ib pri" data-a="recSend" aria-label="Send voice message">${ic('send',20)}</button>`;return}
+  if(S.rec){comp.innerHTML=`<button class="ib" data-a="recCancel" aria-label="Cancel" style="color:var(--bad)">${ic('trash')}</button><div class="rec"><span>●</span><span id="rt">0:00</span><div class="wave" id="lw">${[...Array(24)].map(()=>`<i style="height:4px"></i>`).join('')}</div></div>${NATIVE?`<button class="ib" data-a="recPrev" aria-label="Stop and preview"><span class="stopsq"></span></button>`:''}<button class="ib pri" data-a="recSend" aria-label="Send voice message">${ic('send',20)}</button>`;return}
   const keep=$('#msgIn')?.value||(S.edit?S.edit.text:'');
   comp.innerHTML=`<div class="inp"><button class="ib" data-a="emoTog" aria-label="Emoji" style="width:40px;height:44px">${ic('smile',24)}</button><textarea id="msgIn" rows="1" placeholder="Message" aria-label="Message"></textarea><button class="ib" data-a="attach" aria-label="Attach" style="width:38px;height:44px">${ic('clip',22)}</button><button class="ib" id="camBtn" data-a="attCam" aria-label="Camera" style="width:36px;height:40px">${ic('camera',22)}</button></div><button class="ib pri" id="sendBtn" data-a="send" aria-label="Send">${ic('send',20)}</button><button class="ib pri" id="micBtn" data-a="recStart" aria-label="Record voice message">${ic('mic',20)}</button>`;
   const ta=$('#msgIn');ta.value=keep;syncSend();
@@ -856,7 +865,7 @@ function pickFile(accept,cb){const f=document.createElement('input');f.type='fil
 const size=b=>b>1048576?(b/1048576).toFixed(1)+' MB':Math.max(1,Math.round(b/1024))+' KB';
 function ctxMenu(id){
   const c=chatOf(id);sheet(cName(c),
-   A('cm_pin',id,'pin',c.pinned?'Unpin chat':'Pin chat')+A('cm_fav',id,'star',c.fav?'Remove from favourites':'Add to favourites')+A('cm_mute',id,'mute',c.muted?'Unmute notifications':'Mute notifications')+
+   A('selStart',id,'check','Select chats','Pin, mute, archive or delete several')+A('cm_pin',id,'pin',c.pinned?'Unpin chat':'Pin chat')+A('cm_fav',id,'star',c.fav?'Remove from favourites':'Add to favourites')+A('cm_mute',id,'mute',c.muted?'Unmute notifications':'Mute notifications')+
    A('cm_arch',id,'archive','Archive chat')+(NATIVE?A('cmLabel',id,'tag','Labels',(c.labels||[]).join(', ')||'Mark customers: New, Pending, Paid'):'')+A('cm_unread',id,'chat',c.unread||c.mk?'Mark as read':'Mark as unread')+A('cm_clear',id,'x','Clear chat')+
    (c.type==='dm'?A('cm_block',id,'ban',c.blocked?'Unblock':'Block','','bad')+(NATIVE&&isNet(c.cid)?A('cm_report',id,'ban','Report user','Spam, abuse or fake account','bad'):''):'')+A('cm_del',id,'trash','Delete chat','','bad'))}
 
@@ -1390,7 +1399,7 @@ async function openProf(uid){
   try{const r=await sb('/rest/v1/profiles?select=id,username,name,about,avatar,plan,plan_until&id=eq.'+uid).then(x=>x.json());PROF.info=r&&r[0]}catch(e){}
   if(PROF&&PROF.uid===uid){PROF.busy=false;pfDraw()}}
 function pfDraw(){const v=$('#pfv');if(!v||!PROF)return;const q=PROF.info,me=NET.s&&NET.s.uid===PROF.uid;
-  v.innerHTML=`<div class="ch"><button class="ib" data-a="pfClose" aria-label="Back">${ic('back')}</button><b style="flex:1;font-size:16px">${q?esc(q.name):''}</b></div><div class="body" style="overflow-y:auto;flex:1">${q?`<div class="vkp"><span class="vkpav">${okImg(q.avatar)?`<img src="${q.avatar}" alt="">`:PERSON}</span><h2>${esc(q.name)}${bdg(planOf(q))}</h2><div class="un">@${esc(q.username)}</div>${q.about?`<p>${rich(q.about)}</p>`:''}<div class="vkpa"><button class="vkbtn pri" data-a="${me?'pfEdit':'pfMsg'}">${me?'Edit profile':'Message'}</button></div></div>`:`<div class="empty"><b>${PROF.busy?'Loading…':'Profile not found'}</b></div>`}</div>`}
+  v.innerHTML=`<div class="ch"><button class="ib" data-a="pfClose" aria-label="Back">${ic('back')}</button><b style="flex:1;font-size:16px">${q?esc(q.name):''}</b></div><div class="body" style="overflow-y:auto;flex:1">${q?`<div class="vkp"><span class="vkpav">${okImg(q.avatar)?`<img src="${q.avatar}" alt="">`:PERSON}</span><h2>${esc(q.name)}${bdg(planOf(q))}</h2><div class="un">@${esc(q.username)}</div>${q.about?`<p>${rich(q.about)}</p>`:''}<div class="vkpa"><button class="vkbtn pri" data-a="${me?'pfEdit':'pfMsg'}">${me?'Edit profile':'Message'}</button></div>${me?'':(()=>{const g=chats.filter(x=>x.type==='group'&&Array.isArray(x.members)&&x.members.includes('u:'+PROF.uid));return g.length?`<div class="vksec" style="text-align:left;font-size:13px;color:var(--muted);padding:18px 16px 4px">Groups in common (${g.length})</div>${g.map(x=>`<button class="act" data-a="open" data-v="${esc(x.id)}">${ic('users')}<span class="grow">${esc(x.name)}<small>${x.members.length+1} members</small></span></button>`).join('')}`:''})()}</div>`:`<div class="empty"><b>${PROF.busy?'Loading…':'Profile not found'}</b></div>`}</div>`}
 
 
 
@@ -2619,6 +2628,32 @@ function lwTick(){const w=document.getElementById('lw');if(!w||!S.rec)return;let
 const _rs=ACT.recStart;ACT.recStart=function(){const r=_rs.apply(this,arguments);if(S.rec){clearInterval(S.rec.lw);S.rec.lw=setInterval(lwTick,90)}return r};
 const _rc=ACT.recCancel;ACT.recCancel=function(){if(S.rec)clearInterval(S.rec.lw);return _rc.apply(this,arguments)};
 const _rse=ACT.recSend;ACT.recSend=function(){if(S.rec)clearInterval(S.rec.lw);return _rse.apply(this,arguments)};
+
+S.sel=null;
+{const _rh=rowHTML;rowHTML=function(c){let h=_rh(c);if(S.sel){const on=S.sel.has(c.id);h=h.replace('<button class="li','<button class="li selm'+(on?' seld':'')).replace('<span class="mid">','<span class="selk">'+(on?ic('check',14):'')+'</span><span class="mid">')}return h}}
+function selBar(){let b=document.getElementById('selbar');if(!S.sel){b&&b.remove();return}
+  if(!b){b=document.createElement('div');b.id='selbar';(document.getElementById('phone')||document.body).append(b)}
+  const n=S.sel.size;b.innerHTML=`<button class="ib" data-a="selEnd" aria-label="Cancel">${ic('x',20)}</button><b>${n} selected</b><span class="sp"></span><button class="ib" data-a="selDo" data-v="pin" aria-label="Pin">${ic('pin',20)}</button><button class="ib" data-a="selDo" data-v="mute" aria-label="Mute">${ic('mute',20)}</button><button class="ib" data-a="selDo" data-v="read" aria-label="Mark read">${ic('check',20)}</button><button class="ib" data-a="selDo" data-v="arch" aria-label="Archive">${ic('archive',20)}</button><button class="ib" data-a="selDo" data-v="del" aria-label="Delete" style="color:var(--bad,#e5484d)">${ic('trash',20)}</button>`}
+Object.assign(ACT,{
+ selStart:v=>{closeSheet();S.sel=new Set([v]);render();selBar()},
+ selEnd:()=>{S.sel=null;render();selBar()},
+ selDo:v=>{if(!S.sel||!S.sel.size)return;const L=[...S.sel].map(id=>chats.find(c=>c.id===id)).filter(Boolean);
+  if(v==='del'){sheet('Delete '+L.length+' chat'+(L.length>1?'s':'')+'?','<div class="note2">Messages in these chats will be removed from this phone.</div><button class="btn bad" data-a="selDel">Delete</button>');return}
+  if(v==='pin'){const lim=isPlus()?(ME.plan==='gold'?15:10):3,all=L.every(c=>c.pinned);if(!all&&chats.filter(x=>x.pinned&&!S.sel.has(x.id)).length+L.length>lim){toast('You can pin up to '+lim+' chats');return}L.forEach(c=>c.pinned=!all)}
+  if(v==='mute'){const all=L.every(c=>c.muted);L.forEach(c=>{c.muted=!all;c.muteUntil=0})}
+  if(v==='read'){L.forEach(c=>{c.unread=0;c.mk=false})}
+  if(v==='arch'){L.forEach(c=>c.archived=true)}
+  S.sel=null;persistSoon();render();selBar();toast('Done')},
+ selDel:()=>{if(!S.sel)return;const ids=S.sel;for(let i=chats.length-1;i>=0;i--)if(ids.has(chats[i].id))chats.splice(i,1);S.sel=null;closeSheet();persistSoon();render();selBar();toast('Chats deleted')}});
+{const _op=ACT.open;ACT.open=function(v,el,e){if(S.sel){if(el&&el._lp){el._lp=false;return}S.sel.has(v)?S.sel.delete(v):S.sel.add(v);if(!S.sel.size)S.sel=null;render();selBar();return}return _op.apply(this,arguments)}}
+Object.assign(ACT,{
+ recPrev:()=>{if(!S.rec||S.rec.pv)return;clearInterval(S.rec.iv);clearInterval(S.rec.lw);let j;try{j=JSON.parse(Android.recStop(false)||'')}catch(e){}
+  if(!j||!j.src){S.rec=null;drawComp();toast('Recording failed');return}S.rec={s:0,pv:j};drawComp()},
+ recPlay:()=>{const r=S.rec;if(!r||!r.pv)return;if(r.au&&r.playing){r.au.pause();r.playing=false;drawComp();return}
+  if(!r.au){r.au=new Audio(r.pv.src);r.au.ontimeupdate=()=>{const f=$('#pvf');if(f&&r.au.duration)f.style.width=(r.au.currentTime/r.au.duration*100)+'%'};r.au.onended=()=>{r.playing=false;drawComp()}}
+  r.au.play().then(()=>{r.playing=true;drawComp()}).catch(()=>toast('Could not play'))}});
+{const _rc2=ACT.recCancel;ACT.recCancel=function(){if(S.rec&&S.rec.pv){try{S.rec.au&&S.rec.au.pause()}catch(e){}S.rec=null;drawComp();return}return _rc2.apply(this,arguments)};
+ const _rs2=ACT.recSend;ACT.recSend=function(){if(S.rec&&S.rec.pv){const c=chatOf(S.chat),j=S.rec.pv;try{S.rec.au&&S.rec.au.pause()}catch(e){}S.rec=null;drawComp();if(!okAud(j.src)){toast('That voice message is too long');return}pushMsg(c,M('me','',0,{t:Date.now(),type:'voice',dur:j.dur,src:j.src}));return}return _rs2.apply(this,arguments)}}
 
 /* ---- pull to refresh ---- */
 (()=>{const ptr=document.createElement('div');ptr.id='ptr';ptr.innerHTML=`<span class="pl"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="var(--ink)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.6-5.9"/><path d="M20 4v5h-5"/></svg></span>`;phone.append(ptr);
