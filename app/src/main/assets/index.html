@@ -672,12 +672,10 @@ function setNative(row,sw,nc){
   ${row('plus','verified','Vynk Plus',isPlus()?(ME.plan==='gold'?'Verified':'Active'):'',isPlus()?'Until '+new Date(ME.plan_until).toLocaleDateString():'Badge, longer status and more')}
   ${row('netAcct','users','Internet account',NET.s?'@'+esc(NET.s.user):'','Chat and call anyone online')}
   ${NET.s?row('chPw','lock','Change password','','Use a new password to log in'):''}
-  ${sec('info','Vynk Ads')}
+  ${sec('star','Business and ads')}
   ${row('adNew','info','Promote your business','','Free once a week, or paid for more days')}
   ${NET.s?row('adMine','db','My ads','','Status, views and clicks'):''}
   ${NET.s?row('bizHome','store','Business tools','','Profile, catalogue, quick replies'):''}
-  ${row('quietHrs','moon','Quiet hours',(SET.qh?(SET.qf||'23:00')+' to '+(SET.qt||'07:00'):'Off'),'Silent message alerts at night')}
-  ${row('npTog','bell','Hide message text in notifications',SET.npHide?'On':'Off','Show only "New message"')}
   ${sec('lock','Privacy')}
   ${row('lockMenu','lock','App lock',SET.lockOn?'On':'Off','Code or fingerprint to open Vynk')}
   ${SET.lockOn&&bioAvail()?`<button class="act" data-a="bioTog" data-v="">${ic('user')}<span class="grow">Unlock with fingerprint</span>${tg(SET.bio)}</button>`:''}
@@ -692,6 +690,8 @@ function setNative(row,sw,nc){
   ${row('blocked','ban','Blocked',chats.filter(c=>c.blocked).length)}
   ${sec('bell','Notifications')}
   ${row('notifHelp','bell','Get alerts when app is closed','','Set battery to Unrestricted')}
+  ${row('quietHrs','moon','Quiet hours',(SET.qh?(SET.qf||'23:00')+' to '+(SET.qt||'07:00'):'Off'),'Silent message alerts at night')}
+  ${row('npTog','bell','Hide message text in notifications',SET.npHide?'On':'Off','Show only "New message"')}
   ${NATIVE&&NET.s?row('bkOpen','lock','Chat backup','','Locked with your own password'):''}
   ${sec('chat','Chats')}
   ${row('themePick','moon','Theme',themeName())}
@@ -3298,6 +3298,22 @@ document.head.insertAdjacentHTML('beforeend','<style>.dpv{position:absolute;inse
    <div class="vbsec">Settings</div><div class="vbcard">${R('cm_mute','mute','Mute notifications','',muteL)}${R('disapPickChat','timer','Disappearing messages','',({0:'Off',24:'24 hours',168:'7 days',2160:'90 days'})[c.disap||0])}${R('cm_wp','image','Chat wallpaper','',c.wp?'Custom':'Default')}${R('cm_fav','star',c.fav?'Remove from favourites':'Add to favourites')}${net?R('cm_sec','lock','Encryption','Verify security code'):''}</div>
    ${g.length?`<div class="vbsec">${g.length} group${g.length>1?'s':''} in common</div><div class="vbcard">${g.map(x=>`<button class="cirow" data-a="ci" data-v="open|${esc(x.id)}">${ic('users',22)}<span class="grow">${esc(x.name)}<small>${x.members.length+1} members</small></span></button>`).join('')}</div>`:''}
    <div class="vbsec"> </div><div class="vbcard">${R('exportChat','file','Export chat')}${R('cm_clear','x','Clear chat')}${R('cm_block','ban',c.blocked?'Unblock '+esc(p.name):'Block '+esc(p.name),'','','bad')}${net?R('cm_report','ban','Report '+esc(p.name),'','','bad'):''}</div></div>`)}}
+
+{const SUB={'Account':'Profile, language, Plus, password','Business and ads':'Promote, catalogue, business tools','Privacy':'Last seen, read receipts, app lock, blocked','Notifications':'Alerts, quiet hours, message text','Chats':'Theme, font size, photo quality, wallpapers','Storage and data':'Data usage','Owner':'Owner tools','Help':'Help center, share, updates, about'};
+ let RS=null;const _sn=setNative;
+ const parse=html=>{const d=document.createElement('div');d.innerHTML=html;const out={head:'',secs:[],foot:''};let cur=null;
+  [...d.children].forEach(n=>{const isSec=n.classList&&n.classList.contains('sec')&&(n.classList.contains('sech')||/^Owner$/.test(n.textContent.trim()));
+   if(isSec){cur={t:n.textContent.trim(),i:(n.querySelector('svg')||{}).outerHTML||ic('info',20),b:''};out.secs.push(cur);return}
+   if(n.matches&&n.matches('[data-a="netOut"]')){out.foot+=n.outerHTML;return}
+   if(!cur){out.head+=n.outerHTML;return}
+   if(n.style&&n.style.height==='40px')return;cur.b+=n.outerHTML});return out};
+ setNative=function(row,sw,nc){RS={row,sw};const html=_sn(row,sw,nc),P_=parse(html);
+  return P_.head+`<div class="setm">${P_.secs.map((x,i)=>`<button class="act setr" data-a="setSec" data-v="${i}"><span class="setic">${x.i.replace(/width="\d+"/,'width="22"').replace(/height="\d+"/,'height="22"')}</span><span class="grow">${esc(x.t)}<small>${esc(SUB[x.t]||'')}</small></span>${ic('chev',18)}</button>`).join('')}</div><div id="setres" hidden>${P_.secs.map(x=>x.b).join('')}</div>${P_.foot}<div style="height:40px"></div>`};
+ document.addEventListener('input',e=>{if(e.target.id!=='sq')return;const q=e.target.value.trim(),r=document.querySelector('#setres'),m=document.querySelector('.setm');if(r)r.hidden=!q;if(m)m.hidden=!!q});
+ const body=i=>{if(!RS)return'';const P_=parse(_sn(RS.row,RS.sw,true));const x=P_.secs[+i];return x?`<div class="setp">${x.b}</div>`:''};
+ Object.assign(ACT,{setSec:v=>{if(!RS)return;const P_=parse(_sn(RS.row,RS.sw,true)),x=P_.secs[+v];if(!x)return;const e=page('setp',esc(x.t),body(v));e.dataset.i=v}});
+ document.addEventListener('click',e=>{const pg=e.target.closest('#setp');if(!pg||e.target.closest('.vbh'))return;setTimeout(()=>{const g=document.querySelector('#setp');if(g){const b=g.querySelector('.vbb');if(b)b.innerHTML=body(g.dataset.i)}},120)},true);
+ document.head.insertAdjacentHTML('beforeend','<style>#setp{z-index:15}.setr{padding:14px 16px}.setic{width:38px;height:38px;border-radius:12px;background:var(--surface2);display:grid;place-items:center;flex:none}.setm{margin-top:6px}.setp{padding-top:4px}.setp .act{padding:14px 20px}</style>')}
 document.addEventListener('click',e=>{const b=e.target.closest('.vb[data-vb]');if(b){e.stopPropagation();e.preventDefault();ACT.vbInfo(b.dataset.vb)}},true);
 })();
 </script>
