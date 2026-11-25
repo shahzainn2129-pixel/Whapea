@@ -411,7 +411,7 @@ html .mrow .b .filec b{color:inherit}
 .swrow{display:flex;flex-wrap:wrap;gap:12px;padding:10px 20px 14px}.swc{width:44px;height:44px;border-radius:50%}
 .annb{display:flex;align-items:center;gap:10px;margin:6px 16px 8px;padding:12px 14px;border-radius:14px;background:var(--surface2);font-size:13.5px;line-height:1.4}.annb span{flex:1}.annb button{flex:none;opacity:.7}
 .sw2{width:44px;height:26px;border-radius:13px;background:var(--line);position:relative;flex:none}.sw2:after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .15s}.sw2.on{background:#2a80f5}.sw2.on:after{transform:translateX(18px)}
-html.stealth .li .sub,html.stealth .li .nm>span:first-child{filter:blur(7px)}html.stealth .mrow .b:not(.pk) .tt,html.stealth .mrow .b:not(.pk) img.img{filter:blur(8px)}
+.ico0{width:22px;height:22px;flex:none}html.stealth .li .sub,html.stealth .li .nm>span:first-child{filter:blur(7px)}html.stealth .mrow .b:not(.pk) .tt,html.stealth .mrow .b:not(.pk) img.img{filter:blur(8px)}
 </style>
 </head><body>
 
@@ -3481,6 +3481,7 @@ window.fxPlay=(a,m)=>{if(!m.fx||!on('voicefx'))return;
   if(m.fx==='echo'){try{const AC=window.AudioContext||window.webkitAudioContext,x=new AC(),s=x.createMediaElementSource(a),d=x.createDelay(1),g=x.createGain();d.delayTime.value=.28;g.gain.value=.45;s.connect(x.destination);s.connect(d);d.connect(g);g.connect(d);g.connect(x.destination)}catch(e){}}};
 
 /* ---------- reactions ---------- */
+Object.assign(I,{game:'<rect x="3" y="7" width="18" height="11" rx="4"/><path d="M8 10v5M5.5 12.5h5M16 11h.01M18 14h.01"/>',cards:'<rect x="4" y="5" width="12" height="15" rx="2"/><path d="M8 3h10a2 2 0 0 1 2 2v12"/>',ask:'<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7M12 17h.01"/>',eyeoff:'<path d="M3 3l18 18M10.6 6.2A9 9 0 0 1 12 6c5 0 8.5 4 9.5 6-.4.8-1.1 1.8-2 2.7M6.6 7.6C4.7 9 3.5 10.8 2.5 12c1 2 4.5 6 9.5 6 1.5 0 2.8-.3 4-.9"/>',palette:'<path d="M12 3a9 9 0 1 0 0 18c1.5 0 2-1 1.5-2s0-2.2 1.5-2.2H17a4 4 0 0 0 4-4C21 6.5 17 3 12 3z"/><path d="M7.5 11h.01M10 7.5h.01M14.5 7.5h.01"/>',hourglass:'<path d="M6 3h12M6 21h12M7 3c0 5 5 6 5 9s-5 4-5 9M17 3c0 5-5 6-5 9s5 4 5 9"/>',grid:'<rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/>'});
 RXOK.push('😍','🎉','💯','🤣','😡','🤔');
 {let lt=0,lid='',lr=0;
   const fire=id=>{if(Date.now()-lr<700)return;lr=Date.now();const c=chatOf(S.chat),m=c&&c.msgs.find(x=>x.id===id);if(!m||m.deleted)return;try{ACT.react(id+'|❤️');hap(12)}catch(e){}};
@@ -3499,16 +3500,16 @@ const left=ms=>{const m=Math.max(1,Math.round(ms/60000));return m<60?m+' min':m<
 window.xBody=(c,m)=>{const x=m.x,own=m.from==='me',who=own?'You':(P[m.from]?P[m.from].name.split(' ')[0]:'They');
   if(x.k==='sp'){const open=own||SP.has(m.id);return `<span class="spb${open?' open':''}" data-a="spTog" data-v="${m.id}"><span class="tt">${hl(x.c)}</span>${open?'':`<span class="sph">${ic('lock',14)} Spoiler · tap to reveal</span>`}</span>`}
   if(x.k==='cap'){const lk=Date.now()<x.at;
-    if(lk&&!own)return `<div class="capc lock"><b>${ic('timer',16)} Time capsule</b><div>Opens ${esc(dt(x.at))}</div><small>in ${left(x.at-Date.now())}</small></div>`;
-    return `<div class="capc"><b>${ic('timer',16)} Time capsule</b><div class="tt">${hl(x.c)}</div><small>${lk?'Opens for them '+esc(dt(x.at)):'Opened '+esc(dt(x.at))}</small></div>`}
+    if(lk&&!own)return `<div class="capc lock"><b>${ic('hourglass',16)} Time capsule</b><div>Opens ${esc(dt(x.at))}</div><small>in ${left(x.at-Date.now())}</small></div>`;
+    return `<div class="capc"><b>${ic('hourglass',16)} Time capsule</b><div class="tt">${hl(x.c)}</div><small>${lk?'Opens for them '+esc(dt(x.at)):'Opened '+esc(dt(x.at))}</small></div>`}
   if(x.k==='card')return `<div class="xcard"><span class="xch">${esc(x.cat)}</span><div class="xq">${esc(x.q)}</div></div>`;
   if(x.k==='poke')return `<div class="xpoke">👋 ${own?'You poked them':who+' poked you'}. Let's hang out?</div>`;
   if(x.k==='ttt'){const me=own?'X':'O',st=x.w?(x.w==='D'?'Draw':x.w===me?'You won!':'They won'):(x.t===me?'Your turn ('+me+')':'Waiting… ('+x.t+' plays)');
-    return `<div class="gm"><b>${ic('star',15)} Tic-tac-toe</b><div class="tgrid">${[...x.b].map((v,i)=>`<button class="tc ${v==='X'?'x':v==='O'?'o':''}" ${v==='-'&&!x.w&&x.t===me?`data-a="gmMove" data-v="${m.id}|${i}"`:'disabled'}>${v==='-'?'':v}</button>`).join('')}</div><small>${st} · You are ${me}</small></div>`}
+    return `<div class="gm"><b>${ic('game',15)} Tic-tac-toe</b><div class="tgrid">${[...x.b].map((v,i)=>`<button class="tc ${v==='X'?'x':v==='O'?'o':''}" ${v==='-'&&!x.w&&x.t===me?`data-a="gmMove" data-v="${m.id}|${i}"`:'disabled'}>${v==='-'?'':v}</button>`).join('')}</div><small>${st} · You are ${me}</small></div>`}
   if(x.k==='rps'){const r=x.mine&&x.theirs?rpsRes(x.mine,x.theirs):'';
-    return `<div class="gm"><b>${ic('star',15)} Rock Paper Scissors</b>${r?`<div class="rres">${RV[x.mine]} vs ${RV[x.theirs]}</div><small>${r==='Draw'?'Draw':r==='win'?'You won!':'They won'}</small>`:x.mine?`<div class="rres">${RV[x.mine]}</div><small>Waiting for their choice…</small>`:`<div class="rbtns">${['R','P','S'].map(k=>`<button data-a="gmRps" data-v="${m.id}|${k}">${RV[k]}</button>`).join('')}</div><small>Pick one. Both choices show together.</small>`}</div>`}
+    return `<div class="gm"><b>${ic('game',15)} Rock Paper Scissors</b>${r?`<div class="rres">${RV[x.mine]} vs ${RV[x.theirs]}</div><small>${r==='Draw'?'Draw':r==='win'?'You won!':'They won'}</small>`:x.mine?`<div class="rres">${RV[x.mine]}</div><small>Waiting for their choice…</small>`:`<div class="rbtns">${['R','P','S'].map(k=>`<button data-a="gmRps" data-v="${m.id}|${k}">${RV[k]}</button>`).join('')}</div><small>Pick one. Both choices show together.</small>`}</div>`}
   if(x.k==='ask'){const n=(x.ans||[]).length;
-    const head=`<b>${ic('users',16)} Anonymous question</b><div class="xq">${esc(x.q)}</div>`;
+    const head=`<b>${ic('ask',16)} Anonymous question</b><div class="xq">${esc(x.q)}</div>`;
     if(x.rev)return `<div class="askc">${head}${x.rev.length?x.rev.map(t=>`<div class="ans">${esc(t)}</div>`).join(''):'<small>No answers.</small>'}<small>Answers are shown without names.</small></div>`;
     if(own)return `<div class="askc">${head}<small>${n} answered</small><button class="askb" data-a="askRev" data-v="${m.id}">Reveal answers</button></div>`;
     if(x.done)return `<div class="askc">${head}<small>You answered. Waiting for the reveal.</small></div>`;
@@ -3533,9 +3534,9 @@ Object.assign(ACT,{
   spNew:()=>{const c=chatOf(S.chat),t=$('#msgIn'),txt=(t&&t.value||'').trim();closeSheet();if(!txt){toast('Type your message first, then tap Spoiler');return}sendX(c,{k:'sp',c:txt.slice(0,1000)},SPL);t.value='';c.draft='';syncSend()},
   capNew:()=>{closeSheet();sheet('Time capsule',`<div class="field"><textarea id="capt" rows="3" maxlength="500" placeholder="Write your message"></textarea></div><div class="field"><input id="capd" type="datetime-local" value="${defDT()}"></div><div class="note2" style="padding:0 20px 8px">They see it locked and it opens at the time you pick. The text is hidden by the app, not by encryption.</div>${A('capGo','','send','Send capsule')}`)},
   capGo:()=>{const t=($('#capt').value||'').trim(),at=new Date($('#capd').value).getTime();if(!t){toast('Write a message');return}if(!isFinite(at)||at<Date.now()+60000){toast('Pick a time at least 1 minute from now');return}const c=chatOf(S.chat);closeSheet();sendX(c,{k:'cap',c:t,at},CAP)},
-  cardMenu:()=>{closeSheet();sheet('Random card',CATS.map(k=>A('cardGo',k,'star',k,k==='Truth'?'A question to answer':k==='Dare'?'A challenge to do':'A bold opinion')).join('')+A('cardGo','any','star','Surprise me'))},
+  cardMenu:()=>{closeSheet();sheet('Random card',CATS.map(k=>A('cardGo',k,'cards',k,k==='Truth'?'A question to answer':k==='Dare'?'A challenge to do':'A bold opinion')).join('')+A('cardGo','any','cards','Surprise me'))},
   cardGo:v=>{const c=chatOf(S.chat);closeSheet();const cat=v==='any'?pick(CATS):v;sendX(c,{k:'card',cat,q:pick(DECK[cat])},'🎴 '+cat)},
-  gamesMenu:()=>{const c=chatOf(S.chat);if(!dmOnly(c))return;closeSheet();sheet('Play a game',A('gmNew','ttt','star','Tic-tac-toe','You are X, they are O')+A('gmNew','rps','star','Rock Paper Scissors','Both pick, then it shows'))},
+  gamesMenu:()=>{const c=chatOf(S.chat);if(!dmOnly(c))return;closeSheet();sheet('Play a game',A('gmNew','ttt','game','Tic-tac-toe','You are X, they are O')+A('gmNew','rps','game','Rock Paper Scissors','Both pick, then it shows'))},
   gmNew:v=>{const c=chatOf(S.chat);closeSheet();if(!dmOnly(c))return;if(v==='ttt')sendX(c,{k:'ttt',b:'---------',t:'X',w:''},'🎮 Tic-tac-toe');else sendX(c,{k:'rps'},'✊ Rock paper scissors')},
   gmMove:v=>{const [id,i]=v.split('|'),[c,m]=msgById(id);if(!m||!m.x||m.x.k!=='ttt')return;const me=m.from==='me'?'X':'O',x=m.x,k=+i;if(x.w||x.t!==me||x.b[k]!=='-')return;gmApply(x,k,me);netSend(c,{t:'gm',id,i:k});hap(10);persistSoon();drawMsgs(false)},
   gmRps:v=>{const [id,k]=v.split('|'),[c,m]=msgById(id);if(!m||!m.x||m.x.k!=='rps'||m.x.mine||!RV[k])return;m.x.mine=k;netSend(c,{t:'gm',id,r:k});hap(10);persistSoon();drawMsgs(false)},
@@ -3548,11 +3549,12 @@ Object.assign(ACT,{
   chatColor:()=>{closeSheet();sheet('Chat colour',`<div class="swrow">${SW.map(h=>`<button class="swc" style="background:${h}" data-a="setCC" data-v="${h}" aria-label="${h}"></button>`).join('')}</div>${A('setCC','','x','Default colour')}`)},
   setCC:v=>{const c=chatOf(S.chat);if(!c)return;c.acc=/^#[0-9a-f]{6}$/i.test(v)?v:'';closeSheet();drawMsgs(false);persistSoon()},
   stealthTog:()=>{SET.stealth=!SET.stealth;document.documentElement.classList.toggle('stealth',!!SET.stealth);persistSoon();closeSheet();toast(SET.stealth?'Stealth mode on. Tap a message to peek':'Stealth mode off');if(!S.chat)render()},
-  vibePick:()=>{closeSheet();sheet('Mood and presence',`<div class="sec" style="padding:4px 20px">Mood shown to your contacts</div>`+A('setVibe','','x','None')+VIBES.map(v=>A('setVibe',v,'smile',v)).join('')+`<div class="sec" style="padding:10px 20px 4px">Text shown instead of "online"</div>`+A('setPres','','x','Online (default)')+PRES.map(v=>A('setPres',v,'smile',v)).join(''))},
+  vibePick:()=>{closeSheet();sheet('Mood and presence',`<div class="sec" style="padding:4px 20px">Mood shown to your contacts</div>`+selRow('setVibe','','None',!ME.vibe)+VIBES.map(v=>selRow('setVibe',v,v,ME.vibe===v)).join('')+`<div class="sec" style="padding:10px 20px 4px">Text shown instead of "online"</div>`+selRow('setPres','','Online (default)',!ME.pres)+PRES.map(v=>selRow('setPres',v,v,ME.pres===v)).join(''))},
   setVibe:v=>{ME.vibe=VIBES.includes(v)?v:'';VS={};vibeSend();persistSoon();closeSheet();toast(ME.vibe?'Mood set: '+ME.vibe:'Mood cleared')},
   setPres:v=>{ME.pres=PRES.includes(v)?v:'';VS={};vibeSend();persistSoon();closeSheet();toast(ME.pres?'Presence: '+ME.pres:'Presence reset')}
 });
 let VS={};
+const selRow=(a,v,l,on)=>`<button class="act" data-a="${a}" data-v="${esc(v)}">${on?ic('check',22):'<span class="ico0"></span>'}<span class="grow">${esc(l)}</span></button>`;
 function vibeSend(k){if(!NATIVE)return;const o=JSON.stringify({t:'vibe',v:ME.vibe||'',p:ME.pres||''});
   if(k){if(P[k]&&(P[k].range||isNet(k)))tx(k,o);return}
   Object.keys(P).slice(0,60).forEach(q=>{if(P[q]&&(P[q].range||(isNet(q)&&NET.ok)))tx(q,o)})}
@@ -3563,12 +3565,12 @@ setInterval(()=>{try{VS={};if(ME.vibe||ME.pres)vibeSend()}catch(e){}},600000);
 
 /* ---------- menus ---------- */
 {const _at=ACT.attach;ACT.attach=function(){_at.apply(this,arguments);try{const g=document.querySelector('.grid4');if(!g)return;const dm=chatOf(S.chat)&&chatOf(S.chat).type==='dm';
-  const L=[['spNew','lock','Spoiler',280,'spoiler'],['capNew','timer','Capsule',40,'capsule'],['cardMenu','star','Card',330,'cards'],['askNew','users','Ask',200,'ask']];
-  if(dm)L.push(['gamesMenu','star','Games',150,'games']);
+  const L=[['spNew','eyeoff','Spoiler',280,'spoiler'],['capNew','hourglass','Capsule',40,'capsule'],['cardMenu','cards','Card',330,'cards'],['askNew','ask','Ask',200,'ask']];
+  if(dm)L.push(['gamesMenu','game','Games',150,'games']);
   g.insertAdjacentHTML('beforeend',L.filter(l=>on(l[4])).map(([a,i,l,h])=>`<button data-a="${a}"><span class="c" style="--h:${h}">${ic(i,24)}</span>${l}</button>`).join(''))}catch(e){}}}
 {const _cm=ACT.chatMenu;ACT.chatMenu=function(){_cm.apply(this,arguments);try{const sh=document.querySelector('.scrim .sheet'),c=chatOf(S.chat);if(!sh||!c)return;
-  const add=(on('vibe')&&c.type==='dm'?A('poke','','smile','Poke','Say hi and ask to hang out'):'')+A('chatColor','','image','Chat colour',c.acc?'Custom':'Default')+A('stealthTog','','lock','Stealth mode',SET.stealth?'On':'Off');
-  const bad=sh.querySelector('.act.bad');if(bad)bad.insertAdjacentHTML('beforebegin',add);else sh.insertAdjacentHTML('beforeend',add)}catch(e){}}}
+  const add=(on('vibe')&&c.type==='dm'?A('poke','','smile','Poke','Say hi and ask to hang out'):'')+A('chatColor','','palette','Chat colour',c.acc?'Custom':'Default')+A('stealthTog','','lock','Stealth mode',SET.stealth?'On':'Off');
+  const cl0=sh.querySelector('[data-a=cm_clear]');if(cl0){cl0.insertAdjacentHTML('beforebegin',add+'<div class="cmsep"></div>');const sv=cl0.querySelector('svg');if(sv)sv.outerHTML=ic('trash')}else{const bad=sh.querySelector('.act.bad');if(bad)bad.insertAdjacentHTML('beforebegin',add);else sh.insertAdjacentHTML('beforeend',add)}const md=sh.querySelector('[data-a=media] svg');if(md)md.outerHTML=ic('grid')}catch(e){}}}
 {const _cx=ctxMenu;ctxMenu=function(id){_cx.apply(this,arguments);try{const sh=document.querySelector('.scrim .sheet');if(!sh)return;const bad=sh.querySelector('.cmsep');const add=A('stealthTog','','lock','Stealth mode',SET.stealth?'On':'Off');if(bad)bad.insertAdjacentHTML('beforebegin',add)}catch(e){}}}
 {const _dm=drawMsgs;drawMsgs=function(){_dm.apply(this,arguments);try{const c=chatOf(S.chat),el=$('#msgs');if(el&&c){el.style.setProperty('--cacc',c.acc||'');el.classList.toggle('cacc',!!c.acc)}}catch(e){}}}
 document.addEventListener('click',e=>{if(!SET.stealth)return;const b=e.target.closest&&e.target.closest('.mrow .b');if(b&&!e.target.closest('button,input,a'))b.classList.toggle('pk')},true);
