@@ -423,6 +423,14 @@ html.vk body .nav button.on .pill{background:var(--navchip)}
 .navsw{display:flex;flex-wrap:wrap;gap:12px;padding:8px 20px 12px}.navsw button{width:42px;height:42px;border-radius:14px;border:1px solid rgba(127,127,127,.35)}
 .navsl{padding:4px 20px 8px}.navsl label{display:block;font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--muted);margin:10px 0 4px}.navsl input[type=range]{width:100%}
 </style>
+<style id="v928att">
+html body .attl{font-size:11.5px;letter-spacing:.08em;font-weight:700;color:var(--muted);padding:10px 22px 0}
+html body .sheet .grid4.gx{grid-template-columns:repeat(4,1fr);gap:10px 6px;padding:8px 14px 2px}
+html body .grid4.gx button{gap:7px;font-size:12px;font-weight:600;color:var(--ink)}
+html body .grid4.gx .c{width:56px;height:56px;border-radius:20px;border:1px solid var(--line)!important;background:var(--surface2)!important;color:var(--ink)!important;box-shadow:none!important}
+html body .grid4.gx .c svg{stroke:var(--ink);stroke-width:1.7;fill:none!important;width:24px;height:24px}
+html body .grid4.gx button:active .c{transform:scale(.94);background:color-mix(in srgb,var(--ink) 10%,var(--surface2))!important;color:var(--ink)!important}
+</style>
 </head><body>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><radialGradient id="igrad" cx=".3" cy="1.07" r="1.15"><stop offset="0" stop-color="#7DE3FF"/><stop offset=".22" stop-color="#00C2FF"/><stop offset=".5" stop-color="#2F6BFF"/><stop offset=".78" stop-color="#1E4FE0"/><stop offset="1" stop-color="#1E4FE0"/></radialGradient></defs></svg>
@@ -3621,5 +3629,20 @@ Object.assign(ACT,{
     ['nvh','nvl'].forEach(id=>{const e=$('#'+id);e.addEventListener('input',()=>live(false));e.addEventListener('change',()=>live(true))})},
   setNav:v=>{SET.navc=v==='auto'?'auto':v;navApply();persistSoon();closeSheet();toast(v==='auto'?'Default colour':'Navigation bar colour saved');if(!S.chat&&typeof render==='function')render()}
 })})();
+
+/* ---------- 9.28: grouped grey attachment sheet ---------- */
+(()=>{
+Object.assign(I,{cal:'<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/>',clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'});
+const GR=[['FILES',['attPhoto','attVideo','attDoc','attAudio']],['SEND',['attLoc','attContact','attPoll','attEvent']],['PLAN AND PLAY',['schedule','capNew','askNew','gamesMenu']],['MESSAGE STYLE',['attOnce','spNew','toUrdu','cardMenu']]];
+const _a=ACT.attach;ACT.attach=function(){_a.apply(this,arguments);try{
+  const g=document.querySelector('.sheet .grid4');if(!g||g.classList.contains('gx'))return;
+  const by={};g.querySelectorAll('button').forEach(b=>{by[b.dataset.a]=b});
+  const ev=by.attEvent&&by.attEvent.querySelector('.c');if(ev)ev.innerHTML=ic('cal',24);
+  const sc=by.schedule&&by.schedule.querySelector('.c');if(sc)sc.innerHTML=ic('clock',24);
+  const used=new Set();let html='';
+  GR.forEach(([t,ks])=>{const bs=ks.filter(k=>by[k]).map(k=>{used.add(k);return by[k].outerHTML});if(bs.length)html+=`<div class="attl">${t}</div><div class="grid4 gx">${bs.join('')}</div>`});
+  const rest=Object.keys(by).filter(k=>!used.has(k));if(rest.length)html+=`<div class="attl">MORE</div><div class="grid4 gx">${rest.map(k=>by[k].outerHTML).join('')}</div>`;
+  g.insertAdjacentHTML('beforebegin',html);g.remove()}catch(e){}}
+})();
 </script>
 </body></html>
