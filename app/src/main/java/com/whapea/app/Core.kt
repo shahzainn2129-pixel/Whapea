@@ -100,7 +100,7 @@ object Core {
         val u = ringUriStr()
         if (u.isEmpty()) return ""
         if (isAssetRing()) return "Vynk · " + when (u.removePrefix("asset:")) {
-            "r1" -> "Classic"; "r2" -> "Waves"; "r3" -> "Sunrise"; "r4" -> "Digital"; else -> "Tone" }
+            "r1" -> "Classic"; "r2" -> "Waves"; "r3" -> "Sunrise"; "r4" -> "Digital"; "r5" -> "Morning"; "r6" -> "Bazaar"; "r7" -> "Two-tone"; "r8" -> "Calm"; else -> "Tone" }
         return try { android.media.RingtoneManager.getRingtone(app, android.net.Uri.parse(u))?.getTitle(app) ?: "" } catch (e: Exception) { "" }
     }
 
