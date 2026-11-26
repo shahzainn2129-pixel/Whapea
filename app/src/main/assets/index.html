@@ -1001,8 +1001,10 @@ const ACT={
 
  bkOpen:async()=>{if(!NET.s){toast('Log in to your account first');return}if(!E2.sub){toast('Backup is not available on this phone');return}
   const t=await bkInfo();
-  sheet('Chat backup',`<div class="note2" style="margin:0;padding:0 20px 8px">Your chats are locked with a password you choose and saved online. Nobody can read them, not even us. If you forget the password, the backup cannot be opened. Photos, videos and voice notes are not included.</div><div class="note2" style="margin:0;padding:0 20px 8px"><b>${t?'Last backup: '+new Date(t).toLocaleString([],{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'No backup yet'}</b></div>`+A('bkNowAsk','','lock','Back up now')+(t?A('bkRestoreAsk','','useradd','Restore from backup','Replaces chats on this phone'):'')+(SET.bkPw?A('bkAutoOff','','x','Stop automatic backup','Your saved backup stays online'):''))},
- bkAutoOff:()=>{delete SET.bkPw;persistSoon();closeSheet();toast('Automatic backup is off')},
+  sheet('Chat backup',`<div class="note2" style="margin:0;padding:0 20px 8px">${SET.bkPw?'Your chats are locked with your own password and saved online. If you forget the password, the backup cannot be opened.':'Automatic backup is on. Your chats and contacts are saved online and come back when you log in on any phone, with no password. The backup key is kept by Vynk, so choose your own password below if you want a backup only you can open.'} Photos, videos and voice notes are not included.</div><div class="note2" style="margin:0;padding:0 20px 8px"><b>${t?'Last backup: '+new Date(t).toLocaleString([],{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'No backup yet'}</b></div>`+A('bkNow','','db','Back up now','Saves your chats right away')+A('bkNowAsk','','lock',SET.bkPw?'Change backup password':'Lock with my own password')+(t?A('bkRestoreAsk','','useradd','Restore from backup','Replaces chats on this phone'):'')+(SET.bkPw?A('bkUseAuto','','db','Switch to automatic backup','No password needed'):''))},
+ bkNow:async()=>{if(BK.busy)return;closeSheet();toast('Backing up…');BK.ready=true;await bkAuto(true);toast('Backup saved')},
+ bkUseAuto:()=>{delete SET.bkPw;persistSoon();closeSheet();toast('Automatic backup is on. It updates on the next backup');BK.ready=true;bkAuto(true)},
+ 
  bkNowAsk:()=>sheet('Back up chats',`<div style="padding:0 20px 14px;display:grid;gap:10px"><div class="note2" style="margin:0;padding:0">Choose a backup password (8 or more characters). Write it down somewhere safe. After this, Vynk keeps the backup updated automatically using the password saved on this phone.</div><input id="bkp1" type="password" placeholder="Password" autocomplete="new-password" style="height:44px;border-radius:12px;border:1.5px solid var(--line);background:transparent;color:inherit;padding:0 14px;font:inherit"><input id="bkp2" type="password" placeholder="Repeat password" autocomplete="new-password" style="height:44px;border-radius:12px;border:1.5px solid var(--line);background:transparent;color:inherit;padding:0 14px;font:inherit"><button class="btn" data-a="bkRun">Back up</button></div>`),
  bkRun:async()=>{const a=($('#bkp1')||{}).value||'',b=($('#bkp2')||{}).value||'';if(a.length<8){toast('Use 8 or more characters');return}if(a!==b){toast('Passwords do not match');return}
   if(BK.busy)return;BK.busy=true;toast('Backing up…');
@@ -1014,9 +1016,7 @@ const ACT={
   try{const r=await sb('/rest/v1/backups?select=blob');const a=r.ok?await r.json():[];if(!a[0]){toast('No backup found');BK.busy=false;return}
     let d;try{d=await bkOpen(a[0].blob,pw)}catch(e){toast('Wrong password');BK.busy=false;return}
     if(!d||!Array.isArray(d.chats)){toast('Backup is damaged');BK.busy=false;return}
-    const keepName=ME.name;Object.assign(ME,d.ME||{});if(!ME.name)ME.name=keepName;
-    for(const k in P)delete P[k];Object.assign(P,d.P||{});chats.length=0;chats.push(...d.chats);calls.length=0;calls.push(...(d.calls||[]));
-    E2.ks=null;E2.pk={};E2.dk={};persistSoon();closeSheet();toast('Backup restored');e2Publish();render()}catch(e){toast('Could not restore')}BK.busy=false},
+    bkApply(d);closeSheet();toast('Backup restored')}catch(e){toast('Could not restore')}BK.busy=false},
  cm_sec:async v=>{const c=chatOf(v);if(!c)return;const g=await e2Code(c.cid.slice(2));const p=P[c.cid];
   sheet('Encryption',`<div style="padding:4px 20px 14px;display:grid;gap:10px"><div class="note2" style="margin:0;padding:0">Messages in this chat are end-to-end encrypted. Only you and ${esc(p.name)} can read them. To check, compare this code with ${esc(p.name)}'s phone. If both match, nobody is in between.</div>${g?`<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;font-variant-numeric:tabular-nums;font-weight:700;letter-spacing:.04em;text-align:center;font-size:15px;padding:12px 0;border:1.5px solid var(--ink);border-radius:16px">${g.map(x=>`<span>${x}</span>`).join('')}</div>`:`<div class="note2" style="margin:0;padding:0">${esc(p.name)} has not set up encryption yet. Ask them to open the latest Vynk once.</div>`}${p.pkNew?`<div class="note2" style="margin:0;padding:0">${esc(p.name)}'s security code changed. This happens when they reinstall Vynk or switch phones.</div>`:''}</div>`);if(p.pkNew){p.pkNew=false;persistSoon()}},
  cm_fav:v=>{const c=chatOf(v);c.fav=!c.fav;closeSheet();render()},
@@ -1175,7 +1175,7 @@ const ACT={
  
  
  /* profile photo */
- dpPick:()=>pickFile('image/*',f=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const s=Math.min(im.width,im.height),cv=document.createElement('canvas');cv.width=cv.height=256;cv.getContext('2d').drawImage(im,(im.width-s)/2,(im.height-s)/2,s,s,0,0,256,256);ME.dp=cv.toDataURL('image/jpeg',.7);if(ME.dp.length>58000)ME.dp=cv.toDataURL('image/jpeg',.45);announce();persistSoon();netPushProfile();closeSheet();render();if($('#epv'))epDraw();toast('Profile photo updated')};im.src=r.result};r.readAsDataURL(f)}),
+ dpPick:()=>pickFile('image/*',f=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const s=Math.min(im.width,im.height),cv=document.createElement('canvas');const D=Math.min(s,640);cv.width=cv.height=D;cv.getContext('2d').drawImage(im,(im.width-s)/2,(im.height-s)/2,s,s,0,0,D,D);ME.dp=cv.toDataURL('image/jpeg',.88);if(ME.dp.length>190000)ME.dp=cv.toDataURL('image/jpeg',.72);if(ME.dp.length>190000)ME.dp=cv.toDataURL('image/jpeg',.55);{const c2=document.createElement('canvas');c2.width=c2.height=256;c2.getContext('2d').drawImage(cv,0,0,256,256);ME.dps=c2.toDataURL('image/jpeg',.7)}announce();persistSoon();netPushProfile();closeSheet();render();if($('#epv'))epDraw();toast('Profile photo updated')};im.src=r.result};r.readAsDataURL(f)}),
  dpRemove:()=>{ME.dp=null;announce();persistSoon();netPushProfile();closeSheet();render();if($('#epv'))epDraw()},
  /* settings */
  sw:v=>{SET[v]=!SET[v];if(v==='online'&&NATIVE)seenPing(SET.online);if(v==='appLock'&&SET[v])toast('App lock on. You will unlock with your fingerprint or face');render()},
@@ -1263,7 +1263,7 @@ function groupChat(g,a){
   return c}
 function flushQ(a){const c=chatOf(a);if(!c)return;c.msgs.forEach(m=>{if(m.from==='me'&&!m.deleted&&(m.status==='queued'||m.status==='sent')){m.status='sent';sendMsg(c,m)}})}
 function sendReads(c){if(!NATIVE||c.type!=='dm'||!SET.receipts)return;const ids=c.msgs.filter(m=>m.from!=='me'&&!m.rs).map(m=>{m.rs=true;return m.id});if(ids.length)netSend(c,{t:'read',ids})}
-function announce(){if(!NATIVE)return;for(const k in P)if(P[k].range&&!isNet(k))tx(k,JSON.stringify({t:'hi',name:ME.name,about:ME.about,dp:ME.dp||null}))}
+function announce(){if(!NATIVE)return;for(const k in P)if(P[k].range&&!isNet(k))tx(k,JSON.stringify({t:'hi',name:ME.name,about:ME.about,dp:ME.dps||(ME.dp&&ME.dp.length<60000?ME.dp:null)}))}
 /* ---------- internet mode (Supabase) ---------- */
 const SB='https://bmcsvldqgvuahztwkune.supabase.co',SBK='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJtY3N2bGRxZ3Z1YWh6dHdrdW5lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM0MjkzMDksImV4cCI6MjEwOTAwNTMwOX0.lejp0HGOgQN4_oWquWXvkKfUJqwUtkayu1ADp3dt5YQ';
 const NET={s:null,ok:false,poll:0,busy:false,prof:{}};
@@ -1317,7 +1317,10 @@ function rtClose(){clearTimeout(RT.t);clearInterval(RT.hb);const w=RT.ws;RT.ws=n
 function netStop(){rtClose();clearTimeout(NET.poll);NET.ok=false;for(const k in P)if(isNet(k))P[k].range=false}
 window.addEventListener('online',()=>{if(NET.s){rtClose();rtOpen();netPull();netSched()}});
 document.addEventListener('visibilitychange',()=>{if(NET.s&&NET.ok){if(!document.hidden){rtClose();rtOpen();netPull()}netSched()}});
-function netPushProfile(){if(!NET.s)return;sb('/rest/v1/profiles?id=eq.'+NET.s.uid,{m:'PATCH',h:{Prefer:'return=minimal'},b:{name:cl(ME.name,40),about:cl(ME.about,150),website:ME.website?cl(ME.website,100):null,pronouns:ME.pronouns?cl(ME.pronouns,20):null,gender:({male:1,female:1,custom:1,none:1})[ME.gender]?ME.gender:null,avatar:ME.dp&&ME.dp.length<60000?ME.dp:null}}).catch(()=>{});e2Publish()}
+async function netProfilePull(){try{const r=await sb('/rest/v1/profiles?select=name,about,avatar,website,pronouns,gender&id=eq.'+NET.s.uid);const a=await r.json();const q=a&&a[0];if(!q)return false;
+  if(!ME.dp&&okImg(q.avatar))ME.dp=q.avatar;if((!ME.about||ME.about==='Vynk par hoon')&&q.about)ME.about=q.about;if(!ME.website&&q.website)ME.website=q.website;if(!ME.pronouns&&q.pronouns)ME.pronouns=q.pronouns;if(!ME.gender&&q.gender)ME.gender=q.gender;if(!ME.name&&q.name)ME.name=q.name;NET.pf=NET.s.uid;persistSoon();return true}catch(e){return false}}
+async function netPushProfile(){if(!NET.s)return;if(NET.pf!==NET.s.uid){if(!(await netProfilePull()))return;try{render()}catch(e){}}
+  sb('/rest/v1/profiles?id=eq.'+NET.s.uid,{m:'PATCH',h:{Prefer:'return=minimal'},b:{name:cl(ME.name,40),about:cl(ME.about,150),website:ME.website?cl(ME.website,100):null,pronouns:ME.pronouns?cl(ME.pronouns,20):null,gender:({male:1,female:1,custom:1,none:1})[ME.gender]?ME.gender:null,...(ME.dp&&ME.dp.length<200000?{avatar:ME.dp}:{})}}).catch(()=>{});e2Publish()}
 async function netPeer(uid){
   const key='u:'+uid;
   if(P[key]&&NET.prof[uid]&&Date.now()-NET.prof[uid]<120000)return P[key];
@@ -2386,7 +2389,7 @@ if(NATIVE){
       try{await netFn({action:'forgot',email:e});S.nreset=e;closeSheet();sheet('New password',`<div class="note2" style="font-size:14px">If that email has an account, a code is on its way. Check Spam too.</div><div class="field"><input id="nc" inputmode="numeric" maxlength="6" placeholder="6 digit code" autocomplete="off"></div><div class="field"><input id="np" type="password" placeholder="New password (6+ characters)" maxlength="72" autocomplete="off"></div><button class="btn" data-a="netResetGo">Change password</button>`)}catch(x){netErr(x)}},
     netResetGo:async()=>{const c=($('#nc').value||'').trim(),pw=$('#np').value||'';if(!/^\d{6}$/.test(c)||pw.length<6){toast('Enter the code and a new password (6+ characters)');return}
       try{await netFn({action:'reset',email:S.nreset,code:c,password:pw});toast('Password changed. Log in now');ACT.netAcct('in')}catch(x){netErr(x)}},
-    netOut:()=>{netStop();NET.s=null;netSave();persistSoon();closeSheet();render();toast('Logged out')},
+    netOut:async()=>{try{toast('Saving your chats…');await Promise.race([bkAuto(true),new Promise(r=>setTimeout(r,8000))])}catch(e){}netStop();NET.pf=0;NET.s=null;netSave();persistSoon();closeSheet();render();toast('Logged out')},
     netFind:()=>{if(!NET.s){ACT.netAcct();return}closeSheet();const s=sheet('Find by username',`<div class="field"><input id="nq" placeholder="Username" maxlength="20" autocapitalize="none" autocomplete="off"></div><button class="btn" data-a="netSearch">Search</button><div id="nres"></div>`);},
     netSearch:async()=>{const q=($('#nq').value||'').trim().toLowerCase().replace(/[^a-z0-9_]/g,'');if(!q)return;const el=$('#nres');el.innerHTML='<div class="note2">Searching…</div>';
       try{const r=await sb('/rest/v1/profiles?select=id,username,name,plan,plan_until&username=ilike.'+q+'*&limit=15');const a=(await r.json()).filter(x=>x.id!==NET.s.uid);
@@ -3088,11 +3091,20 @@ window.nativeCall=function(a){try{if(typeof a==='string'&&a.startsWith('callback
 window.nativeOpenChat=a=>{try{const c=chatOf(a);if(!c)return;if(S.chat!==c.id){if(typeof openChat==='function')openChat(c.id)}else{drawMsgs(true)}}catch(e){}};
 
 /* automatic backup (uses the backup password kept on this phone) and restore offer after login */
-async function bkAuto(){if(!SET.bkPw||!NET.s||!NET.s.uid||BK.busy||!chats.length)return;if(Date.now()-(SET.bkLast||0)<3600e3)return;BK.busy=true;
- try{const blob=await bkPack(bkData(),SET.bkPw);if(blob.length<=5900000){const r=await sb('/rest/v1/backups',{m:'POST',h:{Prefer:'resolution=merge-duplicates,return=minimal'},b:{owner:NET.s.uid,blob,updated_at:new Date().toISOString()}});if(r.ok){SET.bkLast=Date.now();persistSoon()}}}catch(e){}BK.busy=false}
+async function bkAutoKey(create){try{const g=async()=>{const r=await sb('/rest/v1/backup_keys?select=k');const a=r.ok?await r.json():[];return a[0]&&a[0].k||null};let k=await g();if(k||!create)return k;
+  k=b64(crypto.getRandomValues(new Uint8Array(32)));await sb('/rest/v1/backup_keys',{m:'POST',h:{Prefer:'resolution=ignore-duplicates,return=minimal'},b:{owner:NET.s.uid,k}});return await g()}catch(e){return null}}
+function bkApply(d){const keepName=ME.name,keepDp=ME.dp;Object.assign(ME,d.ME||{});if(!ME.name)ME.name=keepName;if(!ME.dp)ME.dp=keepDp;
+  for(const k in P)delete P[k];Object.assign(P,d.P||{});chats.length=0;chats.push(...d.chats);calls.length=0;calls.push(...(d.calls||[]));
+  E2.ks=null;E2.pk={};E2.dk={};SET.bkUid=NET.s.uid;SET.bkLast=Date.now();BK.ready=true;persistSoon();e2Publish();render()}
+async function bkAuto(force){if(!NET.s||!NET.s.uid||BK.busy||!chats.length||!E2.sub)return;if(!BK.ready&&SET.bkUid!==NET.s.uid)return;if(!force&&Date.now()-(SET.bkLast||0)<300e3)return;
+ const pw=SET.bkPw||await bkAutoKey(true);if(!pw)return;BK.busy=true;
+ try{const blob=await bkPack(bkData(),pw);if(blob.length<=5900000){const r=await sb('/rest/v1/backups',{m:'POST',h:{Prefer:'resolution=merge-duplicates,return=minimal'},b:{owner:NET.s.uid,blob,updated_at:new Date().toISOString()}});if(r.ok){SET.bkLast=Date.now();SET.bkUid=NET.s.uid;persistSoon()}}}catch(e){}BK.busy=false}
 const _ap=window.appPause;window.appPause=()=>{try{_ap&&_ap()}catch(e){}bkAuto()};
-setInterval(()=>{if(S.bkAsked||!NATIVE||!NET.s||!NET.s.uid||!E2.sub||chats.length||S.chat||document.querySelector('.scrim,.authpg,.ob2,.splash'))return;S.bkAsked=true;
- bkInfo().then(t=>{if(t)sheet('Restore your chats?',`<div style="padding:0 20px 8px" class="note2">A backup of your chats was found (${new Date(t).toLocaleString([],{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}). Enter your backup password to bring back your chats and contacts. Photos, videos and voice notes are not included.</div><div style="padding:0 20px 14px;display:grid;gap:10px"><input id="bkp3" type="password" placeholder="Backup password" autocomplete="current-password" style="height:44px;border-radius:12px;border:1.5px solid var(--line);background:transparent;color:inherit;padding:0 14px;font:inherit"><button class="btn" data-a="bkRestoreRun">Restore</button></div>`)}).catch(()=>{S.bkAsked=false})},5000);
+setInterval(async()=>{if(S.bkAsked||!NATIVE||!NET.s||!NET.s.uid||!E2.sub||S.chat||document.querySelector('.scrim,.authpg,.ob2,.splash'))return;S.bkAsked=true;
+ if(SET.bkUid===NET.s.uid){BK.ready=true;return}
+ try{const r=await sb('/rest/v1/backups?select=blob,updated_at');const a=r.ok?await r.json():[];if(!a[0]){BK.ready=true;return}if(chats.length)return;
+  const k=await bkAutoKey(false);if(k){try{const d=await bkOpen(a[0].blob,k);if(d&&Array.isArray(d.chats)){bkApply(d);toast('Your chats are back');return}}catch(e){}}
+  const t=a[0].updated_at;sheet('Restore your chats?',`<div style="padding:0 20px 8px" class="note2">A backup of your chats was found (${new Date(t).toLocaleString([],{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}). Enter your backup password to bring back your chats and contacts. Photos, videos and voice notes are not included.</div><div style="padding:0 20px 14px;display:grid;gap:10px"><input id="bkp3" type="password" placeholder="Backup password" autocomplete="current-password" style="height:44px;border-radius:12px;border:1.5px solid var(--line);background:transparent;color:inherit;padding:0 14px;font:inherit"><button class="btn" data-a="bkRestoreRun">Restore</button></div>`)}catch(e){S.bkAsked=false}},5000);
 
 /* ---------- v9.18: store orders, payment info, reviews ---------- */
 const ordLoad=()=>{try{return JSON.parse(localStorage.getItem('vk_ords')||'{}')}catch(e){return{}}};
