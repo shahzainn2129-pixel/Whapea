@@ -480,6 +480,9 @@ class MainActivity : ComponentActivity() {
         fun ringReset() { Core.setRingUri("") }
 
         @JavascriptInterface
+        fun ringBuiltin(n: String) { if (Regex("^r[1-4]$").matches(n)) Core.setRingUri("asset:$n") }
+
+        @JavascriptInterface
         fun ringPreview(on: Boolean) { if (on) Core.ringStart() else Core.ringStop() }
 
         @JavascriptInterface

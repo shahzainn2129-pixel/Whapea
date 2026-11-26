@@ -53,6 +53,7 @@ object Core {
     const val CH_LIVE = "whapea_live_call"
     private var pendingRing: Triple<String, String, Long>? = null
     private var ringtone: android.media.Ringtone? = null
+    private var ringPlayer: android.media.MediaPlayer? = null
 
     fun init(context: Context) {
         if (ready) return
@@ -87,26 +88,31 @@ object Core {
     /** The ringtone the person picked for calls. Empty means the phone's default. */
     fun ringUriStr(): String = prefs.getString("ringUri", "") ?: ""
 
+    private fun isAssetRing() = ringUriStr().startsWith("asset:")
+
     private fun ringUri(): android.net.Uri {
         val u = ringUriStr()
-        return if (u.isNotEmpty()) android.net.Uri.parse(u)
+        return if (u.isNotEmpty() && !isAssetRing()) android.net.Uri.parse(u)
         else android.media.RingtoneManager.getDefaultUri(android.media.RingtoneManager.TYPE_RINGTONE)
     }
 
     fun ringName(): String {
         val u = ringUriStr()
         if (u.isEmpty()) return ""
+        if (isAssetRing()) return "Vynk · " + when (u.removePrefix("asset:")) {
+            "r1" -> "Classic"; "r2" -> "Waves"; "r3" -> "Sunrise"; "r4" -> "Digital"; else -> "Tone" }
         return try { android.media.RingtoneManager.getRingtone(app, android.net.Uri.parse(u))?.getTitle(app) ?: "" } catch (e: Exception) { "" }
     }
 
-    fun callCh(): String = if (ringUriStr().isEmpty()) CH_CALL else CH_CALL + "_" + Integer.toHexString(ringUriStr().hashCode())
+    fun callCh(): String = if (ringUriStr().isEmpty()) CH_CALL else if (isAssetRing()) CH_CALL + "_silent" else CH_CALL + "_" + Integer.toHexString(ringUriStr().hashCode())
 
     private fun makeCallChannel(nm: android.app.NotificationManager) {
         if (Build.VERSION.SDK_INT < 26 || ringUriStr().isEmpty()) return
         val id = callCh()
         if (nm.getNotificationChannel(id) != null) return
         val cc = android.app.NotificationChannel(id, "Calls", android.app.NotificationManager.IMPORTANCE_HIGH)
-        cc.setSound(ringUri(), android.media.AudioAttributes.Builder()
+        if (isAssetRing()) cc.setSound(null, null)
+        else cc.setSound(ringUri(), android.media.AudioAttributes.Builder()
             .setUsage(android.media.AudioAttributes.USAGE_NOTIFICATION_RINGTONE)
             .setContentType(android.media.AudioAttributes.CONTENT_TYPE_UNKNOWN).build())
         cc.enableVibration(true)
@@ -115,12 +121,24 @@ object Core {
 
     fun setRingUri(u: String) {
         prefs.edit().putString("ringUri", u).apply()
-        ringStop(); ringtone = null
+        ringStop(); ringtone = null; try { ringPlayer?.release() } catch (e: Exception) { }; ringPlayer = null
         try { makeCallChannel(app.getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager) } catch (e: Exception) { }
     }
 
     fun ringStart() {
         try {
+            if (isAssetRing()) {
+                ringPlayer?.release()
+                val fd = app.assets.openFd("tones/" + ringUriStr().removePrefix("asset:") + ".ogg")
+                val mp = android.media.MediaPlayer()
+                mp.setAudioAttributes(android.media.AudioAttributes.Builder()
+                    .setUsage(android.media.AudioAttributes.USAGE_NOTIFICATION_RINGTONE)
+                    .setContentType(android.media.AudioAttributes.CONTENT_TYPE_SONIFICATION).build())
+                mp.setDataSource(fd.fileDescriptor, fd.startOffset, fd.length); fd.close()
+                mp.isLooping = true; mp.prepare(); mp.start()
+                ringPlayer = mp
+                return
+            }
             if (ringtone == null) {
                 ringtone = android.media.RingtoneManager.getRingtone(app, ringUri())
             }
@@ -131,6 +149,8 @@ object Core {
 
     fun ringStop() {
         try { ringtone?.stop() } catch (e: Exception) { }
+        try { ringPlayer?.let { if (it.isPlaying) it.stop() }; ringPlayer?.release() } catch (e: Exception) { }
+        ringPlayer = null
     }
 
     fun clearCallNotice() {

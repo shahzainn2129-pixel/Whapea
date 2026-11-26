@@ -799,6 +799,7 @@ function setNative(row,sw,nc){
   ${row('themePick','moon','Theme',themeName())}
   ${row('navPick','palette','Navigation bar colour',window.navName?navName():'Default grey')}
   ${row('sndTog','bell','Sounds in app',SET.snd===false?'Off':'On','Short sounds for sent and received messages')}${NATIVE?row('ringPick','phone','Call ringtone',window.ringTxt?ringTxt():'Phone default','Choose your own ringtone for incoming calls'):''}
+  ${row('mtonePick','bell','Message tone',window.mtoneName?mtoneName():'Vynk pop','Sound for messages while the app is open')}
   ${row('fsPick','edit','Font size',SET.fs+' px')}
   ${sw('enter','send','Enter key sends')}
   ${row('qualityPick','image','Photo quality',SET.quality[0].toUpperCase()+SET.quality.slice(1),'Smaller photos use less data')}
@@ -847,6 +848,7 @@ function setHTML(){
   ${row('themePick','moon','Theme',themeName())}
   ${row('navPick','palette','Navigation bar colour',window.navName?navName():'Default grey')}
   ${row('sndTog','bell','Sounds in app',SET.snd===false?'Off':'On','Short sounds for sent and received messages')}${NATIVE?row('ringPick','phone','Call ringtone',window.ringTxt?ringTxt():'Phone default','Choose your own ringtone for incoming calls'):''}
+  ${row('mtonePick','bell','Message tone',window.mtoneName?mtoneName():'Vynk pop','Sound for messages while the app is open')}
   ${row('fsPick','edit','Font size',SET.fs+' px')}
   ${sw('enter','send','Enter key sends')}
   ${NATIVE?'':row('backup','db','Chat backup','','Saved as a file on your phone')}
@@ -3481,6 +3483,7 @@ const SPL='🔒 Spoiler message',CAP='🎁 Time capsule';
 const CATS=['Truth','Dare','Hot take'];
 function cleanX(x){
   if(!x||typeof x!=='object')return null;const k=x.k;
+  if(k==='stk'&&typeof x.id==='string'&&(window.STK_IDS||[]).includes(x.id))return{k,id:x.id};
   if(k==='sp'&&typeof x.c==='string')return{k,c:cl(x.c,1000)};
   if(k==='cap'&&typeof x.c==='string'&&isFinite(+x.at)&&+x.at<Date.now()+4e10)return{k,c:cl(x.c,1000),at:+x.at};
   if(k==='ttt')return{k,b:'---------',t:'X',w:''};
@@ -3489,8 +3492,8 @@ function cleanX(x){
   if(k==='ask'&&typeof x.q==='string')return{k,q:cl(x.q,150)};
   if(k==='poke')return{k};
   return null}
-window.xOut=x=>{if(!x)return null;if(x.k==='sp')return{k:'sp',c:x.c};if(x.k==='cap')return{k:'cap',c:x.c,at:x.at};if(x.k==='card')return{k:'card',cat:x.cat,q:x.q};if(x.k==='ask')return{k:'ask',q:x.q};return{k:x.k}};
-const PH={sp:()=>SPL,cap:()=>CAP,ttt:()=>'🎮 Tic-tac-toe',rps:()=>'✊ Rock paper scissors',card:x=>'🎴 '+x.cat,ask:x=>'❓ '+x.q,poke:()=>'👋 Poke!'};
+window.xOut=x=>{if(!x)return null;if(x.k==='sp')return{k:'sp',c:x.c};if(x.k==='cap')return{k:'cap',c:x.c,at:x.at};if(x.k==='card')return{k:'card',cat:x.cat,q:x.q};if(x.k==='ask')return{k:'ask',q:x.q};if(x.k==='stk')return{k:'stk',id:x.id};return{k:x.k}};
+const PH={stk:()=>'🖼 Sticker',sp:()=>SPL,cap:()=>CAP,ttt:()=>'🎮 Tic-tac-toe',rps:()=>'✊ Rock paper scissors',card:x=>'🎴 '+x.cat,ask:x=>'❓ '+x.q,poke:()=>'👋 Poke!'};
 window.xRecv=(c,a,o,m)=>{
   if(o.ds&&[10,60,86400,604800,7776000].includes(+o.ds)){m.ds=+o.ds;m.exp=Date.now()+m.ds*1000;if(c.type==='dm'&&(c.disapS||0)!==m.ds)setDisapLocal(c,m.ds)}
   const x=cleanX(o.x);if(x&&on(FLAGOF[x.k])&&(c.type==='dm'||['sp','cap','card','ask','poke'].includes(x.k))){m.x=x;m.text=PH[x.k](x)}
@@ -3557,6 +3560,7 @@ const rpsRes=(a,b)=>a===b?'Draw':(a==='R'&&b==='S')||(a==='S'&&b==='P')||(a==='P
 const dt=t=>new Date(t).toLocaleString([], {weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
 const left=ms=>{const m=Math.max(1,Math.round(ms/60000));return m<60?m+' min':m<1440?Math.round(m/60)+' h':Math.round(m/1440)+' days'};
 window.xBody=(c,m)=>{const x=m.x,own=m.from==='me',who=own?'You':(P[m.from]?P[m.from].name.split(' ')[0]:'They');
+  if(x.k==='stk')return `<img class="stkimg" src="${window.ASSET}stickers/${x.id}.png" alt="Sticker" draggable="false">`;
   if(x.k==='sp'){const open=own||SP.has(m.id);return `<span class="spb${open?' open':''}" data-a="spTog" data-v="${m.id}"><span class="tt">${hl(x.c)}</span>${open?'':`<span class="sph">${ic('lock',14)} Spoiler · tap to reveal</span>`}</span>`}
   if(x.k==='cap'){const lk=Date.now()<x.at;
     if(lk&&!own)return `<div class="capc lock"><b>${ic('hourglass',16)} Time capsule</b><div>Opens ${esc(dt(x.at))}</div><small>in ${left(x.at-Date.now())}</small></div>`;
@@ -3580,6 +3584,7 @@ function askReveal(c,m){const x=m.x;if(x.rev)return;const t=(x.ans||[]).map(r=>r
 
 /* ---------- sending helpers ---------- */
 function sendX(c,x,text){if(!c)return;if(c.blocked){toast('You blocked this contact');return}const m=M('me',text,0,{t:Date.now(),x});pushMsg(c,m);hap(8);return m}
+window.sendX=sendX;
 const TRUTH=['Aap ne aakhri jhoot kab bola tha?','Kis cheez se aap ko sab se zyada dar lagta hai?','Aap ki sab se sharmindagi wali yaad kya hai?','Phone mein sab se purani photo konsi hai?','Aap ka secret talent kya hai?','Kis dost ko aap sab se zyada miss karte hain?','Aakhri baar kab roye the aur kyun?','Aap ki sab se ajeeb aadat kya hai?','Agar ek din ke liye invisible ho jayen to kya karenge?','Kis ki baat sun kar aap sab se zyada hanste hain?','Aap ne kabhi kisi ki chat chupke se padhi hai?','Aaj tak ka sab se bura gift kya mila?'];
 const DARE=['Agle 10 minute sirf shayari mein baat karni hai','Apna last copied text paste karo','Apni sab se ajeeb selfie bhejo','Ek voice note mein gaana gao','Agle 5 messages sirf emoji mein likho','Group mein kisi ko "Mubarak ho" bolo bina wajah ke','Apni current screen ka screenshot bhejo','30 second mein 5 cheezon ke naam likho jo laal hain','Apne dost ki taareef mein 3 lines likho','Ek tongue twister voice note mein bolo','Apna naam ulta likh kar bhejo','Jo pehla emoji suggest ho wo 3 baar bhejo'];
 const HOT=['Chai chai se behtar hai coffee','Raat ko jaagna subah uthne se behtar hai','Voice note se behtar text hai','Cricket sab se bora game hai','Biryani sab se overrated khana hai','Phone ka silent mode sab se behtar hai','Group chats mein mute hi theek hai','Pineapple pizza par bilkul theek hai','Selfie sirf front camera se achhi aati hai','Sardiyan garmiyon se behtar hain'];
@@ -3715,6 +3720,28 @@ const _a=ACT.attach;ACT.attach=function(){_a.apply(this,arguments);try{
 (()=>{const fix=()=>{try{const c=chats.find(z=>z.id==='self');if(!c)return false;let ch=false;c.msgs.forEach(m=>{if(m.from==='me'&&m.status!=='read'){m.status='read';ch=true}});return ch}catch(e){return false}};
   const _ps=pushMsg;pushMsg=function(c,m){const r=_ps.apply(this,arguments);if(c&&c.id==='self'){fix();try{drawMsgs(false)}catch(e){}try{persistSoon()}catch(e){}}return r};
   const run=()=>{if(fix()){try{render()}catch(e){}persistSoon()}};setTimeout(run,800);setInterval(()=>{if(fix())try{refresh()}catch(e){}},1500)
+})();
+
+/* ---------- v9.31: sticker pack, message tones, built-in ringtones ---------- */
+(()=>{window.ASSET=(typeof NATIVE!=='undefined'&&NATIVE)?'file:///android_asset/':'';
+  window.STK_IDS=['smile','laugh','love','wink','cool','sad','cry','wow','angry','sleep','think','party','ok','salam','shukriya','sorry','congrats','chai','busy','night','miss','haha','wah','yes'];
+  const STK_N={smile:'Smile',laugh:'Laugh',love:'Love',wink:'Wink',cool:'Cool',sad:'Sad',cry:'Cry',wow:'Wow',angry:'Angry',sleep:'Sleepy',think:'Thinking',party:'Party',ok:'OK',salam:'Salam',shukriya:'Shukriya',sorry:'Sorry',congrats:'Mubarak',chai:'Chai',busy:'Busy',night:'Good night',miss:'Miss you',haha:'Haha',wah:'Wah',yes:'Yes'};
+  const MT=[['','Vynk pop'],['m1','Chime'],['m2','Drop'],['m3','Double pulse'],['m4','Rise'],['m5','Glass'],['m6','Bamboo']];
+  const RT=[['r1','Classic'],['r2','Waves'],['r3','Sunrise'],['r4','Digital']];
+  const st=document.createElement('style');st.textContent='.stkimg{display:block;width:150px;height:150px;object-fit:contain;-webkit-user-drag:none}.b:has(.stkimg){background:none!important;box-shadow:none!important;border:0!important;padding:2px!important}.stkg{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:4px 14px 16px;max-height:52vh;overflow:auto}.stkg button{background:var(--surface2);border:1px solid var(--line);border-radius:14px;padding:6px;display:grid;place-items:center}.stkg img{width:100%;aspect-ratio:1;object-fit:contain}.tnl .tck{margin-left:auto;display:inline-flex}';document.head.appendChild(st);
+  let au=null;const play=n=>{try{if(au){au.pause()}au=new Audio(window.ASSET+'tones/'+n+'.ogg');au.volume=.9;au.play().catch(()=>{})}catch(e){}};
+  const _si=window.sndIn;window.sndIn=()=>{if(SET.mtone&&/^m[1-6]$/.test(SET.mtone))play(SET.mtone);else _si()};
+  window.mtoneName=()=>(MT.find(x=>x[0]===(SET.mtone||''))||MT[0])[1];
+  const _a=ACT.attach;ACT.attach=function(){_a.apply(this,arguments);try{const b=document.querySelector('.sheet [data-a="attLoc"]');if(b&&!document.querySelector('.sheet [data-a="stkOpen"]'))b.parentNode.insertAdjacentHTML('beforeend',`<button data-a="stkOpen"><span class="c" style="--h:48">${ic('smile',24)}</span>Sticker</button>`)}catch(e){}};
+  Object.assign(ACT,{
+    stkOpen:()=>{const c=chatOf(S.chat);if(!c)return;closeSheet();sheet('Stickers',`<div class="stkg">${STK_IDS.map(i=>`<button data-a="stkSend" data-v="${i}" aria-label="${STK_N[i]}"><img src="${window.ASSET}stickers/${i}.png" alt="${STK_N[i]}"></button>`).join('')}</div>`)},
+    stkSend:v=>{const c=chatOf(S.chat);if(!c||!STK_IDS.includes(v))return;closeSheet();sendX(c,{k:'stk',id:v},'🖼 Sticker');try{drawMsgs(true)}catch(e){}},
+    mtonePick:()=>sheet('Message tone',`<div class="tnl">${MT.map(([k,n])=>A('mtoneSet',k,'bell',n,'')).join('')}</div>`),
+    mtoneSet:(v)=>{SET.mtone=v||'';persistSoon();if(v)play(v);else window.sndIn();closeSheet();try{render()}catch(e){}toast('Message tone: '+mtoneName())},
+    ringBuilt:v=>{try{Android.ringBuiltin(v);setTimeout(()=>{try{Android.ringStart();setTimeout(()=>{try{Android.ringStop()}catch(e){}},3500)}catch(e){}},150);window.ringChanged&&window.ringChanged()}catch(e){toast('Not available on this phone')}}
+  });
+  const _rp=ACT.ringPick;ACT.ringPick=function(){_rp.apply(this,arguments);try{const sh=document.querySelector('.sheet');if(sh&&!sh.querySelector('[data-a="ringBuilt"]'))sh.insertAdjacentHTML('beforeend',`<div class="attl" style="margin-top:6px">VYNK TONES</div>`+RT.map(([k,n])=>A('ringBuilt',k,'phone',n,'')).join(''))}catch(e){}};
+  window.ringChanged=()=>{try{closeSheet()}catch(e){}toast('Call ringtone saved');try{render()}catch(e){}}
 })();
 </script>
 </body></html>
