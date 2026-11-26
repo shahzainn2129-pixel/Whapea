@@ -675,7 +675,7 @@ const chatReach=c=>c.type==='group'?(c.members.some(m=>reach(m)==='direct')?'dir
 const last=c=>c.msgs[c.msgs.length-1];
 const PERSON='<svg class="pers" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="8.6" r="4.2"/><path d="M3.6 22c0-4.9 3.8-7.6 8.4-7.6s8.4 2.7 8.4 7.6z"/></svg>';
 const av0=(h,txt,cls='',dot='')=>`<span class="av ${cls}" style="--h:${h}">${PERSON}${dot?`<span class="dot ${dot}"></span>`:''}</span>`;
-const av=(h,txt,cls='',dot='')=>{const x=NATIVE&&Object.values(P).find(p=>p.name===txt&&p.dp);if(!x)return av0(h,txt,cls,dot);return `<span class="av ${cls}" style="--h:${h}"><img src="${x.dp}" alt="">${dot?`<span class="dot ${dot}"></span>`:''}</span>`};
+const av=(h,txt,cls='',dot='')=>{const x=NATIVE&&(txt==='You'&&ME.dp&&P.self&&P.self.hue===h?{dp:ME.dp}:Object.values(P).find(p=>p.name===txt&&p.dp));if(!x)return av0(h,txt,cls,dot);return `<span class="av ${cls}" style="--h:${h}"><img src="${x.dp}" alt="">${dot?`<span class="dot ${dot}"></span>`:''}</span>`};
 const avMe=cls=>ME.dp?`<span class="av ${cls}" style="--h:${ME.hue}"><img src="${ME.dp}" alt="My photo"></span>`:av(ME.hue,ME.name,cls);
 const dotOf=cid=>({direct:'',relay:'relay',none:'off'})[reach(cid)];
 const tick=m=>m.status==='queued'?ic('clock',15).replace('class="ic"','class="ic tk"'):m.status==='sent'?`<span class="tk">${ic('check',16)}</span>`:`<span class="tk ${m.status==='read'&&SET.receipts?'read':''}">${ic('dcheck',16)}</span>`;
@@ -734,7 +734,7 @@ function chatsHTML(){
   ${adsHTML('chats')}<div style="height:30px"></div>`}
 function rowHTML(c){
   const m=last(c),n=c.unread,r=chatReach(c),un=!!(n||c.mk);
-  const sub=c.draft&&!c.typing&&!c.blocked?`<span class="drf">Draft:</span> <span class="pv">${esc(c.draft.slice(0,60))}</span>`:c.typing&&c.type==='dm'?'<span style="color:var(--accent)">typing…</span>':m?`${m.from==='me'&&!m.deleted?tick(m):''}<span class="pv">${c.type==='group'&&m.from!=='me'?esc(who(c,m))+': ':''}${m.type==='voice'?`<span class="pvi">${ic('mic',13)}</span> `:m.type==='img'?`<span class="pvi">${ic('image',13)}</span> `:''}${esc(prev(m))}</span><span class="ago">· ${agoS(m.t)}</span>`:'';
+  const sub=c.draft&&!c.typing&&!c.blocked?`<span class="drf">Draft:</span> <span class="pv">${esc(c.draft.slice(0,60))}</span>`:c.typing&&c.type==='dm'?'<span style="color:var(--accent)">typing…</span>':m?`${m.from==='me'&&!m.deleted&&m.type!=='call'?tick(m):''}<span class="pv">${c.type==='group'&&m.from!=='me'?esc(who(c,m))+': ':''}${m.type==='voice'?`<span class="pvi">${ic('mic',13)}</span> `:m.type==='img'?`<span class="pvi">${ic('image',13)}</span> `:''}${esc(prev(m))}</span><span class="ago">· ${agoS(m.t)}</span>`:'';
   return `<div class="srw"><button class="li${un?' unr':''}" data-a="open" data-v="${c.id}" data-lp="${c.id}">${c.type==='dm'&&STAT[c.cid]&&STAT[c.cid].length&&!mutedSt.has(c.cid)?`<span class="vkring lr ${seenSt.has(c.cid)?'seen':''}">${av(cHue(c),cName(c),'',dotOf(c.cid))}</span>`:av(cHue(c),cName(c),'',c.type==='dm'?dotOf(c.cid):'')}
   <span class="mid"><span class="nm"><span>${esc(cName(c))}</span>${c.type==='dm'&&P[c.cid]?bdg(P[c.cid].plan):''}${c.fav?ic('star',13):''}${window.vibeChip?window.vibeChip(c):''}</span><span class="sub">${sub}</span>${c.type==='dm'&&P[c.cid]&&newTag(P[c.cid].joined)?`<span class="lbrow">${newTag(P[c.cid].joined)}</span>`:''}${(c.labels||[]).length?`<span class="lbrow">${c.labels.map(l=>`<i class="lbt">${esc(l)}</i>`).join('')}</span>`:''}</span>
   <span class="rt"><span style="display:flex;gap:8px;align-items:center">${c.muted?ic('mute',16):''}${c.pinned?ic('pin',15):''}${un?(n>0?`<i class="ucnt${c.muted?' mute':''}">${n>99?'99+':n}</i>`:`<i class="udot${c.muted?' mute':''}"></i>`):''}</span></span></button><span class="sacts"><button data-a="swMute" data-v="${c.id}" class="sm">${ic('mute',20)}<small>${c.muted?'Unmute':'Mute'}</small></button><button data-a="swArch" data-v="${c.id}" class="sa">${ic('archive',20)}<small>Archive</small></button><button data-a="swDel" data-v="${c.id}" class="sd">${ic('trash',20)}<small>Delete</small></button></span></div>`}
@@ -3709,6 +3709,12 @@ const _a=ACT.attach;ACT.attach=function(){_a.apply(this,arguments);try{
     ringTry:()=>{try{Android.ringStart();setTimeout(()=>{try{Android.ringStop()}catch(e){}},4000)}catch(e){}},
     ringDef:()=>{try{Android.ringReset()}catch(e){}closeSheet();toast('Using the phone default');try{render()}catch(e){}}
   })
+})();
+
+/* ---------- v9.30: message-yourself chat delivers instantly ---------- */
+(()=>{const fix=()=>{try{const c=chats.find(z=>z.id==='self');if(!c)return false;let ch=false;c.msgs.forEach(m=>{if(m.from==='me'&&m.status!=='read'){m.status='read';ch=true}});return ch}catch(e){return false}};
+  const _ps=pushMsg;pushMsg=function(c,m){const r=_ps.apply(this,arguments);if(c&&c.id==='self'){fix();try{drawMsgs(false)}catch(e){}try{persistSoon()}catch(e){}}return r};
+  const run=()=>{if(fix()){try{render()}catch(e){}persistSoon()}};setTimeout(run,800);setInterval(()=>{if(fix())try{refresh()}catch(e){}},1500)
 })();
 </script>
 </body></html>
