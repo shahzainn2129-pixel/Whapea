@@ -146,7 +146,7 @@ html.vk .b.tx .meta{display:inline-flex;float:none;vertical-align:bottom;margin:
 <style id="lkcss">.lockv{background:#050505!important;color:#fff;gap:10px}.lockv h2{font:700 24px var(--font-display);margin:8px 0 0}
 .lockv .lkl{filter:none!important;border-radius:0;width:46px;height:46px;overflow:visible;margin-bottom:-2px}.lockv .lkl .wlg{background:#fff}
 .lkd{gap:15px;margin:10px 0 2px}.lkd i{width:13px;height:13px;border:1.5px solid #555}.lkd i.on{background:#fff;border-color:#fff}
-.lockv .lke{color:#b5b5b5}.lkp{gap:12px 22px;margin-top:2px}.lkp button{background:#111;border:1px solid #262626;color:#fff;font:500 26px var(--font-display)}.lkp button.ghost{background:none;border-color:transparent;color:#aaa}
+.lockv .lke{color:#b5b5b5}.lkp{gap:12px 22px;margin-top:2px;touch-action:manipulation;-webkit-tap-highlight-color:transparent}.lkp button{transition:none!important;user-select:none;-webkit-user-select:none}.lkp button:active{background:#2a2a2a!important}.lkp button{background:#111;border:1px solid #262626;color:#fff;font:500 26px var(--font-display)}.lkp button.ghost{background:none;border-color:transparent;color:#aaa}
 .lklink{color:#ddd;font-weight:600;border-bottom:1px solid #666;padding:0 0 2px;margin-top:8px;font-size:13.5px}
 .lockv.lk2{justify-content:flex-start;align-items:stretch;padding:44px 24px 24px;gap:0}.lk2 h2{margin-top:16px}.lk2 .lks{color:#9a9a9a;font-size:13px;margin-top:6px;line-height:1.5}
 .lkbk{width:40px;height:40px;border-radius:50%;border:1.2px solid #333;display:grid;place-items:center;color:#fff}
@@ -1216,7 +1216,10 @@ function callScreen(k){
 }
 
 /* ---------- events ---------- */
+let _lkT=0;
+document.addEventListener('pointerdown',e=>{const el=e.target.closest&&e.target.closest('.lkp button[data-a="lk"],.lkp button[data-a="lkDel"]');if(!el)return;_lkT=Date.now();ACT[el.dataset.a](el.dataset.v,el,e);try{navigator.vibrate&&navigator.vibrate(6)}catch(_){}},true);
 document.addEventListener('click',e=>{const el=e.target.closest('[data-a]');if(!el)return;
+if(_lkT&&Date.now()-_lkT<700&&el.closest('.lkp')&&/^lk(Del)?$/.test(el.dataset.a)){e.stopPropagation();return}
 const f=ACT[el.dataset.a];if(f)f(el.dataset.v,el,e)});
 document.addEventListener('input',e=>{if(e.target.id==='q'){S.q=e.target.value;const b=$('#body');if(b){b.innerHTML=chatsHTML()}}});
 let lpT;
@@ -1457,6 +1460,7 @@ function lockClose(){$('#lock')?.remove();LK.mode='';LK.buf='';LK.err='';
   /* Some phones leave the screen black after the lock layer is removed: rebuild and repaint the page */
   const fix=()=>{try{if(S.chat)return;render()}catch(e){}try{const m=$('#main');if(m){m.style.transform='translateZ(0)';requestAnimationFrame(()=>{m.style.transform=''})}}catch(e){}};
   fix();setTimeout(fix,250);setTimeout(()=>{try{const m=$('#main');if(m&&!m.innerText.trim())render()}catch(e){}},1200)}
+function lkDots(){const d=document.querySelectorAll('.lockv .lkd i');if(!d.length){lockDraw();return}d.forEach((x,i)=>x.classList.toggle('on',i<LK.buf.length));if(LK.err){LK.err='';const e=document.querySelector('.lockv .lke');if(e)e.textContent=''}}
 function lockDraw(){
   let el=$('#lock');if(!el){el=document.createElement('div');el.id='lock';el.className='lockv';phone.append(el)}
   const ARR='<svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>';
@@ -2408,8 +2412,8 @@ if(NATIVE){
     lockChange:()=>{closeSheet();LK.mode='old';LK.next='change';LK.buf='';LK.err='';lockDraw()},
     lockOff:()=>{closeSheet();LK.mode='old';LK.next='off';LK.buf='';LK.err='';lockDraw()},
     lockSkip:()=>closeSheet(),
-    lk:d=>{if(LK.until>Date.now()||LK.buf.length>=4)return;LK.buf+=d;lockDraw();if(LK.buf.length===4)setTimeout(lockSubmit,120)},
-    lkDel:()=>{LK.buf=LK.buf.slice(0,-1);lockDraw()},
+    lk:d=>{if(LK.until>Date.now()||LK.buf.length>=4)return;LK.buf+=d;lkDots();if(LK.buf.length===4)setTimeout(lockSubmit,40)},
+    lkDel:()=>{LK.buf=LK.buf.slice(0,-1);lkDots()},
     lkCancel:()=>{lockClose()},
     lkBio:()=>{if(LK.bioBusy)return;LK.bioBusy=true;LK.bioFor='unlock';try{Android.bioAuth()}catch(e){LK.bioBusy=false}},
     lkForgot:()=>{LK.mode='forgot';LK.err='';lockDraw()},
