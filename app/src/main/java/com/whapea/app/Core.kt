@@ -62,6 +62,7 @@ object Core {
         if (Build.VERSION.SDK_INT >= 26) {
             val nm = app.getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
             nm.createNotificationChannel(android.app.NotificationChannel(CH, "Messages", android.app.NotificationManager.IMPORTANCE_HIGH))
+            makeCallChannel(nm)
             val cc = android.app.NotificationChannel(CH_CALL, "Calls", android.app.NotificationManager.IMPORTANCE_HIGH)
             cc.setSound(
                 android.media.RingtoneManager.getDefaultUri(android.media.RingtoneManager.TYPE_RINGTONE),
@@ -83,11 +84,45 @@ object Core {
     // ---------- messages that arrive while the screen is closed ----------
     private fun names(): JSONObject = try { JSONObject(prefs.getString("names", "{}") ?: "{}") } catch (e: Exception) { JSONObject() }
 
+    /** The ringtone the person picked for calls. Empty means the phone's default. */
+    fun ringUriStr(): String = prefs.getString("ringUri", "") ?: ""
+
+    private fun ringUri(): android.net.Uri {
+        val u = ringUriStr()
+        return if (u.isNotEmpty()) android.net.Uri.parse(u)
+        else android.media.RingtoneManager.getDefaultUri(android.media.RingtoneManager.TYPE_RINGTONE)
+    }
+
+    fun ringName(): String {
+        val u = ringUriStr()
+        if (u.isEmpty()) return ""
+        return try { android.media.RingtoneManager.getRingtone(app, android.net.Uri.parse(u))?.getTitle(app) ?: "" } catch (e: Exception) { "" }
+    }
+
+    fun callCh(): String = if (ringUriStr().isEmpty()) CH_CALL else CH_CALL + "_" + Integer.toHexString(ringUriStr().hashCode())
+
+    private fun makeCallChannel(nm: android.app.NotificationManager) {
+        if (Build.VERSION.SDK_INT < 26 || ringUriStr().isEmpty()) return
+        val id = callCh()
+        if (nm.getNotificationChannel(id) != null) return
+        val cc = android.app.NotificationChannel(id, "Calls", android.app.NotificationManager.IMPORTANCE_HIGH)
+        cc.setSound(ringUri(), android.media.AudioAttributes.Builder()
+            .setUsage(android.media.AudioAttributes.USAGE_NOTIFICATION_RINGTONE)
+            .setContentType(android.media.AudioAttributes.CONTENT_TYPE_UNKNOWN).build())
+        cc.enableVibration(true)
+        nm.createNotificationChannel(cc)
+    }
+
+    fun setRingUri(u: String) {
+        prefs.edit().putString("ringUri", u).apply()
+        ringStop(); ringtone = null
+        try { makeCallChannel(app.getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager) } catch (e: Exception) { }
+    }
+
     fun ringStart() {
         try {
             if (ringtone == null) {
-                ringtone = android.media.RingtoneManager.getRingtone(app,
-                    android.media.RingtoneManager.getDefaultUri(android.media.RingtoneManager.TYPE_RINGTONE))
+                ringtone = android.media.RingtoneManager.getRingtone(app, ringUri())
             }
             if (Build.VERSION.SDK_INT >= 28) ringtone?.isLooping = true
             ringtone?.play()
@@ -131,7 +166,7 @@ object Core {
             val pi = android.app.PendingIntent.getActivity(app, 2,
                 Intent(app, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NEW_TASK),
                 android.app.PendingIntent.FLAG_IMMUTABLE or android.app.PendingIntent.FLAG_UPDATE_CURRENT)
-            val n = NotificationCompat.Builder(app, CH_CALL)
+            val n = NotificationCompat.Builder(app, callCh())
                 .setSmallIcon(R.drawable.ic_stat)
                 .setContentTitle("Vynk call").setContentText("$who is calling you")
                 .setCategory(NotificationCompat.CATEGORY_CALL)

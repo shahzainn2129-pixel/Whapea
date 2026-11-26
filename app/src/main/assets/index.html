@@ -798,6 +798,7 @@ function setNative(row,sw,nc){
   ${row('stealthTog','lock','Stealth mode',SET.stealth?'On':'Off','Blur chat previews. Tap a message to peek')}
   ${row('themePick','moon','Theme',themeName())}
   ${row('navPick','palette','Navigation bar colour',window.navName?navName():'Default grey')}
+  ${row('sndTog','bell','Sounds in app',SET.snd===false?'Off':'On','Short sounds for sent and received messages')}${NATIVE?row('ringPick','phone','Call ringtone',window.ringTxt?ringTxt():'Phone default','Choose your own ringtone for incoming calls'):''}
   ${row('fsPick','edit','Font size',SET.fs+' px')}
   ${sw('enter','send','Enter key sends')}
   ${row('qualityPick','image','Photo quality',SET.quality[0].toUpperCase()+SET.quality.slice(1),'Smaller photos use less data')}
@@ -845,6 +846,7 @@ function setHTML(){
   ${row('stealthTog','lock','Stealth mode',SET.stealth?'On':'Off','Blur chat previews. Tap a message to peek')}
   ${row('themePick','moon','Theme',themeName())}
   ${row('navPick','palette','Navigation bar colour',window.navName?navName():'Default grey')}
+  ${row('sndTog','bell','Sounds in app',SET.snd===false?'Off':'On','Short sounds for sent and received messages')}${NATIVE?row('ringPick','phone','Call ringtone',window.ringTxt?ringTxt():'Phone default','Choose your own ringtone for incoming calls'):''}
   ${row('fsPick','edit','Font size',SET.fs+' px')}
   ${sw('enter','send','Enter key sends')}
   ${NATIVE?'':row('backup','db','Chat backup','','Saved as a file on your phone')}
@@ -3682,6 +3684,30 @@ const _a=ACT.attach;ACT.attach=function(){_a.apply(this,arguments);try{
   GR.forEach(([t,ks])=>{const bs=ks.filter(k=>by[k]).map(k=>{used.add(k);return by[k].outerHTML});if(bs.length)html+=`<div class="attl">${t}</div><div class="grid4 gx">${bs.join('')}</div>`});
   const rest=Object.keys(by).filter(k=>!used.has(k));if(rest.length)html+=`<div class="attl">MORE</div><div class="grid4 gx">${rest.map(k=>by[k].outerHTML).join('')}</div>`;
   g.insertAdjacentHTML('beforebegin',html);g.remove()}catch(e){}}
+})();
+
+/* ---------- v9.29: in-app message sounds and call ringtone ---------- */
+(()=>{let ac=null;const ctx=()=>{try{if(!ac)ac=new(window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume();return ac}catch(e){return null}};
+  const note=(f,t0,d,v,type)=>{const a=ctx();if(!a)return;const o=a.createOscillator(),g=a.createGain();o.type=type||'sine';o.frequency.setValueAtTime(f,a.currentTime+t0);g.gain.setValueAtTime(0.0001,a.currentTime+t0);g.gain.exponentialRampToValueAtTime(v,a.currentTime+t0+.012);g.gain.exponentialRampToValueAtTime(0.0001,a.currentTime+t0+d);o.connect(g);g.connect(a.destination);o.start(a.currentTime+t0);o.stop(a.currentTime+t0+d+.02)};
+  window.sndIn=()=>{note(880,0,.11,.16);note(1320,.07,.16,.13)};
+  window.sndOut=()=>{note(660,0,.09,.11);note(990,.05,.1,.08)};
+  const seen=new Set();let init=false;
+  const scan=()=>{try{let ni=0,no=0;const lim=Date.now()-5000;
+    chats.forEach(c=>{const L=c.msgs;for(let i=Math.max(0,L.length-3);i<L.length;i++){const m=L[i];if(!m||!m.id||seen.has(m.id))continue;seen.add(m.id);
+      if(!init||m.deleted||!(m.t>lim))continue;if(m.from==='me'){no++}else if(!c.muted&&!c.blocked&&!c.req){ni++}}});
+    init=true;if(seen.size>4000){seen.clear()}
+    if(SET.snd===false||document.hidden||S.call||document.querySelector('.lockv'))return;
+    if(ni)window.sndIn();else if(no)window.sndOut()}catch(e){}};
+  setInterval(scan,350);
+  window.ringTxt=()=>{try{return Android.ringName()||'Phone default'}catch(e){return 'Phone default'}};
+  window.ringChanged=()=>{try{closeSheet()}catch(e){}toast('Call ringtone saved');try{render()}catch(e){}};
+  Object.assign(ACT,{
+    sndTog:()=>{SET.snd=SET.snd===false;persistSoon();if(SET.snd!==false)window.sndIn();toast(SET.snd===false?'Sounds are off':'Sounds are on');try{render()}catch(e){}},
+    ringPick:()=>sheet('Call ringtone',`<div class="note2" style="margin:0;padding:0 20px 8px">Now: <b>${esc(ringTxt())}</b></div>`+A('ringChoose','','phone','Choose a ringtone','Pick from your phone')+A('ringTry','','play','Play current ringtone')+A('ringDef','','x','Use phone default')),
+    ringChoose:()=>{try{Android.pickRing()}catch(e){toast('Not available on this phone')}},
+    ringTry:()=>{try{Android.ringStart();setTimeout(()=>{try{Android.ringStop()}catch(e){}},4000)}catch(e){}},
+    ringDef:()=>{try{Android.ringReset()}catch(e){}closeSheet();toast('Using the phone default');try{render()}catch(e){}}
+  })
 })();
 </script>
 </body></html>

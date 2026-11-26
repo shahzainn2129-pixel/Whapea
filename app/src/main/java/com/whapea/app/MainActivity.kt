@@ -29,6 +29,16 @@ class MainActivity : ComponentActivity() {
     private var pageReady = false
     private var askedNotif = false
 
+    private val ringPick =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { r ->
+            if (r.resultCode == RESULT_OK) {
+                @Suppress("DEPRECATION")
+                val u: android.net.Uri? = r.data?.getParcelableExtra(android.media.RingtoneManager.EXTRA_RINGTONE_PICKED_URI)
+                Core.setRingUri(u?.toString() ?: "")
+                js("window.ringChanged&&window.ringChanged()")
+            }
+        }
+
     private val pickFile =
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
             fileCb?.onReceiveValue(if (uri != null) arrayOf(uri) else null)
@@ -446,6 +456,31 @@ class MainActivity : ComponentActivity() {
                 true
             } catch (e: Exception) { false }
         }
+
+        @JavascriptInterface
+        fun pickRing() {
+            runOnUiThread {
+                try {
+                    val i = Intent(android.media.RingtoneManager.ACTION_RINGTONE_PICKER)
+                        .putExtra(android.media.RingtoneManager.EXTRA_RINGTONE_TYPE, android.media.RingtoneManager.TYPE_RINGTONE)
+                        .putExtra(android.media.RingtoneManager.EXTRA_RINGTONE_TITLE, "Call ringtone")
+                        .putExtra(android.media.RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, true)
+                        .putExtra(android.media.RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false)
+                    val cur = Core.ringUriStr()
+                    if (cur.isNotEmpty()) i.putExtra(android.media.RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, android.net.Uri.parse(cur))
+                    ringPick.launch(i)
+                } catch (e: Exception) { }
+            }
+        }
+
+        @JavascriptInterface
+        fun ringName(): String = Core.ringName()
+
+        @JavascriptInterface
+        fun ringReset() { Core.setRingUri("") }
+
+        @JavascriptInterface
+        fun ringPreview(on: Boolean) { if (on) Core.ringStart() else Core.ringStop() }
 
         @JavascriptInterface
         fun ringStart() { Core.ringStart() }
