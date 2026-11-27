@@ -591,6 +591,9 @@ down:'<path d="M12 4v12M6 11l6 6 6-6M5 21h14"/>',help:'<circle cx="12" cy="12" r
 globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/>',
 mark:'<circle cx="12" cy="12" r="4"/>',
 mega:'<path d="M3 11v3l12 5V6L3 11zM15 8.5a4 4 0 0 1 0 7M6 15v5h3v-4"/>',
+store:'<path d="M4 9l1.6-5h12.8L20 9M4 9v11h16V9M4 9c0 1.7 1.3 3 2.7 3S9.3 10.7 9.3 9c0 1.7 1.3 3 2.7 3s2.7-1.3 2.7-3c0 1.7 1.3 3 2.7 3S20 10.7 20 9M10 20v-4h4v4"/>',
+chart:'<path d="M4 20V11M10 20V4M16 20v-6M22 20H2"/>',
+bksp:'<path d="M21 5H9l-6 7 6 7h12a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1zM17 9.5l-5 5M12 9.5l5 5"/>',
 video:'<rect x="3" y="6" width="13" height="12" rx="2"/><path d="M16 10l5-3v10l-5-3z"/>',
 camera:'<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>',
 verified:'<path d="M12 3l2.4 1.8 3-.1.9 2.9 2.4 1.8-1 2.8 1 2.8-2.4 1.8-.9 2.9-3-.1L12 21l-2.4-1.8-3 .1-.9-2.9-2.4-1.8 1-2.8-1-2.8 2.4-1.8.9-2.9 3 .1z"/><path d="M8.5 12l2.5 2.5 4.5-5"/>',
@@ -769,12 +772,12 @@ function setNative(row,sw,nc){
   ${sec('user','Account')}
   ${row('editProfile','user','Edit profile','','Name, bio, website and photo')}
   ${row('langPick','globe','Language / زبان',SET.lang==='ur'?'اردو':'English')}
-  ${row('plus','verified','Vynk Plus',isPlus()?(ME.plan==='gold'?'Verified':'Active'):'',isPlus()?'Until '+new Date(ME.plan_until).toLocaleDateString():'Badge, longer status and more')}
+  ${row('plus','verified','Vynk Plus',isPlus()?(ME.plan==='gold'?'Verified':'Active'):'',isPlus()?'Until '+new Date(ME.plan_until).toLocaleDateString([],{day:'numeric',month:'short',year:'numeric'}):'Badge, longer status and more')}
   ${row('netAcct','users','Internet account',NET.s?'@'+esc(NET.s.user):'','Chat and call anyone online')}
   ${NET.s?row('chPw','lock','Change password','','Use a new password to log in'):''}
   ${sec('star','Business and ads')}
-  ${row('adNew','info','Promote your business','','Free once a week, or paid for more days')}
-  ${NET.s?row('adMine','db','My ads','','Status, views and clicks'):''}
+  ${row('adNew','mega','Promote your business','','Free once a week, or paid for more days')}
+  ${NET.s?row('adMine','chart','My ads','','Status, views and clicks'):''}
   ${NET.s?row('bizHome','store','Business tools','','Profile, catalogue, quick replies'):''}
   ${sec('lock','Privacy')}
   ${row('lockMenu','lock','App lock',SET.lockOn?'On':'Off','Code or fingerprint to open Vynk')}
@@ -864,7 +867,7 @@ function setHTML(){
   ${row('qualityPick','image','Photo quality',SET.quality[0].toUpperCase()+SET.quality.slice(1),'Smaller photos use less data')}
   ${row('bubPick','chat','Bubble colour',bubName())}
   ${NATIVE?row('netAcct','users','Internet account',NET.s?'@'+esc(NET.s.user):'','Chat with anyone over the internet'):''}
-  ${NATIVE?row('plus','verified','Vynk Plus',isPlus()?(ME.plan==='gold'?'Verified':'Active'):'',isPlus()?'Until '+new Date(ME.plan_until).toLocaleDateString():'Badge, longer status and more'):''}
+  ${NATIVE?row('plus','verified','Vynk Plus',isPlus()?(ME.plan==='gold'?'Verified':'Active'):'',isPlus()?'Until '+new Date(ME.plan_until).toLocaleDateString([],{day:'numeric',month:'short',year:'numeric'}):'Badge, longer status and more'):''}
   ${NATIVE&&S.owner&&NET.s?row('netOwner','verified','Internet users','','See accounts and block for 3 hours'):''}
   ${NATIVE&&S.owner&&NET.s?row('ownerPay','db','Plus payments','','Approve or reject payment requests')+row('ownerVer','verified','Verification requests','','Give the golden badge'):''}
   ${NATIVE&&S.owner&&NET.s?row('ownerUsr','ban','Reported users','','Block people who are reported'):''}
@@ -1000,7 +1003,7 @@ const ACT={
  linked:()=>toast('Linked devices need a server, so Vynk does not include them'),
  broadcast:()=>toast('Broadcast lists will be added in a later version'),
  starred:()=>{closeSheet();const all=chats.flatMap(c=>c.msgs.filter(m=>m.star).map(m=>[c,m]));sheet('Starred messages',all.length?all.map(([c,m])=>A('openCid',c.id,'star',cName(c),prev(m))).join(''):'<div class="empty"><b>No starred messages</b>Tap a message and choose Star.</div>')},
- newChat:()=>sheet('New chat',A('selfChat','', 'user','Message yourself','Notes, links and files for you')+(NATIVE?A('netFind','','search','Find by username','Chat over the internet')+A('scanQR','','qr','Scan QR code','Add someone with their code')+A('myQR','','qr','My QR code','Show your code to a friend'):'')+A('newGroup','', 'users','New group','Chat with several people')+Object.keys(P).map(k=>`<button class="act" data-a="openCid" data-v="${k}">${av(P[k].hue,P[k].name,'sm',dotOf(k))}<span class="grow">${esc(P[k].name)}<small>${esc(P[k].about)}</small></span></button>`).join('')),
+ newChat:()=>sheet('New chat',A('selfChat','', 'user','Message yourself','Notes, links and files for you')+(NATIVE?A('netFind','','search','Find by username','Chat over the internet')+A('scanQR','','qr','Scan QR code','Add someone with their code')+A('myQR','','qr','My QR code','Show your code to a friend'):'')+A('newGroup','', 'users','New group','Chat with several people')+Object.keys(P).filter(k=>k!=='self').map(k=>`<button class="act" data-a="openCid" data-v="${k}">${av(P[k].hue,P[k].name,'sm',dotOf(k))}<span class="grow">${esc(P[k].name)}<small>${esc(P[k].about)}</small></span></button>`).join('')),
  newGroup:()=>{closeSheet();const s=sheet('New group',`<div class="field"><input id="gname" placeholder="Group name" maxlength="30" autocomplete="off"></div>${Object.keys(P).map(k=>`<label class="act"><input type="checkbox" class="gm" value="${k}" id="gm_${k}">${av(P[k].hue,P[k].name,'sm')}<span class="grow">${esc(P[k].name)}</span></label>`).join('')}<button class="btn" data-a="mkGroup">Create group</button><div class="note2">Groups work best with 20 to 30 people close together.</div>`)},
  mkGroup:()=>{const n=$('#gname').value.trim(),mem=[...document.querySelectorAll('.gm:checked')].map(x=>x.value);if(!n||mem.length<1){toast('Add a name and at least one person');return}
    const c={id:'g'+uid(),type:'group',name:n,hue:Math.floor(Math.random()*360),members:mem,unread:0,msgs:[M('me',`You created the group "${n}"`,0,{t:Date.now(),status:'read'})]};chats.push(c);closeSheet();openChat(c.id)},
@@ -1117,7 +1120,7 @@ const ACT={
      const src=cv.toDataURL('image/jpeg',.6);pushMsg(chatOf(S.chat),M('me','',0,{t:Date.now(),type:'img',src}));toast('Photo compressed to '+size(src.length*.75)+' before sending')};im.src=r.result};r.readAsDataURL(f)})},
  attDoc:()=>{closeSheet();ACT._sendFile('*/*','file')},
  attAudio:()=>{closeSheet();ACT._sendFile('audio/*','audio')},
- attContact:()=>{closeSheet();sheet('Share a contact',Object.keys(P).map(k=>A('shareC',k,null,P[k].name)).join(''))},
+ attContact:()=>{closeSheet();sheet('Share a contact',Object.keys(P).filter(k=>k!=='self').map(k=>A('shareC',k,null,P[k].name)).join(''))},
  shareC:v=>{closeSheet();pushMsg(chatOf(S.chat),M('me','',0,{t:Date.now(),type:'contact',name:P[v].name}))},
  attLoc:()=>{closeSheet();ACT._sendLoc()},
  attEvent:()=>{closeSheet();const d=new Date(Date.now()+36e5);d.setMinutes(0,0,0);const v=new Date(d-d.getTimezoneOffset()*6e4).toISOString().slice(0,16);sheet('New event',`<div class="field"><input id="evn" maxlength="80" placeholder="Event name" autocomplete="off"></div><div class="field"><input id="evt" type="datetime-local" value="${v}"></div><div class="field"><input id="evp" maxlength="100" placeholder="Location (optional)" autocomplete="off"></div><div class="field"><input id="evx" maxlength="300" placeholder="Description (optional)" autocomplete="off"></div><button class="btn" data-a="mkEvent">Send event</button>`)},
@@ -1128,7 +1131,7 @@ const ACT={
  /* calls */
  startCall:v=>{const r=reach(v);if(r!=='direct'){toast(P[v].name.split(' ')[0]+' is out of direct range. Calls work over the internet.');return}callScreen(v)},
  callBack:v=>ACT.startCall(v),
- newCall:()=>sheet('Call someone',Object.keys(P).map(k=>`<button class="act" data-a="startCall" data-v="${k}">${av(P[k].hue,P[k].name,'sm',dotOf(k))}<span class="grow">${esc(P[k].name)}<small>${reach(k)==='direct'?'In direct range':'Not in direct range'}</small></span></button>`).join('')),
+ newCall:()=>sheet('Call someone',Object.keys(P).filter(k=>k!=='self').map(k=>`<button class="act" data-a="startCall" data-v="${k}">${av(P[k].hue,P[k].name,'sm',dotOf(k))}<span class="grow">${esc(P[k].name)}<small>${reach(k)==='direct'?'In direct range':'Not in direct range'}</small></span></button>`).join('')),
  endCall:()=>{const k=S.call;clearInterval(S.ci);$('#callv')?.remove();calls.unshift({cid:k,dir:'out',t:Date.now(),missed:false,d:S.cs});S.call=null;render()},
  cmute:(v,el)=>el.classList.toggle('on'),
  flipUsman:()=>{P.usman.range=!P.usman.range;P.usman.dist=P.usman.range?33:null;closeSheet();render();if(P.usman.range){toast('Usman is in range. Delivering waiting messages');flushQueue('usman')}else toast('Usman is out of range')},
@@ -1477,13 +1480,13 @@ function lockDraw(){
   const opt=(a,ico,t,sub)=>`<button class="lkopt" data-a="${a}"><span class="lkoi">${ic(ico,20)}</span><span class="lkot"><b>${t}</b><small>${sub}</small></span>${ARR}</button>`;
   if(LK.mode==='forgot'){el.className='lockv lk2';el.innerHTML=`<button class="lkbk" data-a="lkBack" aria-label="Back">${ic('back',20)}</button><div class="lkbadge">${ic('lock',26)}</div><h2>Forgot your code?</h2><div class="lks">Choose how to get back in.</div>`+(NET.s?opt('lkViaPw','user','Account password','Use your Vynk account password'):'')+(SET.lockQ?opt('lkViaQ','help','Security question',SET.lockQ==='mother'?"Your mother's name":"Your father's name"):'')+opt('lkEraseAsk','trash','Erase and reset','Removes chats on this phone')+(NET.s||SET.lockQ?'':'<div class="lks" style="margin-top:10px">No recovery method was set up for this code.</div>')+`<div class="lke">${esc(LK.err)}</div>`;return}
   if(LK.mode==='fpw'||LK.mode==='fq'){const pw=LK.mode==='fpw';el.className='lockv lk2';el.innerHTML=`<button class="lkbk" data-a="lkForgot" aria-label="Back">${ic('back',20)}</button><div class="lkbadge">${ic(pw?'user':'help',26)}</div><h2>${pw?'Account password':'Security question'}</h2><div class="lks">${pw?'Enter the password of your Vynk account @'+esc(NET.s?NET.s.user:''):(SET.lockQ==='mother'?"What is your mother's name?":"What is your father's name?")}</div><input id="lkin" class="lkin" type="${pw?'password':'text'}" autocomplete="off" placeholder="${pw?'Password':'Answer'}"><div class="lke">${esc(LK.err)}</div><button class="btn" style="width:100%;margin:0" data-a="${pw?'lkPwGo':'lkQGo'}">Continue</button>`;return}
-  if(LK.mode==='erase'){el.className='lockv lk2';el.innerHTML=`<button class="lkbk" data-a="lkForgot" aria-label="Back">${ic('back',20)}</button><div class="lkbadge">${ic('trash',26)}</div><h2>Erase and reset?</h2><div class="lks" style="color:var(--ink)">This erases the chats saved on this phone and logs you out of your internet account.</div><button class="btn" style="width:100%;margin:10px 0 0" data-a="lkErase">Erase and reset</button>`;return}
+  if(LK.mode==='erase'){el.className='lockv lk2';el.innerHTML=`<button class="lkbk" data-a="lkForgot" aria-label="Back">${ic('back',20)}</button><div class="lkbadge">${ic('trash',26)}</div><h2>Erase and reset?</h2><div class="lks" style="color:var(--ink)">This erases the chats saved on this phone and logs you out of your internet account.</div><button class="btn dng" style="width:100%;margin:10px 0 0" data-a="lkErase">Erase and reset</button>`;return}
   el.className='lockv';
   const t={verify:'Enter your code',old:'Enter your current code',set1:'Choose a 4-digit code',set2:'Repeat the code'}[LK.mode]||'';
   const wait=LK.until>Date.now(),bio=LK.mode==='verify'&&SET.bio&&bioAvail();
   const key=d=>`<button data-a="lk" data-v="${d}">${d}</button>`;
   el.innerHTML=`<div class="lkl">${WLOGO}</div><h2>${t}</h2><div class="lkd">${[0,1,2,3].map(i=>`<i class="${i<LK.buf.length?'on':''}"></i>`).join('')}</div><div class="lke">${esc(wait?'Too many tries. Wait a little':LK.err)}</div>
-  <div class="lkp">${[1,2,3,4,5,6,7,8,9].map(key).join('')}${bio?`<button class="ghost" data-a="lkBio" aria-label="Fingerprint">${ic('user',26)}</button>`:(LK.mode==='verify'?'<span></span>':'<button class="ghost" data-a="lkCancel">Cancel</button>')}${key(0)}<button class="ghost" data-a="lkDel" aria-label="Delete">${ic('back',24)}</button></div>
+  <div class="lkp">${[1,2,3,4,5,6,7,8,9].map(key).join('')}${bio?`<button class="ghost" data-a="lkBio" aria-label="Fingerprint">${ic('user',26)}</button>`:(LK.mode==='verify'?'<span></span>':'<button class="ghost" data-a="lkCancel">Cancel</button>')}${key(0)}<button class="ghost" data-a="lkDel" aria-label="Delete">${ic('bksp',26)}</button></div>
   ${LK.mode==='verify'?'<button class="lklink" data-a="lkForgot">Forgot code?</button>':''}`}
 function lockShow(){LK.mode='verify';LK.buf='';LK.err='';lockDraw();if(SET.bio&&bioAvail()&&!LK.bioBusy){setTimeout(()=>{if($('#lock')&&LK.mode==='verify'){LK.bioBusy=true;LK.bioFor='unlock';try{Android.bioAuth()}catch(e){LK.bioBusy=false}}},350)}}
 function lockSubmit(){const b=LK.buf;LK.buf='';
@@ -2304,7 +2307,7 @@ if(NATIVE){
       sheet('Video call',ks.map(k=>`<button class="act" data-a="startVideo" data-v="${esc(k)}">${av(P[k].hue,P[k].name,'sm',dotOf(k))}<span class="grow">${esc(P[k].name)}<small>Online</small></span>${ic('video',21)}</button>`).join(''))},
     clearCalls:()=>{calls.length=0;persistSoon();render();toast('Call log cleared')},
     callBack:v=>ACT.startCall(v),
-    newCall:()=>{const ks=Object.keys(P);if(!ks.length){toast('Find someone first: New chat, Find by username');return}
+    newCall:()=>{const ks=Object.keys(P).filter(k=>k!=='self');if(!ks.length){toast('Find someone first: New chat, Find by username');return}
       sheet('Call someone',ks.map(k=>`<div class="act">${av(P[k].hue,P[k].name,'sm',dotOf(k))}<span class="grow">${esc(P[k].name)}<small>${P[k].range?(isNet(k)?'Online':'Connected'):'Not connected'}</small></span>${P[k].range?`<button class="ib" data-a="startCall" data-v="${esc(k)}" aria-label="Voice call">${ic('phone',21)}</button>${isNet(k)?`<button class="ib" data-a="startVideo" data-v="${esc(k)}" aria-label="Video call">${ic('video',21)}</button>`:''}`:''}</div>`).join(''))},
     callAcc:()=>{const k=S.call;if(!k||S.cst!=='in')return;if(!Android.micOk())return;if(S.cvideo&&!Android.camOk())return;csend(k,'acc');goLive(k)},
     gcStart:v=>{const[id,vd]=v.split('|');window.gcStart(id,vd==='1')},
@@ -2962,7 +2965,7 @@ function adsHTML(place){place=place||'status';adLoad(false,place);const L=ADP[pl
   const promo=NET.s?`<button class="adpr" data-a="adNew"><span class="adpi">${ic('megaphone',22)}</span><span class="adpt"><b>Grow with Vynk Ads</b><small>Show your business to Vynk users. First ad is free every week.</small></span><span class="adpg">Promote</span></button>`:'';
   if(place!=='status')return L.length?`<div class="adsec">${L.slice(0,3).map(a=>adCard(a)).join('')}</div>`:'';
   return `<div class="adsec"><div class="vksec reg">Ad Space</div>${L.map(a=>adCard(a)).join('')}${promo}</div>`}
-function adPage(inner){const el=sheet('','');el.classList.add('authpg');const sh=el.querySelector('.sheet');sh.innerHTML=`<button class="apx" type="button" aria-label="Close">${ic('x',18)}</button>${inner}`;sh.querySelector('.apx').onclick=()=>closeSheet();return el}
+function adPage(inner){const el=sheet('','');el.classList.add('authpg','adlt');const sh=el.querySelector('.sheet');sh.innerHTML=`<button class="apx" type="button" aria-label="Close">${ic('x',18)}</button>${inner}`;sh.querySelector('.apx').onclick=()=>closeSheet();return el}
 function adPhoto(f,cb){const t=[[1280,.9],[1280,.8],[1024,.75],[800,.7]];let i=0;const go=()=>readImg(f,t[i][0],t[i][1],u=>{if(u&&u.length>=600000&&++i<t.length){go();return}cb(u&&u.length<600000?u:'')});go()}
 function adPrev(){const e=$('#adpv');if(!e)return;const g=i=>(($(i)||{}).value||'').trim();e.innerHTML=adCard({uname:NET.s.user,av:ME.dp,plan:ME.plan,title:g('#adt')||'Your title appears here',body:g('#adb')||'Write a short description so people know what you offer.',link:g('#adl')||'x',img:AD.img,imgs:AD.imgs||[],cta:AD.cta||'learn',phone:'x'},true)}
 function adTotal(){const e=$('#adtot');if(!e)return;if(AD.free){e.textContent='Free';return}const d=+(($('#add')||{}).value||1),n=parseInt(String(AD.price).replace(/,/g,'').match(/\d+/)||[0]);e.textContent=n?('PKR '+(n*d).toLocaleString()):AD.price}
@@ -2992,7 +2995,7 @@ Object.assign(ACT,{
   <div class="adlab">Audience</div>
   <div class="field">${ic('pin',19)}<input id="adci" maxlength="40" placeholder="City (empty = everyone)" autocomplete="off"></div>
   <div class="field">${ic('user',19)}<select id="adg"><option value="all">Everyone</option><option value="male">Men</option><option value="female">Women</option></select></div>
-  <div class="adlab">Start date</div><div class="field">${ic('clock',19)}<input id="ads" type="date" min="${new Date().toISOString().slice(0,10)}" max="${new Date(Date.now()+30*864e5).toISOString().slice(0,10)}"></div>
+  <div class="adlab">Start date</div><div class="field">${ic('clock',19)}<input id="ads" type="date" value="${new Date().toISOString().slice(0,10)}" min="${new Date().toISOString().slice(0,10)}" max="${new Date(Date.now()+30*864e5).toISOString().slice(0,10)}"></div>
   <div id="adpay" hidden><div class="adlab">Duration</div><div class="field">${ic('clock',19)}<select id="add">${[1,3,7,14,30].map(n=>`<option value="${n}">${n} day${n>1?'s':''}</option>`).join('')}</select></div>
    <div class="adlab">Payment</div><div class="adpb"><div><small>Send ${esc(price)} to</small><b>${esc(info||'Details coming soon')}</b></div>${AD.num?`<button class="adcp" data-a="adCopy" aria-label="Copy number">${ic('copy',18)}</button>`:''}</div>
    <div class="field">${ic('db',19)}<select id="adm"><option>Easypaisa</option><option>JazzCash</option><option>Bank transfer</option></select></div>
@@ -3336,7 +3339,7 @@ window.invRx=(c,a,o)=>{if(o.t!=='invr'||c.inv!=='out'&&c.inv!=='declined')return
 
 /* ---- v9.23: Add favorites page ---- */
 (()=>{let sel=null;
- const list=q=>chats.filter(c=>c.type==='dm'&&P[c.cid]&&(!q||(P[c.cid].name||'').toLowerCase().includes(q)||String(P[c.cid].user||'').toLowerCase().includes(q))).sort((a,b)=>(P[a.cid].name||'').localeCompare(P[b.cid].name||''));
+ const list=q=>chats.filter(c=>c.type==='dm'&&c.id!=='self'&&c.cid!=='self'&&P[c.cid]&&(!q||(P[c.cid].name||'').toLowerCase().includes(q)||String(P[c.cid].user||'').toLowerCase().includes(q))).sort((a,b)=>(P[a.cid].name||'').localeCompare(P[b.cid].name||''));
  const rows=q=>{const L=list(q);return L.length?L.map(c=>`<button class="fvr" data-a="fvTog" data-v="${esc(c.id)}">${av(P[c.cid].hue,P[c.cid].name)}<span class="fn"><b>${esc(P[c.cid].name)}</b>${P[c.cid].user?`<small>@${esc(P[c.cid].user)}</small>`:''}</span><span class="fvck${sel.has(c.id)?' on':''}">${sel.has(c.id)?ic('check',16):''}</span></button>`).join(''):`<div class="note2" style="padding:24px">${q?'No one found':'No contacts yet. Start a chat first.'}</div>`};
  const chips=()=>[...sel].map(id=>chats.find(c=>c.id===id)).filter(Boolean).map(c=>`<button data-a="fvTog" data-v="${esc(c.id)}">${av(P[c.cid].hue,P[c.cid].name)}<span>${esc((P[c.cid].name||'').split(' ')[0])}</span></button>`).join('');
  const redraw=()=>{const e=document.querySelector('#favp');if(!e)return;const q=(e.querySelector('#fvq').value||'').trim().toLowerCase();e.querySelector('.fvl').innerHTML=rows(q);e.querySelector('.fvsel').innerHTML=chips();e.querySelector('.fvsel').style.display=sel.size?'flex':'none';e.querySelector('.fvh small').textContent=sel.size?sel.size+' selected':'Choose people for quick calls';e.querySelector('.fvbot button').textContent=sel.size?'Save '+sel.size+(sel.size===1?' favorite':' favorites'):'Save'};
@@ -3858,5 +3861,32 @@ ACT.tcApply=v=>{const a=document.getElementById('tc1').value,b=document.getEleme
 {const o=ACT.bubSet;ACT.bubSet=function(){const r=o.apply(this,arguments);applyTC();return r}}
 applyTC();setTimeout(applyTC,800);
 })();
+
+/* v9.35 polish */
+(function(){const c=document.createElement('style');c.id='polish935';c.textContent=`
+.fvck.on{background:var(--bw)!important;border-color:var(--bw)!important;color:var(--bwi)!important}
+.fvbot button{background:var(--bw)!important;color:var(--bwi)!important}
+.fvdone{background:var(--bw)!important;color:var(--bwi)!important}
+.fvsel button span{display:block;max-width:58px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center}
+.lkin{margin-top:22px}
+.btn.dng{background:#d92d20!important;color:#fff!important}
+html[data-theme="light"] .lkin{background:var(--surface2);border-color:var(--line);color:var(--ink)}
+html[data-theme="light"] .lkin:focus{border-color:var(--ink)}
+html[data-theme="light"] .scrim.authpg.adlt{background:var(--bg)}
+html[data-theme="light"] .adlt .sheet{background:var(--bg);color:var(--ink)}
+html[data-theme="light"] .adlt .apx{color:var(--muted);border-color:var(--line)}
+html[data-theme="light"] .adlt .aph,html[data-theme="light"] .adlt .aplg,html[data-theme="light"] .adlt .apt{color:var(--ink)}
+html[data-theme="light"] .adlt .aps,html[data-theme="light"] .adlt .adw small,html[data-theme="light"] .adlt .adbd p,html[data-theme="light"] .adlt .adlab,html[data-theme="light"] .adlt .adpb small,html[data-theme="light"] .adlt .adseg button small,html[data-theme="light"] .adlt .note2{color:var(--muted)}
+html[data-theme="light"] .adlt .field,html[data-theme="light"] .adlt .adpb,html[data-theme="light"] .adlt .adseg button{background:var(--surface2);border-color:var(--line);color:var(--ink)}
+html[data-theme="light"] .adlt .field{color:var(--muted)}
+html[data-theme="light"] .adlt .field:focus-within{border-color:var(--ink);color:var(--ink)}
+html[data-theme="light"] .adlt .field input,html[data-theme="light"] .adlt .field select,html[data-theme="light"] .adlt .field input[type=date]{color:var(--ink);color-scheme:light}
+html[data-theme="light"] .adlt .adseg button.on{border-color:var(--ink);background:var(--surface)}
+html[data-theme="light"] .adlt .adpick{border-color:var(--line);color:var(--muted)}
+html[data-theme="light"] .adlt .adc{background:var(--surface2);border-color:var(--line);color:var(--ink)}
+html[data-theme="light"] .adlt .adb,html[data-theme="light"] .adlt .btn:not([style]){background:var(--bw);color:var(--bwi)}
+html[data-theme="light"] .adlt .btn[style]{color:var(--ink)!important;border-color:var(--line)!important}
+html[data-theme="light"] .adlt .adcp{border-color:var(--line);color:var(--ink)}
+`;document.head.append(c)})();
 </script>
 </body></html>
