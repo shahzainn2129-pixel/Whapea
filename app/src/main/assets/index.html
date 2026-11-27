@@ -795,7 +795,6 @@ function setNative(row,sw,nc){
   ${row('notifHelp','bell','Get alerts when app is closed','','Set battery to Unrestricted')}
   ${row('quietHrs','moon','Quiet hours',(SET.qh?(SET.qf||'23:00')+' to '+(SET.qt||'07:00'):'Off'),'Silent message alerts at night')}
   ${row('npTog','bell','Hide message text in notifications',SET.npHide?'On':'Off','Show only "New message"')}
-  ${NATIVE&&NET.s?row('bkOpen','lock','Chat backup','','Locked with your own password'):''}
   ${sec('chat','Chats')}
   ${row('vibePick','smile','Mood and presence',(typeof ME!=='undefined'&&ME.vibe)||'Not set','Show a mood or custom text instead of online')}
   ${row('stealthTog','lock','Stealth mode',SET.stealth?'On':'Off','Blur chat previews. Tap a message to peek')}
@@ -811,16 +810,17 @@ function setNative(row,sw,nc){
   ${row('clrAsk','trash','Clear all chats','','Deletes messages on this phone')}
   ${sec('db','Storage and data')}
   ${row('dataUse','db','Data usage',fmtB((DU.tx||0)+(DU.rx||0)),'Approximate, since you installed Vynk')}
+  ${NATIVE&&NET.s?row('bkOpen','lock','Chat backup','','Locked with your own password'):''}
   ${o?`<div class="sec">Owner</div>${row('ownerOff','verified','Owner mode is on','','Tap to sign out')}
   ${NET.s?row('ownerStats','db','Owner stats','','Users and activity')+row('ownerCtl','db','App controls','','Turn features on or off and post a banner')+row('ownerAds','info','Ads review','','Approve or remove promotions')+row('ownerFb','info','Problem reports','','What users reported')+row('netOwner','verified','Internet users','','See accounts and block for 3 hours')+row('ownerPay','db','Plus payments','','Approve or reject payment requests')+row('ownerVer','verified','Verification requests','','Give the golden badge')+row('ownerUsr','ban','Reported users','','Block people who are reported'):''}`:''}
   ${sec('help','Help')}
-  ${row('helpCenter','info','Help center','','Answers to common questions')}
-  ${row('featGuide','info','Features guide','','What each feature does and how to use it')}
+  ${row('helpCenter','help','Help center','','Answers to common questions')}
+  ${row('featGuide','play','Features guide','','What each feature does and how to use it')}
   ${row('invite','users','Share Vynk','','Send the download link to friends')}
-  ${row('updCheck','down','Check for updates')}
-  ${row('terms','shield','Terms of service')}
-  ${row('reportProb','info','Report a problem','','Tell us what went wrong')}
-  ${row('whatsNew','info',"What's new")}
+  ${row('updCheck','down','Check for updates','','See if a newer version is available')}
+  ${row('terms','file','Terms of service','','Rules for using Vynk')}
+  ${row('reportProb','chat','Report a problem','','Tell us what went wrong')}
+  ${row('whatsNew','star',"What's new",'','Latest changes in Vynk')}
   ${row('privPol','shield','Privacy policy','','How Vynk treats your data')}
   ${row('appinfo','info','About Vynk','','Version 9.35')}
   ${NET.s?`<button class="act bad" data-a="netOut" data-v=""><span class="grow">Log out</span></button>`:''}
@@ -999,7 +999,7 @@ const ACT={
  closeChat,
  archived:()=>{const L=chats.filter(c=>c.archived);sheet('Archived chats',L.map(c=>A('unarch',c.id,null,cName(c),prev(last(c)))).join(''))},
  unarch:v=>{chatOf(v).archived=false;closeSheet();render();toast('Chat moved back to Chats')},
- chatsMenu:()=>sheet('',A('newGroup','', 'users','New group')+A('storeOpen','', 'store','Catalogue','Browse stores, manage your store')+A('prayer','', 'timer','Prayer times and Qibla','Times are approximate')+A('starred','', 'star','Starred messages')+(NATIVE?A('lblFilter','', 'tag','Chats by label',S.lblF||'All chats'):'')+A('readAll','', 'check','Mark all as read')+A('archived','', 'archive','Archived chats')+A('linked','', 'globe','Linked devices','Needs the internet, not available')+A('broadcast','', 'send','Broadcast list','Needs a connection to each recipient')),
+ chatsMenu:()=>sheet('',A('newGroup','', 'users','New group')+A('storeOpen','', 'store','Catalogue','Browse stores, manage your store')+A('prayer','', 'timer','Prayer times and Qibla','Times are approximate')+A('starred','', 'star','Starred messages')+(NATIVE?A('lblFilter','', 'tag','Chats by label',S.lblF||'All chats'):'')+A('readAll','', 'check','Mark all as read')+A('archived','', 'archive','Archived chats')+A('broadcast','', 'send','Broadcast list','Needs a connection to each recipient')),
  linked:()=>toast('Linked devices need a server, so Vynk does not include them'),
  broadcast:()=>toast('Broadcast lists will be added in a later version'),
  starred:()=>{closeSheet();const all=chats.flatMap(c=>c.msgs.filter(m=>m.star).map(m=>[c,m]));sheet('Starred messages',all.length?all.map(([c,m])=>A('openCid',c.id,'star',cName(c),prev(m))).join(''):'<div class="empty"><b>No starred messages</b>Tap a message and choose Star.</div>')},
@@ -2046,7 +2046,7 @@ if(NATIVE){
     vote:v=>{const[id,k]=v.split(':'),[c,m]=msgById(id);if(!m||m.type!=='poll')return;const o=m.opts[+k],had=o.v.includes('me');m.opts.forEach(x=>x.v=x.v.filter(y=>y!=='me'));if(!had)o.v.push('me');drawMsgs(false);persistSoon();sendCtl(c,{t:'vote',id,k:had?-1:+k})},
     wpPick:()=>ACT.wpSheet(''),
     cm_wp:v=>{closeSheet();ACT.wpSheet(v)},
-    wpSheet:cid=>{S.wpFor=cid||null;closeSheet();sheet(cid?'Chat wallpaper':'Wallpaper',`<div class="wpg">${[['dots','Dots'],['lines','Lines'],['plain','Plain'],...Object.keys(WPG).map(k=>[k,''])].map(([k,l])=>`<button class="wps${PLUSWP.includes(k)&&!isPlus()?' lockwp':''}" data-a="wpSet" data-v="${k}" style="${WPG[k]?'background:'+WPG[k]:''}" aria-label="${l||'Colour'}">${l}</button>`).join('')}</div>`+A('wpGallery','','image','Choose from gallery','Use your own photo')+A('wpSet','def','x',cid?'Use the default wallpaper':'Reset wallpaper'))},
+    wpSheet:cid=>{S.wpFor=cid||null;closeSheet();sheet(cid?'Chat wallpaper':'Wallpaper',`<div class="wpg">${[['dots','Dots'],['lines','Lines'],['plain','Plain'],...Object.keys(WPG).map(k=>[k,''])].map(([k,l])=>`<button class="wps${PLUSWP.includes(k)&&!isPlus()?' lockwp':''}" data-a="wpSet" data-v="${k}" style="${WPG[k]?'background:'+WPG[k]:''}" data-wp="${k}" aria-label="${l||'Colour'}">${l}</button>`).join('')}</div>`+A('wpGallery','','image','Choose from gallery','Use your own photo')+A('wpSet','def','x',cid?'Use the default wallpaper':'Reset wallpaper'))},
     wpSet:v=>{if(PLUSWP.includes(v)&&!isPlus()){ACT.plus();return}const val=v==='def'?'':v;
       if(S.wpFor){const c=chatOf(S.wpFor);if(c){if(val)c.wp=val;else delete c.wp}}
       else{if(val==='dots'||val==='lines'||val==='plain'){SET.wp=val;SET.wpx=''}else SET.wpx=val;applySettings()}
@@ -3678,7 +3678,7 @@ function navApply(c){c=(c===undefined?SET.navc:c);const r=document.documentEleme
   if(!c||c==='auto'||!/^#[0-9a-f]{6}$/i.test(c)){r.removeProperty('--nbg');r.removeProperty('--nfg');return}
   const R=parseInt(c.slice(1,3),16),G=parseInt(c.slice(3,5),16),B=parseInt(c.slice(5,7),16),L=(.299*R+.587*G+.114*B)/255;
   r.setProperty('--nbg',c);r.setProperty('--nfg',L>.62?'#111':'#fff')}
-window.navName=()=>!SET.navc||SET.navc==='auto'?'Default grey':SET.navc.toUpperCase();
+window.navName=()=>!SET.navc||SET.navc==='auto'?'Default grey':'Custom';
 navApply();
 Object.assign(ACT,{
   navPick:()=>{closeSheet();sheet('Navigation bar colour',`<div class="navsw"><button style="background:#f2f2f3" data-a="setNav" data-v="auto" aria-label="Default grey"></button>${SWN.map(h=>`<button style="background:${h}" data-a="setNav" data-v="${h}" aria-label="${h}"></button>`).join('')}</div><div class="navsl"><label>Pick your own</label><input type="range" id="nvh" min="0" max="360" value="210"><label>Lightness</label><input type="range" id="nvl" min="15" max="90" value="50"></div><div class="note2" style="padding:0 20px 14px">The bar changes as you slide. Let go to save.</div>`);
@@ -3744,7 +3744,7 @@ const _a=ACT.attach;ACT.attach=function(){_a.apply(this,arguments);try{
   let au=null;const play=n=>{try{if(au){au.pause()}au=new Audio(window.ASSET+'tones/'+n+'.ogg');au.volume=.9;au.play().catch(()=>{})}catch(e){}};
   const _si=window.sndIn;window.sndIn=()=>{if(SET.mtone&&/^m([1-9]|1[0-2])$/.test(SET.mtone))play(SET.mtone);else _si()};
   window.mtoneName=()=>(MT.find(x=>x[0]===(SET.mtone||''))||MT[0])[1];
-  const _a=ACT.attach;ACT.attach=function(){_a.apply(this,arguments);try{const b=document.querySelector('.sheet [data-a="attLoc"]');if(b&&!document.querySelector('.sheet [data-a="stkOpen"]'))b.parentNode.insertAdjacentHTML('beforeend',`<button data-a="stkOpen"><span class="c" style="--h:48">${ic('smile',24)}</span>Sticker</button>`)}catch(e){}};
+  const _a=ACT.attach;ACT.attach=function(){_a.apply(this,arguments);try{const b=document.querySelector('.sheet [data-a="attLoc"]');if(b&&!document.querySelector('.sheet [data-a="stkOpen"]'))(()=>{const o=document.querySelector('.sheet [data-a="attOnce"]'),par=(o||b).parentNode;par.classList.add('g5x');return par})().insertAdjacentHTML('beforeend',`<button data-a="stkOpen"><span class="c" style="--h:48">${ic('smile',24)}</span>Sticker</button>`)}catch(e){}};
   Object.assign(ACT,{
     stkOpen:v=>{const c=chatOf(S.chat);if(!c)return;const PN=[['f','Faces'],['u','Urdu'],['e','Eid'],['c','Cricket']];const pk=typeof v==='string'&&PN.some(x=>x[0]===v)?v:(window._stkp||'f');window._stkp=pk;const L=pk==='f'?STK_IDS.filter(i=>!/^[ecu]_/.test(i)):STK_PK[pk].map(i=>pk+'_'+i);
       closeSheet();sheet('Stickers',`<div class="stkt">${PN.map(([k,n])=>`<button class="${k===pk?'on':''}" data-a="stkOpen" data-v="${k}">${n}</button>`).join('')}</div><div class="stkg">${L.map(i=>`<button data-a="stkSend" data-v="${i}" aria-label="Sticker"><img src="${window.ASSET}stickers/${i}.png" alt="Sticker" loading="lazy"></button>`).join('')}</div>`)},
@@ -3887,6 +3887,17 @@ html[data-theme="light"] .adlt .adc{background:var(--surface2);border-color:var(
 html[data-theme="light"] .adlt .adb,html[data-theme="light"] .adlt .btn:not([style]){background:var(--bw);color:var(--bwi)}
 html[data-theme="light"] .adlt .btn[style]{color:var(--ink)!important;border-color:var(--line)!important}
 html[data-theme="light"] .adlt .adcp{border-color:var(--line);color:var(--ink)}
+`;document.head.append(c)})();
+
+(function(){const c=document.createElement('style');c.id='polish935b';c.textContent=`
+.wps[data-wp="dots"]{background-color:var(--surface2);background-image:radial-gradient(var(--muted) 1.2px,transparent 1.4px);background-size:12px 12px}
+.wps[data-wp="lines"]{background-color:var(--surface2);background-image:repeating-linear-gradient(135deg,var(--line) 0 1.5px,transparent 1.5px 12px)}
+.wps[data-wp="plain"]{background:var(--surface2)}
+.wps[data-wp="dots"],.wps[data-wp="lines"],.wps[data-wp="plain"]{color:var(--ink);font-weight:600}
+.g5x{grid-template-columns:repeat(5,1fr)!important;gap:14px 4px!important}.g5x button{font-size:11.5px!important}
+html:root:root{--sc:var(--ink);--scs:var(--surface2);--scl:var(--surface2)}
+.stav,.stgo,.stbar,.stoff{background:var(--bw)!important;color:var(--bwi)!important}
+html .mrow .b .filec .fi.callfi{background:var(--ink)!important;color:var(--bg)!important}html .mrow .b .filec .fi.callfi:not(.miss) svg{stroke:var(--bg)!important;color:var(--bg)!important}
 `;document.head.append(c)})();
 </script>
 </body></html>
