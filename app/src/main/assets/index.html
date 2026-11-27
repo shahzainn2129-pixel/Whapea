@@ -1782,7 +1782,7 @@ Object.assign(ACT,{
  lblDel:v=>{const l=lbls().splice(+v,1)[0];chats.forEach(c=>{if(c.labels)c.labels=c.labels.filter(x=>x!==l)});persistSoon();ACT.lblEdit()},
  cmLabel:v=>{const c=chatOf(v);sheet('Labels',lbls().map((l,i)=>A('cmLbl',v+'|'+i,(c.labels||[]).includes(l)?'check':null,l)).join('')+A('lblEdit','', 'edit','Edit labels'))},
  cmLbl:v=>{const [id,i]=v.split('|'),c=chatOf(id),l=lbls()[+i];if(!l)return;c.labels=c.labels||[];const k=c.labels.indexOf(l);if(k>=0)c.labels.splice(k,1);else c.labels.push(l);persistSoon();ACT.cmLabel(id);render()},
- lblFilter:()=>sheet('Chats by label',A('lblSet','', S.lblF?null:'check','All chats')+lbls().map((l,i)=>A('lblSet',String(i),S.lblF===l?'check':null,l,chats.filter(c=>(c.labels||[]).includes(l)).length+' chats')).join('')),
+ lblFilter:()=>sheet('Chats by label',A('lblSet','', S.lblF?'chat':'check','All chats')+lbls().map((l,i)=>A('lblSet',String(i),S.lblF===l?'check':'tag',l,chats.filter(c=>(c.labels||[]).includes(l)).length+' chats')).join('')),
  lblSet:v=>{S.lblF=v===''?'':lbls()[+v]||'';closeSheet();render()},
 });
 {const _ci=ACT.chatInfo;ACT.chatInfo=async()=>{_ci();const c=chatOf(S.chat);if(!c||c.type!=='dm'||!isNet(c.cid))return;const b=await peerBiz(c.cid.slice(2));if(!b)return;
@@ -3899,5 +3899,41 @@ html:root:root{--sc:var(--ink);--scs:var(--surface2);--scl:var(--surface2)}
 .stav,.stgo,.stbar,.stoff{background:var(--bw)!important;color:var(--bwi)!important}
 html .mrow .b .filec .fi.callfi{background:var(--ink)!important;color:var(--bg)!important}html .mrow .b .filec .fi.callfi:not(.miss) svg{stroke:var(--bg)!important;color:var(--bg)!important}
 `;document.head.append(c)})();
+
+/* v9.35 media + starred pages */
+(function(){
+ const LK=/https?:\/\/[^\s<>"']+/gi,hostOf=u=>{try{return new URL(u).hostname.replace(/^www\./,'')}catch(e){return u}};
+ const dt=t=>new Date(t).toLocaleDateString([],{day:'numeric',month:'short',year:'numeric'});
+ const css=document.createElement('style');css.textContent=`.vbr .vbi{--c:var(--ink)!important}
+ .mtabs{display:flex;gap:8px;padding:4px 16px 12px;overflow-x:auto;scrollbar-width:none}.mtabs button{flex:none;height:36px;padding:0 16px;border-radius:18px;background:var(--surface2);border:1px solid var(--line);font-weight:600;font-size:13.5px;color:var(--ink)}.mtabs button.on{background:var(--bw);color:var(--bwi);border-color:transparent}
+ .mgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:0 16px 20px}.mgrid button{position:relative;aspect-ratio:1;border-radius:12px;overflow:hidden;background:var(--surface2);padding:0;border:1px solid var(--line)}.mgrid img,.mgrid video{width:100%;height:100%;object-fit:cover;display:block}.mgrid .vp{position:absolute;inset:0;display:grid;place-items:center;color:#fff;background:rgba(0,0,0,.25)}
+ .mempty{display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;padding:56px 32px;color:var(--muted)}.mempty .mi{width:64px;height:64px;border-radius:20px;background:var(--surface2);border:1px solid var(--line);display:grid;place-items:center;color:var(--ink);margin-bottom:8px}.mempty b{color:var(--ink);font-size:16px}.mempty span{font-size:13.5px;line-height:1.5}
+ .scard{display:block;width:100%;text-align:left;padding:14px 16px;border-bottom:1px solid var(--line);position:relative}.scard:last-child{border-bottom:0}.scard .sh{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted)}.scard .sh b{color:var(--ink);font-size:14px;font-weight:700}.scard .sh .grow{flex:1;min-width:0}.scard p{margin:6px 0 0;font-size:15px;line-height:1.45;color:var(--ink);display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word}
+ .scard .su{position:absolute;right:10px;top:8px;width:34px;height:34px;display:grid;place-items:center;color:var(--ink)}.scard .su svg{fill:currentColor}`;document.head.append(css);
+ const page=(id,title,body)=>{document.querySelector('#'+id)?.remove();const e=document.createElement('div');e.id=id;e.className='vbpage';e.innerHTML=`<div class="vbh"><button class="sdb" data-a="vbClose" data-v="${id}" aria-label="Back">${ic('back',24)}</button><h2>${title}</h2></div><div class="vbb">${body}</div>`;phone.append(e);return e};
+ const empty=(i,t,d)=>`<div class="mempty"><span class="mi">${ic(i,28)}</span><b>${t}</b><span>${d}</span></div>`;
+ const back=from=>`data-a="${from?'cmBack':'vbClose'}" data-v="${from?from:'cmedia'}"`;
+ function body(c,tab){const L=c.msgs.filter(m=>!m.deleted).slice().reverse();
+  const media=L.filter(m=>(m.type==='img'||m.type==='video')&&m.src),docs=L.filter(m=>m.type==='file'||m.type==='audio'),links=L.flatMap(m=>m.type==='call'?[]:(String(m.text||'').match(LK)||[]).map(u=>({u,t:m.t})));
+  const tabs=`<div class="mtabs">${[['media','Media',media.length],['docs','Documents',docs.length],['links','Links',links.length]].map(([k,l,n])=>`<button class="${tab===k?'on':''}" data-a="mTab" data-v="${k}">${l}${n?' '+n:''}</button>`).join('')}</div>`;
+  let h='';
+  if(tab==='media')h=media.length?`<div class="mgrid">${media.map(m=>`<button data-a="openMedia" data-v="${m.id}" aria-label="${m.type==='video'?'Video':'Photo'}">${m.type==='video'?`<video src="${m.src}#t=0.2" preload="metadata" muted playsinline></video><span class="vp">${ic('play',26)}</span>`:`<img src="${m.src}" alt="" loading="lazy">`}</button>`).join('')}</div>`:empty('image','No photos or videos','Photos and videos you share in this chat appear here.');
+  if(tab==='docs')h=docs.length?`<div class="vbcard">${docs.map(m=>`<button class="cirow" ${m.src?`data-a="openFile" data-v="${m.id}"`:''}>${ic(m.type==='audio'?'music':'file',22)}<span class="grow">${esc(m.name||'File')}<small>${esc(m.size||'')}${m.size?' · ':''}${dt(m.t)}</small></span>${m.src?ic('down',18):''}</button>`).join('')}</div>`:empty('file','No documents','Documents and audio files you share appear here.');
+  if(tab==='links')h=links.length?`<div class="vbcard">${links.map(l=>`<button class="cirow" data-a="openLink" data-v="${esc(l.u)}">${ic('link',22)}<span class="grow">${esc(hostOf(l.u))}<small style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block">${esc(l.u)}</small></span><span class="val">${dt(l.t)}</span></button>`).join('')}</div>`:empty('link','No links','Links shared in this chat appear here.');
+  return tabs+h}
+ ACT.media=function(){const c=chatOf(S.chat);if(!c)return;closeSheet();S.mt='media';const e=page('cmedia','Media, links and documents',body(c,'media'));e.querySelector('.sdb').setAttribute('data-a','cmBack')};
+ ACT.mTab=v=>{const c=chatOf(S.chat),e=document.querySelector('#cmedia');if(!c||!e)return;S.mt=v;e.querySelector('.vbb').innerHTML=body(c,v)};
+ ACT.cmBack=v=>{document.querySelector('#'+(v||'cmedia'))?.remove();document.querySelector('#cmedia,#cstar')?.remove();if(S.chat)try{ACT.chatInfo()}catch(e){}};
+ const pv=(m)=>{try{return prev(m)}catch(e){return ''}};
+ function sbody(only){const rows=[];(only?[chatOf(only)]:chats).forEach(c=>c&&c.msgs.forEach(m=>{if(m.star&&!m.deleted)rows.push([c,m])}));rows.sort((a,b)=>b[1].t-a[1].t);
+  if(!rows.length)return empty('star','No starred messages','Long-press a message and choose Star to keep it here.');
+  return `<div class="vbcard">${rows.map(([c,m])=>{const who=m.from==='me'?'You':(c.type==='group'?(m.name||cName(c)):cName(c));const txt=m.type==='text'||!m.type?esc(m.text||''):esc(pv(m));
+   return `<div class="scard"><button class="su" data-a="unstar" data-v="${esc(c.id)}|${esc(m.id)}|${only?'1':''}" aria-label="Remove star">${ic('star',20)}</button><button style="display:block;width:100%;text-align:left" data-a="starGo" data-v="${esc(c.id)}"><div class="sh"><b>${esc(who)}</b>${only?'':`<span>in ${esc(cName(c))}</span>`}<span class="grow"></span></div><p>${txt}</p><div class="sh" style="margin-top:6px">${dt(m.t)} · ${fmt(m.t)}</div></button></div>`}).join('')}</div>`}
+ ACT.starred=function(v){closeSheet();const only=v&&chatOf(v)?v:'';const e=page('cstar','Starred messages',sbody(only));e.dataset.only=only;if(only)e.querySelector('.sdb').setAttribute('data-a','cmBack')};
+ ACT.starGo=v=>{document.querySelector('#cstar')?.remove();S.tab='chats';if(S.chat!==v)openChat(v);else{try{drawMsgs(true)}catch(e){}}};
+ ACT.unstar=v=>{const [cid,mid,o]=v.split('|'),c=chatOf(cid),m=c&&c.msgs.find(x=>String(x.id)===mid);if(!m)return;m.star=false;persistSoon();const e=document.querySelector('#cstar');if(e)e.querySelector('.vbb').innerHTML=sbody(o?cid:'');toast('Removed from starred');try{refresh()}catch(_){}};
+ /* chats menu: close the menu sheet before opening another */
+ ['lblFilter','archived','prayer','broadcast','readAll'].forEach(n=>{const o=ACT[n];if(typeof o==='function')ACT[n]=function(){try{closeSheet()}catch(e){}return o.apply(this,arguments)}});
+})();
 </script>
 </body></html>
