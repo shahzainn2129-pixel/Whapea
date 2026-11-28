@@ -510,6 +510,9 @@ class MainActivity : ComponentActivity() {
         fun fileExport(uri: String, name: String, mime: String): Boolean = Core.fileExport(uri, name, mime)
 
         @JavascriptInterface
+        fun saveB64(b64: String, name: String, mime: String): Boolean = Core.saveB64(b64, name, mime)
+
+        @JavascriptInterface
         fun locOk(): Boolean {
             if (hasLoc()) return true
             runOnUiThread { locLauncher.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)) }

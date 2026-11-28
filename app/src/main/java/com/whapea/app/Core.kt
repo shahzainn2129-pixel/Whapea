@@ -341,6 +341,30 @@ object Core {
     }
 
     /** Copies a saved file into the phone's Downloads/Vynk folder. */
+    /** Saves base64 data (JS-generated form, e.g. PDF) to Downloads/Vynk. */
+    fun saveB64(b64: String, name: String, mime: String): Boolean {
+        return try {
+            if (b64.length > 14_000_000) return false
+            val bytes = android.util.Base64.decode(b64, android.util.Base64.DEFAULT)
+            val safe = name.replace(Regex("[^A-Za-z0-9._ -]"), "_").take(80).ifEmpty { "file" }
+            if (android.os.Build.VERSION.SDK_INT >= 29) {
+                val cv = android.content.ContentValues()
+                cv.put(android.provider.MediaStore.Downloads.DISPLAY_NAME, safe)
+                cv.put(android.provider.MediaStore.Downloads.MIME_TYPE, mime.ifBlank { "application/octet-stream" })
+                cv.put(android.provider.MediaStore.Downloads.RELATIVE_PATH, "Download/Vynk")
+                val u = app.contentResolver.insert(android.provider.MediaStore.Downloads.EXTERNAL_CONTENT_URI, cv) ?: return false
+                val os = app.contentResolver.openOutputStream(u) ?: return false
+                os.use { it.write(bytes) }
+                true
+            } else {
+                val dir = java.io.File(android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_DOWNLOADS), "Vynk")
+                dir.mkdirs()
+                java.io.File(dir, safe).writeBytes(bytes)
+                true
+            }
+        } catch (e: Exception) { false }
+    }
+
     fun fileExport(uri: String, name: String, mime: String): Boolean {
         return try {
             val f = java.io.File(uri.removePrefix("file://"))
